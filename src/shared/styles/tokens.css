@@ -1,0 +1,78 @@
+/* 디자인 토큰 — Figma `00 디자인 시스템`(1:27)의 변수명을 그대로 CSS 변수로 옮김
+   예) bg/cream → --bg-cream, brand/orange-deep → --brand-orange-deep */
+
+:root {
+  /* ── 색상 ── */
+  --bg-cream: #fff7e8;
+  --bg-surface: #fffdf8;
+  --bg-butter: #ffebc2;
+  --bg-peach: #ffdcc2;
+
+  --brand-orange: #f2994a;
+  --brand-orange-deep: #dd7a32;
+  --brand-sage: #a9c79b;
+  --brand-sky: #bfdce6;
+  --brand-berry: #e8735a;
+  --brand-blush: #ffb7a3;
+
+  --text-brown: #4b3a2c;
+  --text-sub: #9a8573;
+  --text-hint: #c4b39f;
+
+  --line-soft: #f0e2ca;
+  --white: #ffffff;
+
+  /* ── 폰트 패밀리 ── */
+  --font-jua: 'Jua', sans-serif;
+  --font-body: 'Gowun Dodum', sans-serif;
+  --font-letter: 'Nanum Pen Script', cursive;
+
+  /* ── 타이포 (size / line-height) ── */
+  --display-32-size: 32px;
+  --display-32-lh: 1.3;
+  --title-24-size: 24px;
+  --title-24-lh: 1.35;
+  --title-20-size: 20px;
+  --title-20-lh: 1.35;
+  --title-17-size: 17px;
+  --title-17-lh: 1.4;
+  --label-15-size: 15px;
+  --label-15-lh: 1.4;
+  --body-15-size: 15px;
+  --body-15-lh: 1.6;
+  --body-13-size: 13px;
+  --body-13-lh: 1.55;
+  --caption-11-size: 11px;
+  --caption-11-lh: 1.5;
+  --letter-22-size: 22px;
+  --letter-22-lh: 1.5;
+}
+
+/* 타이포 유틸 클래스 — 필요한 곳에서 className으로 사용 */
+.text-display-32 {
+  font: 400 var(--display-32-size) / var(--display-32-lh) var(--font-jua);
+}
+.text-title-24 {
+  font: 400 var(--title-24-size) / var(--title-24-lh) var(--font-jua);
+}
+.text-title-20 {
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+.text-title-17 {
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+}
+.text-label-15 {
+  font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
+}
+.text-body-15 {
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+}
+.text-body-13 {
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+.text-caption-11 {
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+.text-letter-22 {
+  font: 400 var(--letter-22-size) / var(--letter-22-lh) var(--font-letter);
+}
