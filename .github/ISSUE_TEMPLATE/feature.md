@@ -1,7 +1,7 @@
 ---
 name: 🐱 화면 · 기능 구현
 about: 새 화면이나 기능을 만들 때
-title: "[화면번호] 화면 이름"
+title: "feat: 작업 요약"
 labels: feat
 ---
 

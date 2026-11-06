@@ -1,7 +1,7 @@
 ---
 name: 🐛 버그 신고
 about: 잘못 동작하는 부분을 발견했을 때
-title: "[버그] 문제 요약"
+title: "fix: 문제 요약"
 labels: fix
 ---
 
