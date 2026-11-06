@@ -22,6 +22,9 @@
   --line-soft: #f0e2ca;
   --white: #ffffff;
 
+  /* ── 레이아웃 (Figma 시안은 360×760 기준, 최대 430px까지 늘어남) ── */
+  --app-width: 430px;
+
   /* ── 폰트 패밀리 ── */
   --font-jua: 'Jua', sans-serif;
   --font-body: 'Gowun Dodum', sans-serif;

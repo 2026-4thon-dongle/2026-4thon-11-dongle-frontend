@@ -16,6 +16,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  /* 데스크톱에서 앱 영역 바깥 배경 */
+  background: var(--line-soft);
 }
 
 button,
@@ -25,8 +27,14 @@ select {
   font: inherit;
 }
 
+/* 앱웹: 모바일 화면은 꽉 채우고, 넓은 화면에서는 --app-width에서 멈춰 가운데 정렬 */
 #root {
+  width: 100%;
+  max-width: var(--app-width);
   min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--bg-cream);
 }
 
 .route-placeholder {
