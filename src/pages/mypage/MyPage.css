@@ -1,0 +1,35 @@
+/* 시안 7-1 (360 기준). 가로는 화면 너비를 따라 늘고 줄며 좌우 20px 여백을 둔다. */
+.mypage {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding: 52px 20px 24px;
+}
+
+.mypage__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mypage__title {
+  margin: 0;
+  font: 400 28px / 1.35 var(--font-jua);
+}
+
+.mypage__settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--text-brown);
+}
+
+/* 카드들 사이는 14px */
+.mypage__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}

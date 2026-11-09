@@ -1,0 +1,16 @@
+// 마이 화면에서 쓰는 경로 모음. 경로를 바꿀 때는 여기와 app/routes/mypageRoutes.jsx만 고친다.
+// "가정" 표시가 있는 경로는 화면이나 라우트가 아직 정해지지 않은 것이다.
+
+export const MYPAGE_PATHS = {
+  home: '/mypage', // 7-1
+  drafts: '/mypage/drafts', // 7-3
+  stamps: '/mypage/stamps', // 7-4~7-8 (가정, 묶음 2에서 구현)
+  regions: '/mypage/regions', // 7-10 (가정, 묶음 4에서 구현)
+  notifications: '/mypage/notifications', // 7-11 (가정, 묶음 5에서 구현)
+  // 7-1의 설정 아이콘이 여는 곳. 시안에 설정 목록 화면이 없고, 7-9(닉네임)·7-12(차단)·7-13(로그아웃·탈퇴)로 들어가는 길이 7-1에 없다. (가정)
+  settings: '/mypage/settings',
+  // 다른 담당 화면. 지금은 모두 임시 화면이다.
+  myDiaries: '/diary/mine', // 7-2 내 일기 = 효령 담당(6-6 목록). 브랜치가 합쳐진 뒤 확인한다.
+  penPal: '/pen-pal', // 5-14, 5-15 펜팔 친구
+  letterWrite: '/letter-write', // 임시저장 이어 쓰기
+}
