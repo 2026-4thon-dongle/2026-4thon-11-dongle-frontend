@@ -1,0 +1,33 @@
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  font: 400 14px / 1.4 var(--font-jua);
+  color: var(--text-brown);
+  white-space: nowrap;
+}
+
+button.ui-chip {
+  cursor: pointer;
+}
+
+/* 기본: 흰 배경 + 테두리 (테두리 1.5px만큼 패딩을 줄여 다른 칩과 크기를 맞춘다) */
+.ui-chip--default {
+  padding: 7.5px 14.5px;
+  border: 1.5px solid var(--line-soft);
+  background: var(--bg-surface);
+}
+
+/* 선택: 주황 배경 + 흰 글씨 */
+.ui-chip--selected {
+  background: var(--brand-orange);
+  color: var(--white);
+}
+
+/* 연한: 버터 배경 */
+.ui-chip--light {
+  background: var(--bg-butter);
+}
