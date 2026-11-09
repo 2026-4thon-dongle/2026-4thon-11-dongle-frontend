@@ -1,0 +1,60 @@
+.step-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* 단계 알약 4개가 너비를 똑같이 나눠 가진다(시안: 74px × 4, 간격 8px). */
+.step-layout__progress {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0 20px;
+  list-style: none;
+}
+
+.step-layout__pill {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  border: 1.5px solid transparent;
+  border-radius: 15px;
+  font: 400 13px / 1.4 var(--font-jua);
+  white-space: nowrap;
+}
+
+/* 지금 단계 */
+.step-layout__pill--current {
+  background: var(--brand-orange);
+  color: var(--white);
+}
+
+/* 지난 단계 */
+.step-layout__pill--done {
+  background: var(--bg-butter);
+  color: var(--brand-orange-deep);
+}
+
+/* 아직 안 온 단계 */
+.step-layout__pill--todo {
+  border-color: var(--line-soft);
+  background: var(--bg-surface);
+  color: var(--text-hint);
+}
+
+.step-layout__body {
+  flex: 1;
+  padding: 16px 20px 0;
+}
+
+/* 버튼 영역은 화면 아래에 붙어 있고, 내용이 길면 내용 위에 떠 있다. */
+.step-layout__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
+  background: var(--bg-cream);
+}
