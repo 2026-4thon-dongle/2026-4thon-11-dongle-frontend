@@ -1,0 +1,50 @@
+/* 시안 4-8: 다이얼로그 안쪽. 간격은 좌표 차이에서 계산했다. */
+.exit-confirm {
+  text-align: center;
+}
+
+.exit-confirm__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--bg-butter);
+}
+
+.exit-confirm__title {
+  margin: 16px 0 0;
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.exit-confirm__description {
+  margin: 7px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+  white-space: pre-line;
+}
+
+/* 버튼 124 : 128, 간격 12 */
+.exit-confirm__actions {
+  display: grid;
+  grid-template-columns: 124fr 128fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.exit-confirm__actions .ui-button {
+  width: 100%;
+}
+
+.exit-confirm__continue {
+  margin-top: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+  cursor: pointer;
+}
