@@ -1,0 +1,74 @@
+/* 시안 8-2. 내부 간격은 시안의 좌표 차이에서 계산했다.
+   시안에서 내용 덩어리(원~안내 문구)는 화면 세로 가운데에서 8px쯤 위에 있다.
+   그래서 화면 높이에 상관없이 세로 가운데에 두고, 아래쪽 패딩 16px로 8px만 위로 올린다.
+   탭바가 있는 화면에서는 탭바 높이(--screen-offset)를 빼고 가운데에 둔다. */
+.ui-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100dvh - var(--screen-offset, 0px));
+  padding: 0 40px 16px;
+  text-align: center;
+}
+
+.ui-error__circle {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: var(--bg-butter);
+}
+
+/* 시안에서 고향이가 원의 한가운데보다 6px 아래에 놓여 있다. */
+.ui-error__mascot {
+  transform: translateY(6px);
+}
+
+/* 말풍선: 원 오른쪽 위에 12도 기울어진 흰 상자와 "?!" 글자 */
+.ui-error__bubble {
+  position: absolute;
+  top: 4.5px;
+  left: 162px;
+  width: 46px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--bg-surface);
+  box-shadow: 0 8px 22px rgba(140, 97, 51, 0.12);
+  transform: rotate(12deg);
+}
+
+.ui-error__bubble-text {
+  position: absolute;
+  top: 0;
+  left: 172px;
+  color: var(--brand-berry);
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+}
+
+.ui-error__title {
+  margin: 30px 0 0;
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.ui-error__description {
+  margin: 9px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+  white-space: pre-line;
+}
+
+.ui-error__retry {
+  margin-top: 34px;
+}
+
+.ui-error__hint {
+  margin: 14px 0 0;
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}

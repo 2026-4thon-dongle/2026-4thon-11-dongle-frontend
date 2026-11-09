@@ -1,0 +1,67 @@
+/* 시안 8-1. 간격은 시안의 좌표 차이에서 계산했다. 시안의 상태바(44px) 자리는 뺐다. */
+.ui-loading {
+  padding: 8px 20px 24px;
+}
+
+.ui-loading__title {
+  margin: 0;
+  color: var(--text-brown);
+  font: 400 28px / 1.35 var(--font-jua);
+}
+
+.ui-loading__tabs {
+  margin-top: 10px;
+}
+
+.ui-loading__card {
+  margin-top: 16px;
+}
+
+.ui-loading__bar {
+  margin-top: 20px;
+}
+
+/* 큰 카드: line/soft 바탕 안에 흰 사진 자리와 글줄 자리가 있고, 가운데에 로딩 알약이 뜬다. */
+.ui-loading__feed {
+  position: relative;
+  height: 290px;
+  margin-top: 14px;
+  border-radius: 28px;
+  background: var(--line-soft);
+}
+
+.ui-loading__photo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  left: 12px;
+}
+
+.ui-loading__line {
+  position: absolute;
+  left: 12px;
+  max-width: calc(100% - 24px);
+}
+
+.ui-loading__pill {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 152px;
+  height: 40px;
+  padding-left: 8px;
+  border-radius: 20px;
+  background: var(--bg-surface);
+  box-shadow: 0 8px 22px rgba(140, 97, 51, 0.12);
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.ui-loading__more {
+  margin-top: 18px;
+}

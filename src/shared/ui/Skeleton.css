@@ -1,0 +1,24 @@
+.ui-skeleton {
+  animation: ui-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.ui-skeleton--soft {
+  background: var(--line-soft);
+}
+
+.ui-skeleton--surface {
+  background: var(--bg-surface);
+}
+
+/* 시안에 없는 움직임. 로딩 중임을 알리는 약한 깜빡임이다. */
+@keyframes ui-skeleton-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-skeleton {
+    animation: none;
+  }
+}
