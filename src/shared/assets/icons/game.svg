@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/game">
+<path id="path" d="M16.5 7.5H7.5C4.73858 7.5 2.5 9.73858 2.5 12.5C2.5 15.2614 4.73858 17.5 7.5 17.5H16.5C19.2614 17.5 21.5 15.2614 21.5 12.5C21.5 9.73858 19.2614 7.5 16.5 7.5Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="path_2" d="M7.5 10.5V14.5M5.5 12.5H9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="path_3" d="M15.4999 12.6C16.1074 12.6 16.5999 12.1075 16.5999 11.5C16.5999 10.8925 16.1074 10.4 15.4999 10.4C14.8924 10.4 14.3999 10.8925 14.3999 11.5C14.3999 12.1075 14.8924 12.6 15.4999 12.6Z" fill="currentColor"/>
+<path id="path_4" d="M17.7999 14.9C18.4075 14.9 18.9 14.4075 18.9 13.8C18.9 13.1925 18.4075 12.7 17.7999 12.7C17.1924 12.7 16.7 13.1925 16.7 13.8C16.7 14.4075 17.1924 14.9 17.7999 14.9Z" fill="currentColor"/>
+</g>
+</svg>

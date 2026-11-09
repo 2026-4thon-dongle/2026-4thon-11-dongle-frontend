@@ -1,0 +1,7 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/trash">
+<path id="path" d="M4.5 7H19.5M9.5 7V4.5H14.5V7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="path_2" d="M6.5 7L7.5 19.5C7.56667 20.1667 7.93333 20.5 8.6 20.5H15.4C16.0667 20.5 16.4333 20.1667 16.5 19.5L17.5 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="path_3" d="M10.5 11V16.5M13.5 11V16.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
