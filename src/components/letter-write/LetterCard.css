@@ -1,0 +1,53 @@
+/* 시안 4-2: 카드 320×420, 줄 간격 30px. 글씨체는 style로 받는다. */
+.letter-card {
+  position: relative;
+  height: 420px;
+  border-radius: 24px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+}
+
+.letter-card__to {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.5;
+}
+
+/* 줄 노트: 줄 10개(첫 줄 아래 86px부터 30px 간격). 글줄이 줄 위에 얹히게 줄 높이를 30px로 맞춘다. */
+.letter-card__text {
+  position: absolute;
+  top: 56px;
+  right: 20px;
+  left: 20px;
+  height: 300px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background:
+    linear-gradient(to bottom, transparent 28.5px, var(--line-soft) 28.5px 30px)
+    0 0 / 100% 30px local;
+  color: inherit;
+  font-family: inherit;
+  font-size: 21px;
+  line-height: 30px;
+  overflow-y: auto;
+}
+
+.letter-card__text::placeholder {
+  color: var(--text-hint);
+}
+
+/* 글자 수: 시안은 카드 왼쪽에서 167px 위치에 놓여 있어 그대로 따른다(카드 너비의 52%). */
+.letter-card__count {
+  position: absolute;
+  top: 394px;
+  left: 52%;
+  margin: 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}

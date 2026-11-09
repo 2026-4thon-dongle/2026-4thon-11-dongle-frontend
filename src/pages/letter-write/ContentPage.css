@@ -1,0 +1,18 @@
+/* 시안 4-2: 카드(420) → 드롭다운(12px 아래, 44) → 경고(6px 아래, 36) → 버튼 */
+.content-page__font {
+  margin-top: 12px;
+}
+
+/* 시안에서는 이 알약의 바탕과 글자가 같은 berry 색이라 글자가 보이지 않는다.
+   그래서 바탕을 옅은 berry로 두고 글자만 berry로 썼다(시안과 다르게 구현한 부분). */
+.content-page__warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  margin: 6px 0 0;
+  border-radius: 18px;
+  background: rgba(232, 115, 90, 0.15);
+  color: var(--brand-berry);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
