@@ -1,0 +1,31 @@
+.ui-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  color: var(--text-brown);
+}
+
+.ui-header__side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+button.ui-header__side {
+  cursor: pointer;
+}
+
+.ui-header__title {
+  margin: 0;
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+  white-space: nowrap;
+}

@@ -1,0 +1,62 @@
+/* 화면 내용이 탭바에 가리지 않게 쓰는 높이. 탭바를 쓰는 레이아웃은 하단에 이 값만큼 여백을 둔다. */
+:root {
+  --tabbar-height: 76px;
+}
+
+/* 앱 화면 맨 아래에 붙고, 너비는 앱 영역(모바일은 화면 전체, 넓은 화면은 --app-width)과 같다. */
+.ui-tabbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--app-width);
+  height: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+  margin: 0 auto;
+  padding: 0 26px calc(8px + env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0;
+  background: var(--bg-surface);
+  box-shadow: 0 -4px 8px rgba(140, 97, 51, 0.1);
+}
+
+.ui-tabbar__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-hint);
+  text-decoration: none;
+}
+
+.ui-tabbar__tab.is-active {
+  color: var(--brand-orange);
+}
+
+.ui-tabbar__label {
+  font: 400 12px / 1.4 var(--font-jua);
+}
+
+/* 가운데 일기 쓰기: 항상 주황 버튼, 글씨는 비활성 색 */
+.ui-tabbar__tab--write {
+  gap: 3px;
+}
+
+.ui-tabbar__tab--write .ui-tabbar__label {
+  line-height: normal;
+}
+
+.ui-tabbar__write-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--brand-orange);
+  box-shadow: 0 4px 10px rgba(222, 122, 51, 0.3);
+  color: var(--white);
+}
