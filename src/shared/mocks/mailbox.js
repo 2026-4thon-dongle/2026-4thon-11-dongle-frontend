@@ -107,38 +107,70 @@ const MOCK_LETTERS = {
       round_trip_count: 0,
     },
   ],
+  // 배송 중(5-5): Notion 초안에 없는 필드를 시안에 맞춰 mock에만 넣었다. (API 확정 시 요청 필요)
+  //   direction          'sent'(내가 보냄, "To.") | 'received'(나에게 오는 중, "From.")
+  //   counterpart_nickname  상대 닉네임
+  //   from_region / to_region  출발·도착 지역
+  //   travel_minutes     배송에 걸리는 전체 시간(분), remaining_minutes 남은 시간(분) → 진행률을 여기서 계산한다
   shipping: [
     {
-      id: 301,
-      sender_nickname: '바다소리',
-      sender_region: '여수시',
-      stamp: stamp('long-way', '먼 길 배달'),
-      travel_minutes: 600,
-      arrived_at: '2026-11-11T08:00:00+09:00',
-      is_read: true,
-      subtitle: '배송 중인 편지',
+      id: 601,
+      direction: 'sent',
+      counterpart_nickname: '하늘빛',
+      from_region: '서울',
+      to_region: '충남',
+      stamp: stamp('dawn-letter', '새벽 편지'),
+      travel_minutes: 400,
+      remaining_minutes: 341,
     },
     {
-      id: 302,
-      sender_nickname: '돌담길',
-      sender_region: '안동시',
-      stamp: stamp('first-letter', '첫 편지'),
-      travel_minutes: 420,
-      arrived_at: '2026-11-10T20:30:00+09:00',
-      is_read: true,
-      subtitle: '배송 중인 편지',
+      id: 602,
+      direction: 'received',
+      counterpart_nickname: '갈매기',
+      from_region: '부산',
+      to_region: '서울',
+      stamp: stamp('long-way', '먼 길 배달'),
+      travel_minutes: 1220,
+      remaining_minutes: 672,
+    },
+    {
+      id: 603,
+      direction: 'sent',
+      counterpart_nickname: '귤껍질',
+      from_region: '서울',
+      to_region: '제주',
+      stamp: stamp('handwriting-master', '손글씨 장인'),
+      travel_minutes: 884,
+      remaining_minutes: 663,
     },
   ],
+  // 보관(5-7): 역시 Notion 초안에 없는 필드를 mock에 넣었다.
+  //   kind       'passed_letter'(넘긴 편지) | 'ended_chat'(마무리된 대화)
+  //   stored_at  보관된 날짜
   stored: [
     {
-      id: 401,
-      sender_nickname: '새벽안개',
-      sender_region: '통영시',
+      id: 701,
+      kind: 'passed_letter',
+      sender_nickname: '별빛',
+      sender_region: '경북 경주',
+      stamp: stamp('penpal-friend', '펜팔 친구'),
+      stored_at: '2026-11-01T10:00:00+09:00',
+    },
+    {
+      id: 702,
+      kind: 'ended_chat',
+      sender_nickname: '감자왕',
+      sender_region: '강원 춘천',
       stamp: stamp('dawn-letter', '새벽 편지'),
-      travel_minutes: 540,
-      arrived_at: '2026-10-12T05:50:00+09:00',
-      is_read: true,
-      subtitle: '보관한 편지',
+      stored_at: '2026-10-25T10:00:00+09:00',
+    },
+    {
+      id: 703,
+      kind: 'passed_letter',
+      sender_nickname: '바람',
+      sender_region: '전남 여수',
+      stamp: stamp('long-way', '먼 길 배달'),
+      stored_at: '2026-10-20T10:00:00+09:00',
     },
   ],
 }

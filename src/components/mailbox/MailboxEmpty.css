@@ -18,13 +18,16 @@
 .mailbox-empty--large .mailbox-empty__circle {
   width: 220px;
   height: 220px;
-  padding-top: 12px;
 }
 
 .mailbox-empty--small .mailbox-empty__circle {
   width: 150px;
   height: 150px;
-  padding-top: 8px;
+}
+
+/* 고향이는 원 가운데에서 --mascot-shift 만큼 내려 앉는다 (시안 위치에 맞춤) */
+.mailbox-empty__circle img {
+  transform: translateY(var(--mascot-shift, 0));
 }
 
 .mailbox-empty__title {

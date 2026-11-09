@@ -105,9 +105,78 @@ export function toChatCard(raw) {
   }
 }
 
+/** 분 → "5시간 41분" / "11시간" / "40분" */
+export function formatDuration(minutes) {
+  if (!Number.isFinite(minutes) || minutes <= 0) return ''
+  const hours = Math.floor(minutes / 60)
+  const rest = Math.round(minutes % 60)
+  if (hours === 0) return `${rest}분`
+  return rest === 0 ? `${hours}시간` : `${hours}시간 ${rest}분`
+}
+
+/**
+ * 배송 중 카드 하나(5-5). 화면용 필드:
+ * id, name("To. 하늘빛" / "From. 갈매기"), route("서울 → 충남" 등), stampId, stampName,
+ * progress(0~1), remainingLabel, mapPath(지도 화면 경로)
+ * 지도 경로 /delivery/:letterId/map 은 letterRoutes에 있는 임시 경로(4-12)이다.
+ */
+export function toShippingCard(raw) {
+  const isSent = raw.direction === 'sent'
+  const total = raw.travel_minutes
+  const remaining = raw.remaining_minutes
+  const progress = total > 0 ? Math.min(Math.max(1 - remaining / total, 0), 1) : 0
+  const route = `${raw.from_region} → ${raw.to_region}${isSent ? '' : ' · 나에게 오는 중'}`
+  const duration = formatDuration(remaining)
+  return {
+    id: raw.id,
+    name: `${isSent ? 'To.' : 'From.'} ${raw.counterpart_nickname}`,
+    route,
+    stampId: raw.stamp?.code ?? null,
+    stampName: raw.stamp?.name ?? '',
+    stampImageUrl: raw.stamp?.image_url ?? null,
+    progress,
+    remainingLabel: isSent ? `도착까지 ${duration}` : `${duration} 남음`,
+    mapPath: `/delivery/${raw.id}/map`,
+  }
+}
+
+// 보관 카드: 넘긴 편지는 "From. 닉네임", 마무리된 대화는 닉네임만 쓴다. (시안 5-7)
+const STORED_KIND = {
+  passed_letter: { badge: '넘긴 편지', withFrom: true },
+  ended_chat: { badge: '마무리된 대화', withFrom: false },
+}
+
+/**
+ * 보관 카드 하나(5-7). 화면용 필드:
+ * id, name, info("경북 경주 · 11월 1일"), hint, badge, stampId, stampName, stampImageUrl, path
+ */
+export function toStoredCard(raw) {
+  const kind = STORED_KIND[raw.kind] ?? STORED_KIND.passed_letter
+  const date = formatArrivedAt(raw.stored_at).replace(/ 도착$/, '')
+  return {
+    id: raw.id,
+    name: kind.withFrom ? `From. ${raw.sender_nickname}` : raw.sender_nickname,
+    info: [raw.sender_region, date].filter(Boolean).join(' · '),
+    hint: '읽기만 할 수 있어요',
+    badge: kind.badge,
+    stampId: raw.stamp?.code ?? null,
+    stampName: raw.stamp?.name ?? '',
+    stampImageUrl: raw.stamp?.image_url ?? null,
+    // 가정: 마무리된 대화는 대화 화면, 넘긴 편지는 편지 화면으로 간다. 둘 다 아직 임시 화면이다.
+    path: raw.kind === 'ended_chat' ? `/mailbox/chats/${raw.id}` : `/mailbox/${raw.id}`,
+  }
+}
+
+const CARD_MAPPERS = {
+  new: toLetterCard,
+  chatting: toChatCard,
+  shipping: toShippingCard,
+  stored: toStoredCard,
+}
+
 /** 목록 응답 { results, next_cursor, has_next } → { items, nextCursor, hasNext }. 탭에 맞는 카드 모양으로 바꾼다. */
 export function toMailboxPage(tab, response) {
-  const toCard = tab === 'chatting' ? toChatCard : toLetterCard
+  const toCard = CARD_MAPPERS[tab] ?? toLetterCard
   return {
     items: (response.results ?? []).map(toCard),
     nextCursor: response.next_cursor ?? null,

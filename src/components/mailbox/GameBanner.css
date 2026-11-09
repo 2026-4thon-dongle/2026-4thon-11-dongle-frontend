@@ -1,0 +1,18 @@
+/* 시안 5-5 안내 박스: 높이 64, radius 20, butter */
+.game-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: var(--bg-butter);
+  color: var(--brand-orange-deep);
+  text-decoration: none;
+}
+
+.game-banner__text {
+  color: var(--text-brown);
+  font: 400 14px / 1.4 var(--font-jua);
+}

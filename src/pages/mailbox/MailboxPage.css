@@ -59,3 +59,17 @@
 .mailbox-page__chips + .mailbox-page__list {
   margin-top: 15px;
 }
+
+/* 보관 탭: 안내 박스 아래 18px에서 카드가 시작하고, 카드 사이는 12px */
+.mailbox-page__notice {
+  margin-top: 16px;
+}
+
+.mailbox-page__notice + .mailbox-page__list {
+  margin-top: 18px;
+}
+
+/* 배송 중 탭: 마지막 카드 아래 26px에 배달 게임 안내 */
+.mailbox-page__banner {
+  margin-top: 26px;
+}
