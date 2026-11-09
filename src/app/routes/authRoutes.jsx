@@ -1,4 +1,5 @@
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
+import OwnedDiaryRoute from '../../pages/diary/OwnedDiaryRoute.jsx'
 
 export const authRoutes = [
   {
@@ -20,6 +21,18 @@ export const authRoutes = [
   {
     path: '/home/*',
     element: <RoutePlaceholder title="홈" />,
+  },
+  {
+    path: '/diary/write',
+    element: <OwnedDiaryRoute />,
+  },
+  {
+    path: '/diary/mine/*',
+    element: <OwnedDiaryRoute />,
+  },
+  {
+    path: '/diary/published/:diaryId',
+    element: <OwnedDiaryRoute />,
   },
   {
     path: '/diary/*',

@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="138" height="150" viewBox="0 0 138 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="&#236;&#130;&#172;&#236;&#167;&#132; (&#236;&#157;&#188;&#235;&#159;&#172;&#236;&#138;&#164;&#237;&#138;&#184;)">
+<g clip-path="url(#clip0_0_23)">
+<rect width="138" height="150" rx="18" fill="url(#paint0_linear_0_23)"/>
+<circle id="&#237;&#149;&#180;" cx="117.6" cy="43.5" r="21" fill="#F2994A" fill-opacity="0.8"/>
+<ellipse id="&#235;&#168;&#188; &#236;&#150;&#184;&#235;&#141;&#149;" cx="27.6" cy="150" rx="55.2" ry="67.5" fill="#A9C79B" fill-opacity="0.7"/>
+<ellipse id="&#234;&#176;&#128;&#234;&#185;&#140;&#236;&#154;&#180; &#236;&#150;&#184;&#235;&#141;&#149;" cx="110.4" cy="157.5" rx="62.1" ry="60" fill="#A9C79B"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_23" x1="69" y1="0" x2="69" y2="150" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFEBC2"/>
+<stop offset="1" stop-color="#FFDBC2"/>
+</linearGradient>
+<clipPath id="clip0_0_23">
+<rect width="138" height="150" rx="18" fill="white"/>
+</clipPath>
+</defs>
+</svg>
