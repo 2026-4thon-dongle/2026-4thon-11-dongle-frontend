@@ -68,26 +68,43 @@ const MOCK_LETTERS = {
       subtitle: '첫 편지 · 일기 답장',
     },
   ],
+  // 대화 중(5-3): Notion 초안에 없는 필드가 많다. 시안을 보여 주려고 mock에만 아래 필드를 넣었다. (API 확정 시 요청 필요)
+  //   status                'my_turn'(내 차례) | 'waiting_reply'(답장 기다리는 중) | 'in_transit'(배송 중) | 'ended'(7일간 답장 없어 마무리)
+  //   last_message_preview  상대가 보낸 마지막 편지 한 줄 (my_turn일 때 보여 준다)
+  //   round_trip_count      주고받은 왕복 횟수
+  //   arrived_at            (waiting_reply) 내가 보낸 편지의 도착 시각
+  //   remaining_minutes     (in_transit) 도착까지 남은 시간(분)
   chatting: [
     {
-      id: 201,
-      sender_nickname: '구름빵',
-      sender_region: '강릉시',
-      stamp: stamp('penpal-friend', '펜팔 친구'),
-      travel_minutes: 480,
-      arrived_at: '2026-11-02T10:30:00+09:00',
-      is_read: false,
-      subtitle: '이어지는 편지',
+      id: 500,
+      sender_nickname: '하늘빛',
+      sender_region: '충남 천안',
+      status: 'my_turn',
+      last_message_preview: '성북 동네 이야기도 더 들려줘요!',
+      round_trip_count: 2,
     },
     {
-      id: 202,
-      sender_nickname: '붕어빵',
-      sender_region: '대구시',
-      stamp: stamp('first-roundtrip', '첫 왕복'),
-      travel_minutes: 300,
-      arrived_at: '2026-10-30T16:00:00+09:00',
-      is_read: true,
-      subtitle: '이어지는 편지',
+      id: 501,
+      sender_nickname: '갈매기',
+      sender_region: '부산 수영',
+      status: 'waiting_reply',
+      arrived_at: '2026-11-03T12:00:00+09:00',
+      round_trip_count: 1,
+    },
+    {
+      id: 502,
+      sender_nickname: '귤껍질',
+      sender_region: '제주 서귀포',
+      status: 'in_transit',
+      remaining_minutes: 660,
+      round_trip_count: 1,
+    },
+    {
+      id: 503,
+      sender_nickname: '감자왕',
+      sender_region: '강원 춘천',
+      status: 'ended',
+      round_trip_count: 0,
     },
   ],
   shipping: [
@@ -126,6 +143,7 @@ const MOCK_LETTERS = {
   ],
 }
 
+// 정렬은 새 편지 탭(5-1의 칩)에서만 쓴다. 다른 탭은 서버가 준 순서 그대로 보여 준다.
 function sortLetters(letters, sort) {
   const byLatest = (a, b) => new Date(b.arrived_at) - new Date(a.arrived_at)
   const copied = [...letters]
@@ -140,12 +158,12 @@ function sortLetters(letters, sort) {
  * 탭별 목록 응답을 흉내 낸다. 실제 API가 정해지면 이 함수 대신 서버 요청을 쓴다.
  * 커서 페이지네이션은 mock에서 한 번에 다 내려 주므로 항상 다음 페이지가 없다.
  * @param {'new'|'chatting'|'shipping'|'stored'} tab
- * @param {{ sort?: 'latest'|'oldest'|'unread' }} [options]
+ * @param {{ sort?: 'latest'|'oldest'|'unread', empty?: boolean }} [options] empty: true면 비었을 때 화면(5-2, 5-4) 확인용으로 빈 목록을 준다.
  */
-export function getMockMailboxResponse(tab, { sort = 'latest' } = {}) {
-  const letters = MOCK_LETTERS[tab] ?? []
+export function getMockMailboxResponse(tab, { sort = 'latest', empty = false } = {}) {
+  const letters = empty ? [] : (MOCK_LETTERS[tab] ?? [])
   return {
-    results: sortLetters(letters, sort),
+    results: tab === 'new' ? sortLetters(letters, sort) : letters,
     next_cursor: null,
     has_next: false,
   }

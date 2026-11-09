@@ -51,7 +51,11 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin: 15px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
+}
+
+.mailbox-page__chips + .mailbox-page__list {
+  margin-top: 15px;
 }
