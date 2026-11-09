@@ -28,12 +28,14 @@
   white-space: nowrap;
 }
 
-/* 아이콘이 오른쪽을 가리키므로 아래로 돌려 보여준다. 열리면 위로. */
+/* 아이콘이 오른쪽을 가리키므로 아래로 돌려 보여준다. 시안은 열려도 방향이 같다. */
 .ui-dropdown__chevron {
+  flex: none;
+  color: var(--brand-orange);
   transform: rotate(90deg);
-  transition: transform 0.15s;
 }
 
-.ui-dropdown[aria-expanded='true'] .ui-dropdown__chevron {
-  transform: rotate(-90deg);
+/* 열렸을 때: 테두리가 주황색 (시안 4-3) */
+.ui-dropdown[aria-expanded='true'] {
+  border-color: var(--brand-orange);
 }

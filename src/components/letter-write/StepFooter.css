@@ -1,0 +1,20 @@
+/* 시안 4-4: 건너뛰기 110px + 다음 200px, 간격 10px. 너비는 같은 비율로 나눈다. */
+.ui-button.step-footer__skip {
+  flex: 110 1 0;
+  width: auto;
+}
+
+.ui-button.step-footer__next {
+  flex: 200 1 0;
+  width: auto;
+}
+
+/* 건너뛰기가 없으면 다음이 전체 너비를 쓴다. */
+.ui-button.step-footer__next:only-child {
+  flex: 1 1 0;
+}
+
+.ui-button.step-footer__next:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

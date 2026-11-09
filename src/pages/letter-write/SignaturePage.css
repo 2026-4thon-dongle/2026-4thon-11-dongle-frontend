@@ -1,0 +1,24 @@
+/* 시안 4-4: 제목(24px, 두 줄) → 안내(5px 아래) → 그림판(16px 아래, 220) → 탭(8px 아래, 40) → 도구/서랍(12px 아래) */
+.signature-page__title {
+  margin: 4px 0 0;
+  color: var(--text-brown);
+  font: 400 var(--title-24-size) / var(--title-24-lh) var(--font-jua);
+}
+
+.signature-page__hint {
+  margin: 5px 0 16px;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.signature-page__tabs {
+  margin-top: 8px;
+}
+
+.signature-page__panel {
+  margin-top: 10px;
+}
+
+.signature-page__panel--tools {
+  margin-top: 12px;
+}

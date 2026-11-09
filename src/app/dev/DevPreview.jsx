@@ -105,6 +105,12 @@ function DevPreview() {
         <li><Link to="/preview/boundary">렌더링 에러 → ErrorBoundary</Link></li>
       </ul>
 
+      <Title>편지 쓰기 단계 틀</Title>
+      <ul className="text-body-15" style={{ margin: 0, paddingLeft: 20 }}>
+        <li><Link to="/letter-write?diaryId=12&nickname=하늘빛&region=충남 천안">일기에서 답장으로 들어오기 (쿼리 전달)</Link></li>
+        <li><Link to="/letter-write">쿼리 없이 들어오기 (고향에 띄우기)</Link></li>
+      </ul>
+
       {/* 탭바는 화면 맨 아래에 고정된다 */}
       <TabBar />
 

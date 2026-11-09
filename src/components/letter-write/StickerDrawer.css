@@ -1,0 +1,48 @@
+/* 시안 4-5: 320×132, radius 22, 스티커 54px 원 5개(간격 8px) */
+.sticker-drawer {
+  height: 132px;
+  border-radius: 22px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 16px rgba(140, 97, 51, 0.12);
+}
+
+.sticker-drawer__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 32px 0 14px;
+}
+
+.sticker-drawer__title {
+  margin: 0;
+  color: var(--text-brown);
+  font: 400 13px / 1.4 var(--font-jua);
+}
+
+.sticker-drawer__reward {
+  color: var(--brand-orange-deep);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.sticker-drawer__list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0 10px;
+  list-style: none;
+}
+
+.sticker-drawer__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 16px rgba(140, 97, 51, 0.12);
+  cursor: pointer;
+}
