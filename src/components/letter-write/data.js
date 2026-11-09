@@ -1,4 +1,6 @@
 // 편지 쓰기 화면에서 쓰는 목록과 임시(mock) 값
+import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
+
 
 // 편지지. lockedStamps가 있으면 우표가 그만큼 모여야 열린다. badge는 이름 아래 작은 표시.
 export const PAPERS = [
@@ -31,7 +33,7 @@ export const STICKERS = [
 export const MAX_CONTENT_LENGTH = 1000
 
 // ── 임시(mock) 값: 백엔드·우표 데이터가 정해지면 실제 값으로 바꾼다. ──
-// 내가 모은 우표 개수. 잠긴 편지지를 열 수 있는지 판단할 때 쓴다.
-export const MOCK_STAMP_COUNT = 3
+// 내가 모은 우표 개수(shared/mocks의 우표 mock 기준). 잠긴 편지지를 열 수 있는지 판단할 때 쓴다.
+export const MOCK_STAMP_COUNT = MOCK_OWNED_STAMPS.length
 // 답장하는 일기의 앞부분. 일기 상세 데이터가 연결되면 일기에서 가져온다.
 export const MOCK_DIARY_EXCERPT = '오늘 학교 앞 호수 색이 유난히…'
