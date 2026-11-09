@@ -1,0 +1,39 @@
+.ui-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px 0 16px;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 22px;
+  background: var(--bg-surface);
+  color: var(--text-brown);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-dropdown__label {
+  flex: none;
+  color: var(--text-sub);
+  font: 400 13px / normal var(--font-jua);
+}
+
+.ui-dropdown__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font: 400 20px / normal var(--font-letter);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 아이콘이 오른쪽을 가리키므로 아래로 돌려 보여준다. 열리면 위로. */
+.ui-dropdown__chevron {
+  transform: rotate(90deg);
+  transition: transform 0.15s;
+}
+
+.ui-dropdown[aria-expanded='true'] .ui-dropdown__chevron {
+  transform: rotate(-90deg);
+}

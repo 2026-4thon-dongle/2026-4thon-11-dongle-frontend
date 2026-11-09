@@ -1,0 +1,147 @@
+/* 바텀시트·다이얼로그·토스트가 함께 쓰는 레이어. 앱 너비(--app-width) 안에서만 보이게 가운데 정렬한다. */
+.ui-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+}
+
+.ui-overlay__dim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(75, 58, 44, 0.55);
+}
+
+.ui-sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 14px 24px calc(40px + env(safe-area-inset-bottom));
+  border-radius: 32px 32px 0 0;
+  background: var(--bg-surface);
+}
+
+.ui-sheet__grab {
+  margin: -14px -24px 0;
+  padding: 14px 24px 12px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.ui-sheet__grab:active {
+  cursor: grabbing;
+}
+
+.ui-sheet__handle {
+  width: 48px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--line-soft);
+}
+
+/* ── 열고 닫는 애니메이션 ── */
+@keyframes ui-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes ui-sheet-out {
+  from {
+    transform: translateY(var(--sheet-drag, 0px));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes ui-dim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ui-dim-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.ui-sheet {
+  animation: ui-sheet-in 0.25s ease-out;
+}
+
+.ui-overlay__dim {
+  animation: ui-dim-in 0.25s ease-out;
+}
+
+.ui-overlay.is-closing .ui-sheet {
+  animation: ui-sheet-out 0.2s ease-in forwards;
+}
+
+.ui-overlay.is-closing .ui-overlay__dim {
+  animation: ui-dim-out 0.2s ease-in forwards;
+}
+
+/* 모션을 줄이는 설정이면 애니메이션 없이 바로 열고 닫는다. */
+@media (prefers-reduced-motion: reduce) {
+  .ui-sheet,
+  .ui-overlay__dim,
+  .ui-overlay.is-closing .ui-sheet,
+  .ui-overlay.is-closing .ui-overlay__dim {
+    animation: none;
+  }
+
+  .ui-overlay.is-closing {
+    visibility: hidden;
+  }
+}
+
+/* 핸들 영역(grab)이 아래 12px 여백을 이미 차지하므로 제목 위 간격은 5px만 더한다. */
+.ui-sheet__title {
+  margin: 5px 0 0;
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+/* ── 다이얼로그: 가운데 카드만. 내용 스타일은 쓰는 화면에서 정한다. ── */
+.ui-dialog-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px;
+  pointer-events: none;
+}
+
+.ui-dialog {
+  width: 100%;
+  padding: 20px 16px 28px;
+  border-radius: 32px;
+  background: var(--bg-surface);
+  box-shadow: 0 8px 22px rgba(140, 97, 51, 0.12);
+  pointer-events: auto;
+}
+
+/* ── 토스트 ── */
+.ui-toast {
+  position: absolute;
+  right: 20px;
+  bottom: 100px;
+  left: 20px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--text-brown);
+  color: var(--white);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+  text-align: center;
+}
