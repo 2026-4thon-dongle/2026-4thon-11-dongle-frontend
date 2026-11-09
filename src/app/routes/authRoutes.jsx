@@ -1,4 +1,7 @@
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
+import HomeRoute from '../../pages/home/HomeRoute.jsx'
+import DiaryReadRoute from '../../pages/diary/DiaryReadRoute.jsx'
+import NotificationRoute from '../../pages/notification/NotificationRoute.jsx'
 
 export const authRoutes = [
   {
@@ -19,7 +22,15 @@ export const authRoutes = [
   },
   {
     path: '/home/*',
-    element: <RoutePlaceholder title="홈" />,
+    element: <HomeRoute />,
+  },
+  {
+    path: '/diary/write',
+    element: <RoutePlaceholder title="일기 쓰기" />,
+  },
+  {
+    path: '/diary/:diaryId',
+    element: <DiaryReadRoute />,
   },
   {
     path: '/diary/*',
@@ -27,6 +38,6 @@ export const authRoutes = [
   },
   {
     path: '/notification',
-    element: <RoutePlaceholder title="알림" />,
+    element: <NotificationRoute />,
   },
 ]
