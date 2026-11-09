@@ -1,21 +1,28 @@
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
+import LoginPage from '../../pages/login/LoginPage.jsx'
+import IntroPage, { SplashPage, StartPage } from '../../pages/intro/IntroPage.jsx'
+import SignupPage from '../../pages/signup/SignupPage.jsx'
 
 export const authRoutes = [
   {
     path: '/',
-    element: <RoutePlaceholder title="동글" />,
+    element: <SplashPage />,
   },
   {
-    path: '/intro',
-    element: <RoutePlaceholder title="인트로" />,
+    path: '/intro/*',
+    element: <IntroPage />,
+  },
+  {
+    path: '/start',
+    element: <StartPage />,
   },
   {
     path: '/signup/*',
-    element: <RoutePlaceholder title="가입" />,
+    element: <SignupPage />,
   },
   {
-    path: '/login',
-    element: <RoutePlaceholder title="로그인" />,
+    path: '/login/*',
+    element: <LoginPage />,
   },
   {
     path: '/home/*',
