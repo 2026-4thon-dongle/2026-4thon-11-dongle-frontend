@@ -1,4 +1,5 @@
 /* 탭바가 화면 내용을 가리지 않도록 하단에 탭바 높이만큼 비운다. */
 .tabbar-layout__content.has-tabbar {
-  padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+  --screen-offset: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+  padding-bottom: var(--screen-offset);
 }
