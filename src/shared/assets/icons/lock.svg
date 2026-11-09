@@ -1,0 +1,7 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/lock">
+<path id="path" d="M16 10.5H8C6.34315 10.5 5 11.8431 5 13.5V17.5C5 19.1569 6.34315 20.5 8 20.5H16C17.6569 20.5 19 19.1569 19 17.5V13.5C19 11.8431 17.6569 10.5 16 10.5Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="path_2" d="M8 10.5V8C8 5.33333 9.33333 4 12 4C14.6667 4 16 5.33333 16 8V10.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="path_3" d="M12 16.9C12.7732 16.9 13.4 16.2732 13.4 15.5C13.4 14.7268 12.7732 14.1 12 14.1C11.2268 14.1 10.6 14.7268 10.6 15.5C10.6 16.2732 11.2268 16.9 12 16.9Z" fill="currentColor"/>
+</g>
+</svg>
