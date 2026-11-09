@@ -1,0 +1,24 @@
+.ui-input {
+  width: 100%;
+  height: 56px;
+  padding: 0 20px;
+  border: 2px solid var(--line-soft);
+  border-radius: 20px;
+  background: var(--bg-surface);
+  color: var(--text-brown);
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+}
+
+.ui-input::placeholder {
+  color: var(--text-hint);
+}
+
+/* 시안에 없는 상태. 포커스는 주황, 오류는 berry 테두리로 구분한다. */
+.ui-input:focus {
+  outline: none;
+  border-color: var(--brand-orange);
+}
+
+.ui-input.is-invalid {
+  border-color: var(--brand-berry);
+}
