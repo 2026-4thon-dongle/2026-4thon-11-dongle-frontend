@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
+import Stamp from '../../shared/ui/Stamp.jsx'
+import { MOCK_STAMPS } from '../../shared/mocks/stamps.js'
 import Chip from '../../shared/ui/Chip.jsx'
 import Header from '../../shared/ui/Header.jsx'
 import TabBar from '../../shared/ui/TabBar.jsx'
@@ -127,6 +129,16 @@ function DevPreview() {
           <figure key={pose} style={{ margin: 0, textAlign: 'center' }}>
             <Mascot pose={pose} size={100} />
             <figcaption className="text-caption-11">{pose}</figcaption>
+          </figure>
+        ))}
+      </div>
+
+      <Title>우표</Title>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        {MOCK_STAMPS.map((stamp) => (
+          <figure key={stamp.id} style={{ margin: 0, textAlign: 'center', opacity: stamp.owned ? 1 : 0.4 }}>
+            <Stamp id={stamp.id} size={72} alt={stamp.name} />
+            <figcaption className="text-caption-11">{stamp.name}</figcaption>
           </figure>
         ))}
       </div>
