@@ -4,7 +4,8 @@
 export const MYPAGE_PATHS = {
   home: '/mypage', // 7-1
   drafts: '/mypage/drafts', // 7-3
-  stamps: '/mypage/stamps', // 7-4~7-8 (가정, 묶음 2에서 구현)
+  stamps: '/mypage/stamps', // 7-4~7-6, 7-7(같은 경로의 바텀시트)
+  stampRewards: '/mypage/stamps/rewards', // 7-8 수집 보상 (가정, 묶음 3에서 구현)
   regions: '/mypage/regions', // 7-10 (가정, 묶음 4에서 구현)
   notifications: '/mypage/notifications', // 7-11 (가정, 묶음 5에서 구현)
   // 7-1의 설정 아이콘이 여는 곳. 시안에 설정 목록 화면이 없고, 7-9(닉네임)·7-12(차단)·7-13(로그아웃·탈퇴)로 들어가는 길이 7-1에 없다. (가정)
@@ -13,4 +14,5 @@ export const MYPAGE_PATHS = {
   myDiaries: '/diary/mine', // 7-2 내 일기 = 효령 담당(6-6 목록). 브랜치가 합쳐진 뒤 확인한다.
   penPal: '/pen-pal', // 5-14, 5-15 펜팔 친구
   letterWrite: '/letter-write', // 임시저장 이어 쓰기
+  diaryWrite: '/diary/write', // 7-6 "첫 일기 쓰러 가기". 공용 TabBar의 일기 쓰기 경로와 같다(가정)
 }

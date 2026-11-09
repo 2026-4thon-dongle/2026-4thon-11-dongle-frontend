@@ -94,3 +94,57 @@ export function toDraftCard(raw) {
     resumePath: `${MYPAGE_PATHS.letterWrite}?${query.toString()}`,
   }
 }
+
+/**
+ * 우표첩(7-4~7-6) 화면용 데이터.
+ * @param {Array<{id: string, name: string, kind: 'basic'|'decoration'}>} stamps 우표 목록 (shared/mocks/stamps.js, 읽기만 한다)
+ * @param {string[]} ownedCodes 보유한 우표 id 목록
+ * @param {Array<{id: string, threshold: number, name: string, next_text?: string}>} rewards 수집 보상 (mock 전용)
+ *
+ * 우표는 "보유한 것을 앞에, 나머지는 원래 순서"로 늘어놓는다. 시안 7-4, 7-5, 7-6의 순서와 맞춘 가정이다.
+ * 다음 보상과 받은 보상의 진행은 업적(기본) 우표 개수로 센다. 시안 7-5는 "꾸미기 우표도 수집 보상 개수에 포함돼요"라고
+ * 적었지만 7-4의 "5 / 10"은 기본 우표 5개만 센 값이라 서로 맞지 않는다. 디자이너 확인이 필요하다.
+ */
+export function toStampCollection(stamps, ownedCodes, rewards) {
+  const owned = new Set(ownedCodes)
+  const byKind = (kind) => {
+    const list = stamps
+      .filter((stamp) => stamp.kind === kind)
+      .map((stamp) => ({ id: stamp.id, name: stamp.name, owned: owned.has(stamp.id) }))
+    return [...list.filter((stamp) => stamp.owned), ...list.filter((stamp) => !stamp.owned)]
+  }
+
+  const achievementStamps = byKind('basic')
+  const decorationStamps = byKind('decoration')
+  const achievementCount = achievementStamps.filter((stamp) => stamp.owned).length
+  const decorationCount = decorationStamps.filter((stamp) => stamp.owned).length
+
+  const sortedRewards = [...rewards].sort((a, b) => a.threshold - b.threshold)
+  const next = sortedRewards.find((reward) => reward.threshold > achievementCount)
+  const received = sortedRewards.filter((reward) => reward.threshold <= achievementCount)
+
+  return {
+    achievement: {
+      count: achievementCount,
+      title: `모은 우표 ${achievementCount}개`,
+      subtitle: '성과를 낼 때마다 특별한 우표가 생겨요',
+      stamps: achievementStamps,
+      nextReward: next
+        ? {
+            text: `다음 보상 · ${next.next_text ?? `${next.threshold}개: ${next.name}`}`,
+            current: achievementCount,
+            target: next.threshold,
+            ratio: Math.min(achievementCount / next.threshold, 1),
+          }
+        : null,
+      receivedLabel: received.length > 0 ? `받은 보상: ${received.map((reward) => reward.name).join(' · ')}` : '',
+      isEmpty: achievementCount === 0,
+    },
+    decoration: {
+      count: decorationCount,
+      title: `꾸미기 우표 ${decorationCount}개`,
+      subtitle: '성과와 상관없이 예쁘고 갖고 싶은 우표예요',
+      stamps: decorationStamps,
+    },
+  }
+}

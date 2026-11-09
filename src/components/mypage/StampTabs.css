@@ -1,0 +1,26 @@
+/* 시안 7-4: 바닥 높이 40(radius 20), 고른 탭 알약 높이 32(radius 16), 안쪽 여백 4 */
+.stamp-tabs {
+  display: grid;
+  width: 100%;
+  height: 40px;
+  padding: 4px;
+  border-radius: 20px;
+  background: var(--line-soft);
+}
+
+.stamp-tabs__tab {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+  cursor: pointer;
+}
+
+.stamp-tabs__tab.is-selected {
+  background: var(--bg-surface);
+  box-shadow: 0 6px 16px rgba(140, 97, 51, 0.12);
+  color: var(--text-brown);
+}
