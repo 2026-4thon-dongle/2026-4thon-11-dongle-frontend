@@ -1,4 +1,5 @@
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
+import FirstDiaryRoute, { SignupCompleteEntry } from '../../pages/diary/FirstDiaryRoute.jsx'
 
 export const authRoutes = [
   {
@@ -20,6 +21,14 @@ export const authRoutes = [
   {
     path: '/home/*',
     element: <RoutePlaceholder title="홈" />,
+  },
+  {
+    path: '/signup/complete',
+    element: <SignupCompleteEntry />,
+  },
+  {
+    path: '/diary/first/*',
+    element: <FirstDiaryRoute />,
   },
   {
     path: '/diary/*',
