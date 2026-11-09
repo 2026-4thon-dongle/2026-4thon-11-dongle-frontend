@@ -1,5 +1,6 @@
 // 개발 전용 확인 화면 (/preview) — 공용 컴포넌트·토큰을 눈으로 확인하는 용도
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Chip from '../../shared/ui/Chip.jsx'
@@ -96,6 +97,13 @@ function DevPreview() {
         </Button>
         <Button variant="secondary" onClick={() => showToast('저장했어요')}>토스트 띄우기</Button>
       </div>
+
+      <Title>공통 상태 화면</Title>
+      <ul className="text-body-15" style={{ margin: 0, paddingLeft: 20 }}>
+        <li><Link to="/preview/loading">8-1 로딩 (스켈레톤)</Link></li>
+        <li><Link to="/preview/error">8-2 네트워크 에러</Link></li>
+        <li><Link to="/preview/boundary">렌더링 에러 → ErrorBoundary</Link></li>
+      </ul>
 
       {/* 탭바는 화면 맨 아래에 고정된다 */}
       <TabBar />
