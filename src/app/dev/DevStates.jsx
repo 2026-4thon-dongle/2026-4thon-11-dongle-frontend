@@ -4,6 +4,8 @@ import Loading from '../../shared/feedback/Loading.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import Button from '../../shared/ui/Button.jsx'
 import StampSheet from '../../components/letter-write/StampSheet.jsx'
+import useStartLetter from '../../components/letter-write/useStartLetter.js'
+import { clearLetterDraft } from '../../components/letter-write/letterDraftStorage.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
 import StampingScene from '../../components/letter-write/StampingScene.jsx'
@@ -73,6 +75,33 @@ export function DevStampSheet() {
       <Button onClick={() => open(MOCK_OWNED_STAMPS)}>우표 여러 장 (4-6)</Button>
       <Button variant="secondary" onClick={() => open(MOCK_OWNED_STAMPS.slice(0, 1))}>
         우표 1장 (4-7)
+      </Button>
+    </main>
+  )
+}
+
+// /preview/diary-reply : 일기 상세의 "편지로 답장하기"를 흉내 낸 화면. useStartLetter로 편지 쓰기를 시작하면
+// 임시저장한 편지가 있을 때 "이어 쓰기" 시트(4-9)가 뜨는지 확인한다.
+const MOCK_DIARY = { diaryId: '12', nickname: '하늘빛', region: '충남 천안' }
+
+export function DevDiaryReply() {
+  const startLetter = useStartLetter()
+  const { showToast } = useOverlay()
+  return (
+    <main style={{ display: 'grid', gap: 12, padding: 24 }}>
+      <h1 className="text-title-20" style={{ margin: 0 }}>고향 일기 (확인용)</h1>
+      <p className="text-body-13" style={{ margin: 0 }}>
+        {MOCK_DIARY.nickname}님의 일기에 편지로 답장합니다. 편지를 쓰다 나가면서 임시저장한 뒤 다시 눌러 보세요.
+      </p>
+      <Button onClick={() => startLetter(MOCK_DIARY)}>편지로 답장하기</Button>
+      <Button
+        variant="secondary"
+        onClick={() => {
+          clearLetterDraft(MOCK_DIARY)
+          showToast('임시저장을 지웠어요')
+        }}
+      >
+        임시저장 지우기
       </Button>
     </main>
   )

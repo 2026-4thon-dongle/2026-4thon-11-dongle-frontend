@@ -109,6 +109,7 @@ function DevPreview() {
 
       <Title>발송 연출</Title>
       <ul className="text-body-15" style={{ margin: 0, paddingLeft: 20 }}>
+        <li><Link to="/preview/diary-reply">4-8, 4-9 임시저장과 이어 쓰기 (일기에서 답장)</Link></li>
         <li><Link to="/preview/stamp-sheet">4-6, 4-7 우표 선택 시트</Link></li>
         <li><Link to="/preview/stamping">4-10 도장 찍기 애니메이션</Link></li>
       </ul>

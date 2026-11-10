@@ -3,7 +3,7 @@ import { authRoutes } from './authRoutes.jsx'
 import { letterRoutes } from './letterRoutes.jsx'
 import { mailboxRoutes } from './mailboxRoutes.jsx'
 import DevPreview from '../dev/DevPreview.jsx' // 개발 전용
-import { DevLoading, DevError, DevBoundary, DevStamping, DevStampSheet } from '../dev/DevStates.jsx' // 개발 전용
+import { DevLoading, DevError, DevBoundary, DevStamping, DevStampSheet, DevDiaryReply } from '../dev/DevStates.jsx' // 개발 전용
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
 import TabBarLayout from '../layouts/TabBarLayout.jsx'
 
@@ -22,6 +22,7 @@ const routes = [
       { path: '/preview/boundary', element: <DevBoundary /> }, // 개발 전용
       { path: '/preview/stamping', element: <DevStamping /> }, // 개발 전용
       { path: '/preview/stamp-sheet', element: <DevStampSheet /> }, // 개발 전용
+      { path: '/preview/diary-reply', element: <DevDiaryReply /> }, // 개발 전용
       {
         path: '*',
         element: <RoutePlaceholder title="페이지를 찾을 수 없어요" />,

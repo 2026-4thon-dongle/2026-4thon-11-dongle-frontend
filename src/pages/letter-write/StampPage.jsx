@@ -4,6 +4,7 @@ import StepLayout from '../../app/layouts/StepLayout.jsx'
 import StepFooter from '../../components/letter-write/StepFooter.jsx'
 import StampSheet from '../../components/letter-write/StampSheet.jsx'
 import useStepNavigation from '../../components/letter-write/useStepNavigation.js'
+import { clearLetterDraft } from '../../components/letter-write/letterDraftStorage.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
 import {
@@ -52,6 +53,7 @@ function StampPage() {
           onSend={(stampId) => {
             // TODO: 편지 보내기 API가 정해지면 여기서 보내고 받은 편지 번호(letterId)로 이동한다.
             updateDraft({ stampId })
+            clearLetterDraft(reply) // 보낸 편지는 임시저장에서 지운다.
             close()
             navigate(`/delivery/${MOCK_LETTER_ID}/sending`)
           }}
