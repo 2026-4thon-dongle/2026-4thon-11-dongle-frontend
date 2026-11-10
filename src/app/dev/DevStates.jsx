@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import Loading from '../../shared/feedback/Loading.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
+import Button from '../../shared/ui/Button.jsx'
+import StampingScene from '../../components/letter-write/StampingScene.jsx'
 
 // /preview/loading : 8-1 로딩 화면
 export function DevLoading() {
@@ -23,4 +25,20 @@ export function DevError() {
 // 다시 시도를 누르면 에러 상태가 풀리지만, 아래 컴포넌트가 다시 에러를 내므로 에러 화면이 다시 나온다.
 export function DevBoundary() {
   throw new Error('ErrorBoundary 확인용 에러')
+}
+
+// /preview/stamping : 발송 연출(4-10)의 도장 찍는 애니메이션 확인. 다시 보기를 누르면 처음부터 다시 재생한다.
+export function DevStamping() {
+  const [round, setRound] = useState(0)
+  return (
+    <>
+      <StampingScene key={round} />
+      {/* 화면 위에 떠 있는 다시 보기 버튼 (연출 화면 자체에는 버튼이 없다) */}
+      <div style={{ position: 'fixed', right: 0, bottom: 16, left: 0, zIndex: 10, padding: '0 20px', maxWidth: 'var(--app-width)', margin: '0 auto' }}>
+        <Button variant="secondary" onClick={() => setRound((value) => value + 1)}>
+          다시 보기
+        </Button>
+      </div>
+    </>
+  )
 }

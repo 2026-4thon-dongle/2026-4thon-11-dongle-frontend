@@ -1,0 +1,409 @@
+/* 시안 4-10 발송 연출. 좌표는 시안(360×760) 기준이고, 위쪽 상태바 자리 44px는 뺐다.
+   기본 스타일이 "다 끝난 모습"이고 애니메이션은 시작 모습에서 거기까지 움직인다.
+   그래서 동작 줄이기를 켠 사용자는 animation: none만으로 끝난 모습을 본다.
+   도장이 닿는 때(--hit)는 도장 애니메이션 시작 600ms + 전체 1500ms × 62% = 1530ms이다. */
+.stamping {
+  --hit: 1530ms;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-butter);
+}
+
+.stamping__art {
+  position: relative;
+  flex: none;
+  width: 360px;
+  height: 716px;
+  animation: stamping-shake 260ms linear var(--hit);
+}
+
+.stamping__art > * {
+  position: absolute;
+}
+
+/* 아래쪽 큰 원 */
+.stamping__circle {
+  top: 456px;
+  left: -40px;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: var(--bg-cream);
+}
+
+/* 봉투 + 우표 묶음 */
+.stamping__envelope {
+  inset: 0;
+  animation: stamping-press 300ms ease-out var(--hit);
+}
+
+.stamping__envelope > * {
+  position: absolute;
+}
+
+.stamping__card-box {
+  top: 126px;
+  left: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 234.47px;
+  height: 172.17px;
+  animation: stamping-card-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.stamping__card {
+  flex: none;
+  width: 220px;
+  height: 150px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  transform: rotate(6deg);
+}
+
+.stamping__fold {
+  top: 138px;
+  left: 77px;
+  width: 212px;
+  height: 90px;
+  transform: rotate(9deg);
+  transform-origin: 113px 82px;
+  animation: stamping-card-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+/* 우표 + 이름 띠 (시안의 우표 · 이름 띠 · 번호 · 브랜드 글자) */
+.stamping__stamp {
+  top: 121.1px;
+  left: 214px;
+  width: 57.6px;
+  height: 72px;
+  filter: drop-shadow(0 1.8px 1.8px rgba(115, 77, 38, 0.18));
+  animation: stamping-stamp-in 420ms cubic-bezier(0.3, 1.4, 0.5, 1) 420ms backwards;
+}
+
+.stamping__stamp > * {
+  position: absolute;
+}
+
+.stamping__stamp img {
+  top: 0;
+  left: 0;
+  display: block;
+}
+
+.stamping__stamp-band {
+  top: 53.4px;
+  left: 7.8px;
+  width: 42px;
+  height: 10.2px;
+  border-radius: 5.1px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.stamping__stamp-name {
+  top: 54.6px;
+  left: 7.8px;
+  width: 42px;
+  color: #4a3b2b;
+  font: 400 6px / normal var(--font-jua);
+  text-align: center;
+}
+
+.stamping__stamp-no,
+.stamping__stamp-brand {
+  top: 7.2px;
+  color: var(--white);
+  font: 400 4.2px / normal var(--font-jua);
+  white-space: nowrap;
+}
+
+.stamping__stamp-no {
+  left: 39.6px;
+  opacity: 0.95;
+}
+
+.stamping__stamp-brand {
+  left: 7.8px;
+}
+
+/* 소인: 점선 원 + 날짜·지역. 도장이 닿는 순간 나타난다. */
+.stamping__postmark {
+  top: 106px;
+  left: 190px;
+  width: 96px;
+  height: 96px;
+  animation: stamping-mark-in 120ms ease-out var(--hit) backwards;
+}
+
+.stamping__ring {
+  display: block;
+}
+
+.stamping__ripple {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--brand-berry);
+  border-radius: 50%;
+  opacity: 0;
+  animation: stamping-ripple 480ms ease-out var(--hit);
+}
+
+.stamping__date {
+  top: 163.5px;
+  left: 232.8px;
+  display: flex;
+  flex-direction: column;
+  width: 96px;
+  margin: 0;
+  color: var(--brand-berry);
+  font: 400 14px / 1.4 var(--font-jua);
+  text-align: center;
+  transform: translate(-50%, -50%) rotate(12deg);
+  animation: stamping-date-in 120ms ease-out var(--hit) backwards;
+}
+
+/* 도장: 위에서 내려다본 둥근 모습. 고무면은 소인과 같은 크기(96px) 동그라미라서 닿으면 소인 자리에 딱 맞는다.
+   손잡이만 살짝 위로 기울어져 옆면(목)이 조금 보인다. 화면 앞쪽(멀리)에서는 크게 보이다가
+   우표에 닿으면 원래 크기로 줄어든다. */
+.stamping__tool {
+  top: 106px;
+  left: 190px;
+  width: 96px;
+  height: 96px;
+  animation: stamping-tool 1500ms 600ms both;
+}
+
+.stamping__tool-disc {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--brand-orange) 0 45%, var(--brand-orange-deep) 100%);
+  box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.28);
+}
+
+/* 손잡이 옆면: 가운데에서 위쪽으로 살짝 솟은 모양 */
+.stamping__tool-neck {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  width: 30px;
+  height: 34px;
+  border-radius: 15px;
+  background: #3a2c20;
+  transform: translateX(-50%);
+}
+
+/* 손잡이 윗면: 앞쪽(위)으로 조금 올라와 있다 */
+.stamping__tool-knob {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6b5442 0 30%, var(--text-brown) 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+}
+
+.stamping__mascot {
+  top: 353.2px;
+  left: 40px;
+  animation: stamping-hop 520ms ease-out var(--hit);
+}
+
+.stamping__mascot img {
+  display: block;
+}
+
+.stamping__mailbox {
+  inset: 0;
+}
+
+.stamping__mailbox > * {
+  position: absolute;
+}
+
+.stamping__mailbox-head {
+  top: 366px;
+  left: 180px;
+  width: 90px;
+  height: 140px;
+  border-radius: 30px;
+  background: var(--brand-berry);
+}
+
+.stamping__mailbox-slot {
+  top: 400px;
+  left: 198px;
+  width: 54px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--text-brown);
+}
+
+.stamping__mailbox-pole {
+  top: 506px;
+  left: 219px;
+  width: 12px;
+  height: 70px;
+  border-radius: 4px;
+  background: var(--text-brown);
+}
+
+.stamping__caption {
+  top: 596px;
+  left: 0;
+  width: 360px;
+  margin: 0;
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+  text-align: center;
+  animation: stamping-caption-in 460ms ease-out var(--hit) backwards;
+}
+
+@keyframes stamping-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+}
+
+@keyframes stamping-stamp-in {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) scale(1.4) rotate(-14deg);
+  }
+}
+
+/* 도장이 화면 앞쪽(크게)에서 다가와 우표 위에서 한 번 뜸을 들이다가 내리찍고 다시 앞으로 빠진다.
+   멀리 있을수록 그림자가 크고 흐리고, 닿으면 바짝 붙는다. */
+@keyframes stamping-tool {
+  0% {
+    opacity: 0;
+    transform: translate(30px, 70px) scale(2.5) rotate(10deg);
+    filter: drop-shadow(0 30px 24px rgba(75, 58, 44, 0.1));
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(6px, 16px) scale(1.7) rotate(-4deg);
+    filter: drop-shadow(0 20px 18px rgba(75, 58, 44, 0.2));
+    animation-timing-function: ease-in-out;
+  }
+  48% {
+    transform: translate(5px, 11px) scale(1.88) rotate(-3deg);
+    filter: drop-shadow(0 22px 20px rgba(75, 58, 44, 0.2));
+    animation-timing-function: cubic-bezier(0.9, 0, 1, 0.5);
+  }
+  62% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    filter: drop-shadow(0 2px 3px rgba(75, 58, 44, 0.4));
+    animation-timing-function: ease-out;
+  }
+  68% {
+    transform: translate(0, 0) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(75, 58, 44, 0.4));
+  }
+  78% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    filter: drop-shadow(0 2px 3px rgba(75, 58, 44, 0.4));
+    animation-timing-function: ease-in;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-20px, 70px) scale(2.3) rotate(-10deg);
+    filter: drop-shadow(0 30px 24px rgba(75, 58, 44, 0.1));
+  }
+}
+
+/* 찍히는 충격: 봉투가 살짝 눌렸다 올라온다 */
+@keyframes stamping-press {
+  30% {
+    transform: translateY(6px) scale(0.972);
+  }
+}
+
+/* 쾅! 화면 전체가 흔들렸다가 가라앉는다 */
+@keyframes stamping-shake {
+  15% {
+    transform: translate(-2px, 2px);
+  }
+  35% {
+    transform: translate(2px, -1px);
+  }
+  60% {
+    transform: translate(-1px, 1px);
+  }
+}
+
+/* 도장이 닿는 순간 같은 자리에 그대로 찍힌다(크기·위치 변화 없이 나타나기만 한다) */
+@keyframes stamping-mark-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes stamping-date-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes stamping-ripple {
+  from {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+@keyframes stamping-hop {
+  35% {
+    transform: translateY(-14px) rotate(-4deg);
+  }
+  70% {
+    transform: translateY(0) rotate(2deg);
+  }
+}
+
+@keyframes stamping-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamping__envelope,
+  .stamping__card-box,
+  .stamping__fold,
+  .stamping__stamp,
+  .stamping__postmark,
+  .stamping__art,
+  .stamping__ripple,
+  .stamping__date,
+  .stamping__mascot,
+  .stamping__caption {
+    animation: none;
+  }
+
+  /* 도장은 이미 찍힌 뒤라 보이지 않는다 */
+  .stamping__tool {
+    display: none;
+  }
+}
