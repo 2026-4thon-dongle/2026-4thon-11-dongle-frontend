@@ -1,0 +1,75 @@
+/* 5-13 화면 바탕: 전체 화면 버터 (큰 원 없음, 작은 점만) */
+.reward-unlocked {
+  min-height: 100dvh;
+  background: var(--bg-butter);
+}
+
+/* 보상 카드: 280×200 흰 바탕, radius 28, 위에서 196(설명 아래 20), 안쪽 버터 그림은 (20, 18) */
+.reward-unlocked__card {
+  width: 280px;
+  height: 200px;
+  margin-top: 20px;
+  padding: 18px 20px;
+  border-radius: 28px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 16px rgba(140, 97, 51, 0.12);
+}
+
+/* 보상 이름 알약: 176×32 주황, 카드 아래 14 */
+.reward-unlocked__pill {
+  width: 176px;
+  height: 32px;
+  margin: 14px 0 0;
+  border-radius: 16px;
+  background: var(--brand-orange);
+  color: var(--white);
+  font: 400 14px / 32px var(--font-jua);
+}
+
+/* 안내 문구: 알약 아래 20 */
+.reward-unlocked__usage {
+  margin: 20px 0 0;
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+}
+
+/* 다음 보상: 안내 문구 아래 24, 너비 280 */
+.reward-unlocked__next {
+  width: 280px;
+  margin-top: 24px;
+  text-align: left;
+}
+
+.reward-unlocked__track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--bg-surface);
+}
+
+.reward-unlocked__fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--brand-orange);
+}
+
+.reward-unlocked__next-label {
+  margin: 8px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.reward-unlocked__missing {
+  margin: 120px 20px 0;
+  color: var(--text-sub);
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+  text-align: center;
+}
+
+.reward-unlocked__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding: 104px 20px 0;
+}

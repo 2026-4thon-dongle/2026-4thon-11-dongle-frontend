@@ -1,0 +1,95 @@
+/* 시안 5-9 (360 기준): 카드 320 너비, radius 24, 안쪽 좌우 20. 너비는 부모를 채운다. */
+.letter-paper {
+  position: relative;
+  min-height: 486px;
+  padding: 20px 20px 28px;
+  border-radius: 24px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+}
+
+/* "첫 편지" 배지: 카드 위쪽 가장자리에 걸친다 */
+.letter-paper__badge {
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  height: 24px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--brand-orange);
+  color: var(--white);
+  font: 400 12px / 24px var(--font-jua);
+}
+
+.letter-paper__from {
+  margin: 8px 0 0;
+  padding-right: 80px;
+  overflow: hidden;
+  font: 400 28px / 1.5 var(--font-letter);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.letter-paper__route {
+  margin: 0 0 0 2px;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.letter-paper__travel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin: 6px 0 0;
+  padding: 0 14px 0 8px;
+  border-radius: 12px;
+  background: var(--bg-butter);
+  color: var(--brand-orange-deep);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+/* 우표와 소인: 오른쪽 위 */
+.letter-paper__stamp {
+  position: absolute;
+  top: 13px;
+  right: 26px;
+  display: block;
+  line-height: 0;
+  filter: drop-shadow(0 1.8px 1.8px rgba(115, 77, 38, 0.18));
+}
+
+/* 소인 도장: 시안 72px 이미지. 우표(오른쪽 26, 위 13)보다 안쪽·아래(오른쪽 36, 위 36)에 겹쳐 찍힌다 */
+.letter-paper__postmark {
+  position: absolute;
+  top: 36px;
+  right: 36px;
+  width: 72px;
+  height: 72px;
+  pointer-events: none;
+}
+
+/* 줄 있는 본문: 줄 높이 30px, 줄마다 아래에 1.5px 선 */
+.letter-paper__body {
+  min-height: 270px;
+  margin: 22px 0 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 28.5px,
+    var(--line-soft) 28.5px,
+    var(--line-soft) 30px
+  );
+  font: 400 21px / 30px var(--font-letter);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.letter-paper__signature {
+  margin: 14px 0 0;
+  color: var(--brand-orange-deep);
+  font: 400 24px / 1.5 var(--font-letter);
+  text-align: right;
+  transform: rotate(3deg);
+}

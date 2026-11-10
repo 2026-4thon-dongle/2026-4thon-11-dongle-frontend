@@ -1,0 +1,87 @@
+/* 시안 5-9 (360 기준). 가로는 화면 너비를 따라 늘고 줄며 좌우 20px 여백을 둔다. */
+.letter-page {
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+/* 5-8은 화면 전체가 버터 바탕이다 */
+.letter-page--arrival {
+  max-width: none;
+  padding-bottom: 0;
+  background: var(--bg-butter);
+}
+
+.letter-page--arrival > .letter-arrival {
+  max-width: var(--app-width);
+  margin: 0 auto;
+}
+
+.letter-page__body {
+  padding: 4px 20px 0;
+}
+
+.letter-page__more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.letter-page__missing {
+  margin: 80px 20px 0;
+  color: var(--text-sub);
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+  text-align: center;
+}
+
+/* 우표 만들기 진입 줄: 버터 알약, 높이 40 */
+.letter-page__stamp-make {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% - 40px);
+  height: 40px;
+  margin: 10px 20px 0;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--bg-butter);
+  color: var(--brand-orange-deep);
+  font: 400 13px / 1.4 var(--font-jua);
+  text-align: left;
+  cursor: pointer;
+}
+
+.letter-page__footer {
+  padding: 24px 20px 0;
+}
+
+/* 넘기기(작게) + 답장하기(나머지) */
+.letter-page__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.letter-page__actions .ui-button {
+  flex: 1 1 auto;
+}
+
+.letter-page__actions .letter-page__pass {
+  flex: 0 0 34%;
+}
+
+.letter-page__hint {
+  margin: 8px 0 0;
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-align: center;
+}

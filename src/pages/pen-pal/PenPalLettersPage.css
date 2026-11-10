@@ -1,0 +1,55 @@
+/* 시안 5-15 (360 기준). 가로는 화면 너비를 따라 늘고 줄며 좌우 20px 여백을 둔다. 아래 버튼은 화면 아래에 붙어 있다. */
+.pen-pal-letters {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100dvh;
+  margin: 0 auto;
+}
+
+.pen-pal-letters__body {
+  flex: 1;
+  padding: 0 20px 24px;
+}
+
+/* "주고받은 편지 6통" 알약: 가운데, 높이 30 */
+.pen-pal-letters__count {
+  width: fit-content;
+  height: 30px;
+  margin: 0 auto 18px;
+  padding: 0 24px;
+  border-radius: 15px;
+  background: var(--bg-butter);
+  color: var(--brand-orange-deep);
+  font: 400 13px / 30px var(--font-jua);
+}
+
+.pen-pal-letters__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pen-pal-letters__item {
+  display: flex;
+  flex-direction: column;
+}
+
+.pen-pal-letters__missing {
+  margin: 80px 20px 0;
+  color: var(--text-sub);
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+  text-align: center;
+}
+
+/* 스크롤해도 보이도록 아래에 붙인다. 뒤가 비치지 않게 배경색을 깐다. */
+.pen-pal-letters__footer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 20px calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--bg-cream) 24%);
+}
