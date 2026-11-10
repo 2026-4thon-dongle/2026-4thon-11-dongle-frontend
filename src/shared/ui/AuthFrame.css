@@ -1,0 +1,29 @@
+.auth-page { display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: max(760px, 100dvh); padding: 44px 20px 38px; }
+.auth-header { position: relative; display: flex; justify-content: center; align-items: center; min-height: 56px; }
+.auth-header h1 { margin: 0; outline: none; }
+.auth-back { position: absolute; left: -12px; display: grid; place-items: center; width: 40px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--text-brown); cursor: pointer; }
+.auth-back img { display: block; }
+.auth-progress { flex-shrink: 0; height: 8px; margin-top: 4px; border-radius: 4px; background: var(--line-soft); overflow: hidden; }
+.auth-progress span { display: block; height: 100%; border-radius: inherit; background: var(--brand-orange); transition: width .2s; }
+.auth-content { min-width: 0; }
+.auth-heading { margin-top: 28px; }
+.auth-heading h2 { margin: 0; }
+.auth-heading p { margin: 10px 0 0; color: var(--text-sub); }
+.auth-footer { margin-top: auto; padding-top: 32px; }
+.auth-footer .ui-button { width: 100%; }
+.auth-page input:not([type='checkbox']) { color: var(--text-brown); }
+.auth-input { width: 100%; min-width: 0; height: 56px; padding: 0 20px; border: 2px solid var(--line-soft); border-radius: 20px; background: var(--bg-surface); }
+.auth-input::placeholder { color: var(--text-hint); opacity: 1; }
+.auth-input:focus { border-color: var(--brand-orange); }
+.auth-input[aria-invalid='true'] { border-color: var(--brand-berry); }
+.auth-field { display: block; margin-top: 22px; }
+.auth-caption { margin: 8px 4px 0; font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body); color: var(--text-sub); }
+.auth-error { color: var(--brand-berry); }
+.auth-success { color: var(--brand-sage); }
+.auth-page button:focus-visible, .auth-page a:focus-visible, .auth-page input:focus-visible { outline: 2px solid var(--brand-orange-deep); outline-offset: 3px; }
+.auth-page .ui-button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.auth-page .ui-button:not(:disabled):active { transform: translateY(1px); }
+.auth-page .ui-button:not(:disabled):hover { background: var(--brand-orange-deep); }
+.auth-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.auth-link-button { border: 0; padding: 0; background: transparent; color: var(--text-sub); cursor: pointer; font-family: var(--font-jua); }
+.auth-demo { padding: 10px 12px; margin: 16px 0 0; border: 1px dashed var(--line-soft); border-radius: 12px; color: var(--text-sub); font-size: 11px; }
