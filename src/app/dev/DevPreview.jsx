@@ -107,6 +107,11 @@ function DevPreview() {
         <li><Link to="/preview/boundary">렌더링 에러 → ErrorBoundary</Link></li>
       </ul>
 
+      <Title>발송 연출</Title>
+      <ul className="text-body-15" style={{ margin: 0, paddingLeft: 20 }}>
+        <li><Link to="/preview/stamping">4-10 도장 찍기 애니메이션</Link></li>
+      </ul>
+
       <Title>편지 쓰기 단계 틀</Title>
       <ul className="text-body-15" style={{ margin: 0, paddingLeft: 20 }}>
         <li><Link to="/letter-write?diaryId=12&nickname=하늘빛&region=충남 천안">일기에서 답장으로 들어오기 (쿼리 전달)</Link></li>
