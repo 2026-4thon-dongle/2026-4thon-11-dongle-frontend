@@ -1,0 +1,214 @@
+/* 시안 4-6, 4-7 바텀시트 안쪽. 세로 간격은 시안 좌표의 차이에서 계산했다.
+   시트 틀(BottomSheet)의 좌우 여백은 24px인데 시안의 버튼·배너는 20px 여백이라 4px씩 넓혀 쓴다. */
+.stamp-sheet {
+  color: var(--text-brown);
+}
+
+/* 경로: 점 · 점선(가운데 고향이) · 점 */
+.stamp-sheet__route {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36.4px;
+  margin-top: 6px;
+}
+
+.stamp-sheet__dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--brand-orange-deep);
+}
+
+.stamp-sheet__line {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.stamp-sheet__line::before {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 2.5px;
+  margin-top: -1.25px;
+  background: repeating-linear-gradient(to right, var(--brand-orange-deep) 0 4px, transparent 4px 8px);
+  content: '';
+}
+
+.stamp-sheet__line img {
+  position: relative;
+  display: block;
+}
+
+.stamp-sheet__places {
+  display: flex;
+  justify-content: space-between;
+  margin: -5px -4px 0;
+  font: 400 var(--body-13-size) / 1.4 var(--font-jua);
+}
+
+.stamp-sheet__arrival {
+  margin: 8px 0 0;
+  color: var(--brand-orange-deep);
+  font: 400 17px / 1.4 var(--font-jua);
+  text-align: center;
+}
+
+.stamp-sheet__label {
+  margin: 12px 0 0;
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+/* 우표 목록: 가로로 나열하고 많으면 옆으로 밀어서 본다. 고른 우표는 주황 테두리 */
+.stamp-sheet__stamps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px -24px 0;
+  padding: 0 18px;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.stamp-sheet__stamps::-webkit-scrollbar {
+  display: none;
+}
+
+.stamp-sheet__stamps li {
+  flex: none;
+}
+
+.stamp-sheet__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 78px;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+
+.stamp-sheet__cell.is-selected {
+  border-color: var(--brand-orange);
+}
+
+/* 우표 추가 칸 (점선 박스) */
+.stamp-sheet__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 66px;
+  margin-left: 6px;
+  padding: 0;
+  border: 2px dashed var(--line-soft);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+/* 4-7: 우표가 1장일 때 안내 카드 */
+.stamp-sheet__only {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 74px;
+  margin: 3px -4px 0;
+  padding: 0 12px 0 6px;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 20px;
+  background: var(--bg-cream);
+}
+
+.stamp-sheet__only .stamp-sheet__cell {
+  flex: none;
+  width: 64px;
+  height: 77px;
+  cursor: default;
+}
+
+.stamp-sheet__only-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.stamp-sheet__only-title {
+  margin: 0;
+  font: 400 15px / 1.4 var(--font-jua);
+}
+
+.stamp-sheet__only-desc {
+  margin: 1px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+/* 직접 배달하기 배너 */
+.stamp-sheet__game {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 8px);
+  height: 46px;
+  margin: 8px -4px 0;
+  padding: 0 10px 0 14px;
+  border: 2px solid var(--brand-orange);
+  border-radius: 23px;
+  background: var(--bg-butter);
+  text-align: left;
+  cursor: pointer;
+}
+
+.stamp-sheet__game-icon,
+.stamp-sheet__game-chevron {
+  flex: none;
+  color: var(--brand-orange-deep);
+}
+
+.stamp-sheet__game-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stamp-sheet__game-title {
+  color: var(--brand-orange-deep);
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+.stamp-sheet__game-desc {
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+/* 다시 보기 110 : 보내기 200 */
+.stamp-sheet__actions {
+  display: grid;
+  grid-template-columns: 110fr 200fr;
+  gap: 10px;
+  margin: 18px -4px 0;
+}
+
+.stamp-sheet__actions .ui-button {
+  width: 100%;
+}
+
+/* 시트 아래 여백(40px)이 시안(약 26px)보다 커서 14px 당겨 붙인다. */
+.stamp-sheet__caption {
+  margin: 10px 0 -14px;
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-align: center;
+}

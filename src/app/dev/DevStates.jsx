@@ -3,6 +3,9 @@ import { useState } from 'react'
 import Loading from '../../shared/feedback/Loading.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import Button from '../../shared/ui/Button.jsx'
+import StampSheet from '../../components/letter-write/StampSheet.jsx'
+import useOverlay from '../../shared/hooks/useOverlay.js'
+import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
 import StampingScene from '../../components/letter-write/StampingScene.jsx'
 
 // /preview/loading : 8-1 로딩 화면
@@ -40,5 +43,37 @@ export function DevStamping() {
         </Button>
       </div>
     </>
+  )
+}
+
+// /preview/stamp-sheet : 우표 선택 시트(4-6, 4-7)를 우표 개수별로 열어 본다. 시트 안의 동작은 알림으로만 확인한다.
+export function DevStampSheet() {
+  const { openSheet, showToast, close } = useOverlay()
+  const open = (stamps) =>
+    openSheet({
+      title: '편지를 보낼까요?',
+      content: (
+        <StampSheet
+          stamps={stamps}
+          from="서울 성북"
+          to="충남 천안"
+          arrival="약 6시간"
+          onReview={close}
+          onAdd={() => showToast('우표 추가')}
+          onGame={() => showToast('직접 배달하기')}
+          onSend={(stampId) => {
+            showToast(`보내기: ${stampId}`)
+            close()
+          }}
+        />
+      ),
+    })
+  return (
+    <main style={{ display: 'grid', gap: 12, padding: 24 }}>
+      <Button onClick={() => open(MOCK_OWNED_STAMPS)}>우표 여러 장 (4-6)</Button>
+      <Button variant="secondary" onClick={() => open(MOCK_OWNED_STAMPS.slice(0, 1))}>
+        우표 1장 (4-7)
+      </Button>
+    </main>
   )
 }
