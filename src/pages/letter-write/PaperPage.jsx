@@ -75,6 +75,20 @@ function PaperPage() {
           )
         })}
       </ul>
+
+      {/* 개발 중에만 보인다(배포 빌드에는 들어가지 않는다): 잠긴 금박 엽서를 골라 바로 편지 쓰기 화면에서 확인한다. */}
+      {import.meta.env.DEV && (
+        <button
+          type="button"
+          className="paper-page__dev"
+          onClick={() => {
+            updateDraft({ paperId: 'gold' })
+            goNext()
+          }}
+        >
+          금박 편지지 확인하기
+        </button>
+      )}
     </StepLayout>
   )
 }

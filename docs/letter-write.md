@@ -80,3 +80,10 @@ updateDraft({ content: '안녕' })
 
 `src/app/layouts/StepLayout.jsx`가 헤더, 단계 표시, 아래 버튼 영역을 제공한다.
 단계 화면은 `StepLayout`으로 감싸고, 아래 버튼은 `StepFooter`(다음 / 건너뛰기 + 다음)를 쓴다.
+
+## 편지지 6종
+
+편지지(기본, 줄노트, 체크, 고향이 테두리, 밤하늘, 금박 엽서)의 색과 테두리는 `components/letter-write/Paper.css`에서만 정한다
+(시안의 "편지지 스펙"). 편지지를 쓰는 요소에 `paper paper--{id}` 클래스를 붙이면 `--paper-bg`, `--paper-line`,
+`--paper-border`, `--paper-text` 변수를 받는다. 4-1 미리보기(`PaperPreview`)와 편지 쓰는 카드(`LetterCard`)가 같은 값을 쓴다.
+새 편지지를 추가하려면 `data.js`의 `PAPERS`에 항목을 더하고, `Paper.css`에 변수를, 미리보기와 카드 CSS에 줄·장식을 더한다.

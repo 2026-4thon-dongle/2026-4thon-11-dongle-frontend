@@ -32,6 +32,7 @@ function ContentPage() {
       footer={<StepFooter onNext={goNext} nextDisabled={draft.content.trim() === ''} />}
     >
       <LetterCard
+        paperId={draft.paperId}
         recipient={recipient}
         value={draft.content}
         onChange={(content) => updateDraft({ content })}
