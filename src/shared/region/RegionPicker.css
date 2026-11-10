@@ -1,0 +1,25 @@
+.region-picker { position: relative; margin-top: 18px; }
+.region-count { position: absolute; top: -32px; right: 12px; color: var(--brand-orange-deep); font-size: 13px; }
+.region-selected { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 52px; padding: 10px 12px; margin-bottom: 12px; border-radius: 20px; background: var(--bg-butter); }
+.region-selected > span { color: var(--text-sub); }
+.region-selected button { display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 4px 10px; border: 1.5px solid var(--brand-orange); border-radius: 15px; background: var(--bg-surface); font: 400 13px / 1.4 var(--font-jua); color: var(--text-brown); cursor: pointer; }
+.region-selected img { display: block; }
+.region-chips { display: flex; flex-wrap: wrap; gap: 8px 6px; }
+.region-chips button { flex: 0 0 auto; min-height: 40px; padding: 8px 16px; border: 1.5px solid var(--line-soft); border-radius: 999px; background: var(--bg-surface); color: var(--text-brown); font: 400 14px / 1.4 var(--font-jua); cursor: pointer; }
+.region-chips button.is-active { background: var(--brand-orange); border-color: var(--brand-orange); color: var(--white); }
+.region-chips button.is-picked { background: var(--bg-butter); border-color: var(--bg-butter); }
+.region-chips button:not(:disabled):hover { border-color: var(--brand-orange); }
+.region-chips button:disabled { color: var(--text-hint); background: var(--bg-cream); border-color: var(--line-soft); cursor: not-allowed; opacity: .5; }
+.region-divider { margin: 16px 0 0; border: 0; border-top: 1.5px solid var(--line-soft); }
+.region-picker--home .region-details { border-top: 0; }
+.region-details { margin-top: 22px; padding-top: 12px; border-top: 1.5px solid var(--line-soft); }
+.region-details h3 { display: inline; margin: 0; }
+.region-details > p { display: inline; margin-left: 10px; color: var(--text-sub); }
+.region-details .region-chips { margin-top: 10px; }
+.region-summary { min-height: 80px; padding: 16px 8px 10px; margin-top: 22px; border-radius: 24px; background: var(--bg-butter); }
+.region-route { position: relative; display: flex; justify-content: space-between; align-items: center; }
+.region-route > span { position: relative; z-index: 1; display: flex; align-items: center; gap: 4px; padding: 6px 10px; border: 1.5px solid var(--line-soft); border-radius: 999px; background: var(--bg-surface); font: 400 13px / 1 var(--font-jua); }
+.region-route > span > .ui-icon { color: var(--brand-orange-deep); }
+.region-route-line { position: absolute; left: 50%; transform: translateX(-50%); }
+.region-summary > p { margin: 0; text-align: center; overflow-wrap: anywhere; }
+@media (max-width: 359px) { .region-chips button { padding-inline: 12px; } .region-details > p { display: block; margin: 4px 0; } }
