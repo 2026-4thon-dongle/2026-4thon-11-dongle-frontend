@@ -1,0 +1,69 @@
+/* 시안 5-7 카드: 높이 86, radius 22, 안쪽 좌우 12 */
+.stored-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  height: 86px;
+  padding: 0 12px;
+  border-radius: 22px;
+  background: var(--bg-surface);
+  color: var(--text-brown);
+  text-decoration: none;
+}
+
+.stored-card__stamp {
+  flex: none;
+  width: 49.92px;
+  margin-top: 10px;
+}
+
+.stored-card__stamp-img {
+  display: block;
+  filter: drop-shadow(0 1.56px 1.56px rgba(115, 77, 38, 0.18));
+}
+
+.stored-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding-top: 16px;
+}
+
+.stored-card__name {
+  /* 오른쪽 배지와 겹치지 않게 */
+  max-width: calc(100% - 100px);
+  overflow: hidden;
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stored-card__info {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stored-card__hint {
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.stored-card__badge {
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  height: 24px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--line-soft);
+  color: var(--text-sub);
+  font: 400 12px / 24px var(--font-jua);
+  white-space: nowrap;
+}

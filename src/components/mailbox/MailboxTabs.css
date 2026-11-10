@@ -1,0 +1,38 @@
+/* 시안 5-1: 바닥 높이 44(radius 22), 안쪽 여백 4, 고른 탭 높이 36(radius 18) */
+.mailbox-tabs {
+  display: grid;
+  width: 100%;
+  height: 44px;
+  padding: 4px;
+  border-radius: 22px;
+  background: var(--line-soft);
+}
+
+.mailbox-tabs__tab {
+  position: relative;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+  cursor: pointer;
+}
+
+.mailbox-tabs__tab.is-selected {
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+}
+
+/* 읽지 않은 편지 점: 시안 8px, 탭 오른쪽 위 */
+.mailbox-tabs__dot {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-berry);
+}
