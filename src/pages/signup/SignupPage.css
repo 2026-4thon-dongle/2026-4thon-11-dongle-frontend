@@ -1,0 +1,42 @@
+.signup-terms-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; }
+.signup-terms-heading h2 { margin: 0; }
+.signup-terms-heading > img { display: block; flex-shrink: 0; }
+.signup-agree-all { position: relative; display: flex; align-items: center; gap: 14px; min-height: 64px; margin-top: 30px; padding: 16px; border-radius: 22px; background: var(--bg-butter); cursor: pointer; }
+.signup-agreements { margin-top: 12px; padding-left: 16px; }
+.signup-agreement-row { display: flex; align-items: center; min-height: 52px; gap: 8px; }
+.signup-agreement-row label { position: relative; flex: 1; display: flex; align-items: center; gap: 14px; align-self: stretch; cursor: pointer; }
+.signup-agreement-row label > span:last-child { flex: 1; align-self: stretch; display: flex; align-items: center; padding-block: 8px; font-size: 15px; }
+.signup-agreement-row:not(:last-child) label > span:last-child { border-bottom: 1px solid var(--line-soft); }
+.signup-checkbox { position: relative; display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--line-soft); border-radius: 50%; background: var(--bg-surface); flex-shrink: 0; pointer-events: none; }
+.signup-checkbox.is-checked { background: var(--brand-orange); border-color: var(--brand-orange); color: var(--white); }
+.signup-checkbox--all { width: 26px; height: 26px; }
+.signup-agree-all input, .signup-agreement-row input { position: absolute; opacity: 0; width: 24px; height: 24px; left: 0; }
+.signup-agree-all input { left: 16px; }
+.signup-agree-all:has(input:focus-visible), .signup-agreement-row label:has(input:focus-visible) { outline: 2px solid var(--brand-orange-deep); outline-offset: 3px; border-radius: 8px; }
+.signup-agreement-row > button { display: grid; place-items: center; width: 32px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--text-hint); cursor: pointer; }
+.signup-email-note { padding: 10px 16px; min-height: 64px; border: 1.5px solid var(--line-soft); border-radius: 18px; color: var(--text-sub); margin: 30px 0 0; }
+.signup-email-field { position: relative; }.signup-email-field .auth-input { padding-right: 48px; }
+.signup-email-field > .ui-icon { position: absolute; right: 14px; top: 18px; color: var(--brand-sage); }
+.signup-privacy { display: flex; align-items: center; gap: 14px; padding: 16px 14px; min-height: 92px; margin-top: 40px; border-radius: 20px; background: var(--bg-butter); }
+.signup-privacy img { flex-shrink: 0; display: block; }.signup-privacy p { margin: 0; }
+.signup-letter { position: relative; margin: 30px 10px 28px; }
+.signup-letter-paper { min-height: 150px; padding: 16px 22px; border-radius: 20px; background: var(--bg-surface); box-shadow: 0 6px 18px rgba(140,97,51,.1); transform: rotate(2deg); background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 26.5px, var(--line-soft) 26.5px, var(--line-soft) 28px); background-size: calc(100% - 44px) 84px; background-repeat: no-repeat; background-position: center 28px; }
+.signup-letter-paper p { margin: 0; font: 400 22px / 1.5 var(--font-letter); color: var(--text-sub); }
+.signup-letter-signature { display: block; margin-top: 42px; text-align: right; font: 400 26px / 1.5 var(--font-letter); }
+.signup-letter-stamp { position: absolute; top: -10px; right: 22px; width: 44.8px; height: 56px; filter: drop-shadow(0 1.4px 1.4px rgba(115,77,38,.18)); font-family: var(--font-jua); }
+.signup-letter-stamp img { display: block; }.signup-stamp-brand, .signup-stamp-number { position: absolute; top: 5.6px; font-size: 3.27px; color: white; }.signup-stamp-brand { left: 6.07px; }.signup-stamp-number { right: 6.07px; }
+.signup-stamp-label { position: absolute; left: 6.07px; top: 41.53px; width: 32.667px; height: 7.933px; border-radius: 4px; background: rgba(255,255,255,.9); text-align: center; font-size: 4.67px; line-height: 7.933px; }
+.signup-nickname-hint { display: flex; justify-content: space-between; gap: 8px; }.signup-nickname-hint p { flex: 1; }.signup-nickname-hint span { white-space: nowrap; }
+.signup-page--hometown .auth-heading { margin-top: 16px; }.signup-page--residence .auth-heading { margin-top: 24px; }
+.signup-page--hometown .auth-heading p { padding-right: 35px; }
+.signup-page--hometown .auth-heading p { margin-top: 4px; }
+.signup-page--hometown .region-picker { margin-top: 6px; }
+.signup-page--hometown .region-details { margin-top: 0; }
+.signup-page--hometown .region-details .region-chips { margin-top: 8px; }
+.signup-page--residence .auth-heading p { margin-top: 6px; }
+.signup-page--residence .region-picker { margin-top: 12px; }
+.signup-page--residence .region-details { margin-top: 18px; }
+.signup-page--residence .auth-footer { padding-top: 22px; }
+.signup-complete { text-align: center; padding-top: 90px; }.signup-complete img { display: block; margin: 0 auto; }.signup-complete h2 { margin: 30px 0 16px; }.signup-complete p { color: var(--text-sub); }
+.signup-complete-link { display: block; text-align: center; color: var(--brand-orange-deep); }
+@media (max-width: 359px) { .signup-terms-heading h2 { font-size: 21px; }.signup-terms-heading > img { transform: scale(.85); transform-origin: right; margin-left: -10px; }.signup-agreement-row label > span:last-child { font-size: 13px; } }
