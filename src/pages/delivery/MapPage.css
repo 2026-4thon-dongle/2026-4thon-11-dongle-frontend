@@ -1,0 +1,328 @@
+/* 시안 4-12. 지도 위 요소의 좌표는 시안(360×470 지도) 기준이고, 위쪽 상태바 자리 44px는 뺐다.
+   아래 시트의 간격은 시안 좌표의 차이에서 계산했다.
+   화면 높이에 꽉 차게 하고, 지도 영역이 남는 높이를 가지며 시트는 내용만큼만 차지한다. */
+.map-page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: #fff0d2; /* 지도 바탕색 */
+}
+
+/* 지도 영역. 지도 그림과 길은 --map-scale(JS가 정한 배율)만큼 키워 이 영역을 채운다.
+   지도 위의 글자와 표시(.map-page__place 등)는 위치만 지도에 맞고 크기는 그대로다. */
+.map-page__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.map-page__stage > * {
+  position: absolute;
+}
+
+.map-page__scaled {
+  top: calc(-44px * var(--map-scale, 1));
+  left: var(--map-x, 0px);
+  width: 360px;
+  height: 470px;
+  transform: scale(var(--map-scale, 1));
+  transform-origin: 0 0;
+}
+
+.map-page__scaled > * {
+  position: absolute;
+}
+
+.map-page__map {
+  top: 0;
+  left: 0;
+  display: block;
+}
+
+.map-page__route {
+  top: 0;
+  left: 0;
+  width: 360px;
+  height: 470px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 앞으로 갈 길: 점선, 지나온 길: 굵은 선 */
+.map-page__route-rest {
+  stroke: var(--brand-orange-deep);
+  stroke-width: 3.5;
+  stroke-dasharray: 0.1 9;
+}
+
+.map-page__route-done {
+  stroke: var(--brand-orange);
+  stroke-width: 5;
+}
+
+.map-page__place {
+  transform: translateX(-50%);
+  color: var(--text-brown);
+  font: 400 var(--body-13-size) / 1.4 var(--font-jua);
+  white-space: nowrap;
+}
+
+/* 출발·도착 점: 안쪽 12px 색 + 바깥 4px 흰 테두리 = 20px */
+.map-page__pin {
+  box-sizing: content-box;
+  width: 12px;
+  height: 12px;
+  border: 4px solid var(--white);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.map-page__pin--from {
+  background: var(--brand-orange-deep);
+}
+
+.map-page__pin--to {
+  background: var(--brand-berry);
+}
+
+/* 지나는 동네 점: 지나간 동네는 주황, 아직인 동네는 흰색 (12px, 테두리 2px) */
+.map-page__town-dot {
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--brand-orange-deep);
+  border-radius: 50%;
+  background: var(--bg-surface);
+  transform: translate(-50%, -50%);
+}
+
+.map-page__town-dot.is-passed {
+  background: var(--brand-orange);
+}
+
+.map-page__town-chip {
+  display: block;
+  width: 74px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+  font: 400 var(--caption-11-size) / 24px var(--font-body);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 지금 편지가 있는 곳: 흰 동그라미 안의 고향이 */
+.map-page__rider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  transform: translate(-50%, -50%);
+}
+
+.map-page__rider img {
+  display: block;
+}
+
+.map-page__game {
+  bottom: 42px; /* 시트 위 12px (시트가 지도를 30px 덮는다) */
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 168px;
+  height: 44px;
+  padding: 0 0 0 14px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--brand-orange);
+  box-shadow: 0 6px 16px rgba(140, 97, 51, 0.14);
+  color: var(--white);
+  font: 400 15px / 1.4 var(--font-jua);
+  cursor: pointer;
+}
+
+/* 지도 위에 떠 있는 뒤로 가기와 제목 */
+.map-page__back {
+  position: absolute;
+  top: 6px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+  cursor: pointer;
+}
+
+.map-page__title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 212px;
+  height: 36px;
+  margin: 0 0 0 -106px;
+  border-radius: 18px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+  font: 400 14px / 36px var(--font-jua);
+  text-align: center;
+}
+
+/* 아래 시트: 도착 시간 + 진행 바 + 동네 소식. 지도 위로 30px 겹쳐 올라온다. */
+.map-page__sheet {
+  position: relative;
+  flex: none;
+  margin-top: -30px;
+  padding: 0 20px calc(24px + env(safe-area-inset-bottom));
+  border-radius: 32px 32px 0 0;
+  background: var(--bg-surface);
+}
+
+/* 손잡이를 잡는 영역(위아래로 끌거나 누른다) */
+.map-page__grab {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 12px 0 10px;
+  border: 0;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-page__grab:active {
+  cursor: grabbing;
+}
+
+.map-page__handle {
+  display: block;
+  width: 48px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--line-soft);
+}
+
+.map-page__remaining {
+  margin: 5px 0 0;
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.map-page__now {
+  margin: 3px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / 1.55 var(--font-body);
+}
+
+.map-page__bar {
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 5px;
+  background: var(--line-soft);
+}
+
+.map-page__bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--brand-orange);
+}
+
+.map-page__more {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.map-page__sheet.is-collapsed .map-page__more {
+  grid-template-rows: 0fr;
+}
+
+.map-page__more-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.map-page__news-title {
+  margin: 20px 0 0;
+  color: var(--text-brown);
+  font: 400 15px / 1.4 var(--font-jua);
+}
+
+.map-page__news {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 7px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.map-page__news-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 68px;
+  padding: 0 10px;
+  border-radius: 20px;
+  background: var(--bg-cream);
+}
+
+.map-page__news-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: var(--brand-orange-deep);
+}
+
+.map-page__news-icon--peach {
+  background: var(--bg-peach);
+}
+
+.map-page__news-icon--sage {
+  background: var(--brand-sage);
+}
+
+.map-page__news-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.map-page__news-name {
+  color: var(--text-brown);
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+.map-page__news-desc {
+  margin-top: 4px;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-page__more {
+    transition: none;
+  }
+}
