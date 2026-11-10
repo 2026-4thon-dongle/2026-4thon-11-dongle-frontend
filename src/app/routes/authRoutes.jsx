@@ -1,4 +1,5 @@
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
+import OwnedDiaryRoute from '../../pages/diary/OwnedDiaryRoute.jsx'
 import HomeRoute from '../../pages/home/HomeRoute.jsx'
 import DiaryReadRoute from '../../pages/diary/DiaryReadRoute.jsx'
 import NotificationRoute from '../../pages/notification/NotificationRoute.jsx'
@@ -41,6 +42,16 @@ export const authRoutes = [
     element: <DiaryReadRoute />,
   },
   {
+    path: '/diary/write',
+    element: <OwnedDiaryRoute />,
+  },
+  {
+    path: '/diary/mine/*',
+    element: <OwnedDiaryRoute />,
+  },
+  {
+    path: '/diary/published/:diaryId',
+    element: <OwnedDiaryRoute />,
     path: '/signup/complete',
     element: <SignupCompleteEntry />,
   },
