@@ -1,0 +1,38 @@
+/* 시안 7-8 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. */
+.stamp-rewards {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.stamp-rewards__body {
+  padding: 4px 20px 0;
+}
+
+.stamp-rewards__summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stamp-rewards__title {
+  margin: 0;
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.stamp-rewards__next {
+  margin: 0;
+  color: var(--brand-orange-deep);
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+.stamp-rewards__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}

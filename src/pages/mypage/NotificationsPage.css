@@ -1,0 +1,72 @@
+/* 시안 7-11 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. */
+.notification-settings {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.notification-settings__body {
+  padding: 4px 20px 0;
+}
+
+/* 안내 박스: 높이 80, radius 24, butter */
+.notification-settings__notice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 80px;
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 24px;
+  background: var(--bg-butter);
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+.notification-settings__notice .ui-icon {
+  color: var(--brand-orange-deep);
+}
+
+/* 설정 카드: radius 24, 줄 사이에 가는 선 */
+.notification-settings__card {
+  margin: 38px 0 0;
+  padding: 8px 16px;
+  list-style: none;
+  border-radius: 24px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+}
+
+.notification-settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.notification-settings__row:last-child {
+  border-bottom: 0;
+}
+
+.notification-settings__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.notification-settings__label {
+  font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
+}
+
+.notification-settings__hint {
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.notification-settings__loading {
+  margin-top: 38px;
+}

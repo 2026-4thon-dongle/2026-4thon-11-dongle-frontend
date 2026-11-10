@@ -1,0 +1,16 @@
+/* 시안 7-9, 7-10: 헤더 오른쪽 "저장" (Label/15, 주황). shared Header의 오른쪽 칸(24px)보다 글씨가 넓어서 왼쪽으로 조금 당겨 시안 자리에 맞춘다. */
+.header-save {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-orange);
+  font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translateX(-21px);
+}
+
+.header-save:disabled {
+  color: var(--text-hint);
+  cursor: default;
+}

@@ -1,0 +1,185 @@
+/* 시안 7-8 보상 미리보기: 124×86.8, radius 11.16. 안의 도형은 시안의 px 값을 그대로 쓴다(그림이라 고정 크기). */
+.reward-thumb {
+  position: relative;
+  flex: none;
+  width: 124px;
+  height: 86.8px;
+  overflow: hidden;
+  border-radius: 11.16px;
+}
+
+.reward-thumb > * {
+  position: absolute;
+}
+
+.reward-thumb--sticker {
+  background: var(--bg-butter);
+}
+.reward-thumb--paper {
+  background: var(--bg-cream);
+}
+.reward-thumb--collector {
+  background: linear-gradient(180deg, #fff3c4, #ffe8a0);
+}
+.reward-thumb--postcard {
+  background: var(--bg-cream);
+}
+
+/* 받지 못한 보상 */
+.reward-thumb--collector.is-locked,
+.reward-thumb--postcard.is-locked {
+  opacity: 0.45;
+}
+
+/* 표정 스티커: 하얀 타원 안에 고향이 얼굴 */
+.reward-thumb__bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35.96px;
+  height: 33.48px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1.2px 2.4px rgba(115, 77, 38, 0.18);
+}
+
+.reward-thumb__heart {
+  top: 50.84px;
+  left: 95.48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 23.56px;
+  height: 23.56px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1.2px 2.4px rgba(115, 77, 38, 0.18);
+  color: #ff7f95;
+  font-size: 8.46px;
+}
+
+/* 편지지 「밤하늘」 */
+.reward-thumb__night {
+  top: 6.2px;
+  left: 24.8px;
+  width: 74.4px;
+  height: 80.6px;
+  border-radius: 4.96px;
+  background: linear-gradient(180deg, #3e4386, #8a7cc4);
+  box-shadow: 0 2.48px 6.2px rgba(115, 77, 38, 0.16);
+}
+
+.reward-thumb__night-line {
+  left: 32.24px;
+  width: 59.52px;
+  height: 0.744px;
+  border-radius: 0.62px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.reward-thumb__night-to {
+  top: 27.28px;
+  left: 33.48px;
+  color: var(--white);
+  font: 400 9.92px / normal var(--font-letter);
+  white-space: nowrap;
+}
+
+/* 초승달: 노란 원 위에 종이색 원을 겹쳐 깎는다 */
+.reward-thumb__moon {
+  top: 12.4px;
+  left: 73.16px;
+  width: 13.64px;
+  height: 13.64px;
+  border-radius: 50%;
+  background: #ffd86b;
+}
+
+.reward-thumb__moon--cut {
+  top: 9.92px;
+  left: 78.12px;
+  width: 12.4px;
+  height: 12.4px;
+  background: #5b5aa6;
+}
+
+.reward-thumb__sparkle {
+  color: #ffe9a8;
+  line-height: 1;
+}
+
+.reward-thumb__sparkle--gold {
+  color: #e2a93b;
+}
+
+/* 「우표 수집가」 + 글씨체 */
+.reward-thumb__collector-stamp {
+  top: 13.64px;
+  left: 4.74px;
+  display: block;
+  filter: drop-shadow(0 1.24px 1.24px rgba(115, 77, 38, 0.18));
+  transform: rotate(6deg);
+}
+
+.reward-thumb__font-card {
+  top: 18.6px;
+  left: 57.04px;
+  width: 59.52px;
+  height: 49.6px;
+  border-radius: 7.44px;
+  background: var(--white);
+  box-shadow: 0 2.48px 6.2px rgba(115, 77, 38, 0.16);
+}
+
+.reward-thumb__font-label {
+  position: absolute;
+  top: 4.96px;
+  left: 6.2px;
+  color: var(--text-sub);
+  font: 400 6.2px / normal var(--font-jua);
+}
+
+.reward-thumb__font-sample {
+  position: absolute;
+  top: 13.64px;
+  left: 6.2px;
+  color: var(--text-brown);
+  font: 400 12.4px / normal var(--font-letter);
+  white-space: nowrap;
+}
+
+/* 한정 편지지 「금박 엽서」 */
+.reward-thumb__postcard {
+  top: 13.64px;
+  left: 13.64px;
+  width: 96.72px;
+  height: 62px;
+  border: 2.48px solid #f9e29a;
+  border-radius: 4.96px;
+  background: #fffbf0;
+  box-shadow: 0 2.48px 6.2px rgba(115, 77, 38, 0.16);
+}
+
+.reward-thumb__postcard-slot {
+  top: 19.84px;
+  left: 85.56px;
+  width: 18.6px;
+  height: 22.32px;
+  border: 0.93px dashed #e2a93b;
+  border-radius: 1.86px;
+}
+
+.reward-thumb__postcard-line {
+  left: 21.08px;
+  width: 55.8px;
+  height: 0.744px;
+  border-radius: 0.62px;
+  background: #ebd9a8;
+}
+
+.reward-thumb__postcard-dear {
+  top: 21.08px;
+  left: 21.08px;
+  color: #c9932e;
+  font: 400 9.92px / normal var(--font-letter);
+}

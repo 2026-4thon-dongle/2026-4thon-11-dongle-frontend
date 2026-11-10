@@ -6,8 +6,12 @@ export const MYPAGE_PATHS = {
   drafts: '/mypage/drafts', // 7-3
   stamps: '/mypage/stamps', // 7-4~7-6, 7-7(같은 경로의 바텀시트)
   stampRewards: '/mypage/stamps/rewards', // 7-8 수집 보상 (가정, 묶음 3에서 구현)
-  regions: '/mypage/regions', // 7-10 (가정, 묶음 4에서 구현)
-  notifications: '/mypage/notifications', // 7-11 (가정, 묶음 5에서 구현)
+  nickname: '/mypage/nickname', // 7-9 (진입 경로는 시안에 없어서 주소로 직접 연다)
+  regions: '/mypage/regions', // 7-10 (7-1의 "지역 수정 ›"에서도 온다)
+  notifications: '/mypage/notifications', // 7-11
+  blocks: '/mypage/blocks', // 7-12 (진입 경로는 시안에 없어서 주소로 직접 연다)
+  account: '/mypage/account', // 7-13 로그아웃·탈퇴 (진입 경로는 시안에 없어서 주소로 직접 연다)
+  start: '/start', // 로그아웃·탈퇴 뒤에 가는 시작 화면(효령 담당). 가정
   // 7-1의 설정 아이콘이 여는 곳. 시안에 설정 목록 화면이 없고, 7-9(닉네임)·7-12(차단)·7-13(로그아웃·탈퇴)로 들어가는 길이 7-1에 없다. (가정)
   settings: '/mypage/settings',
   // 다른 담당 화면. 지금은 모두 임시 화면이다.

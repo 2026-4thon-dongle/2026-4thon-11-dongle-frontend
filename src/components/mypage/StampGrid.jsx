@@ -7,25 +7,42 @@ import './StampGrid.css'
  * 우표 그림은 shared의 Stamp(id = assets/stamp 파일 이름)로 그린다. 우표 이름 띠와 번호는 그림 안에 들어 있다.
  * @param {Array<{id: string, name: string, owned: boolean}>} stamps mypageMapper.toStampCollection의 stamps
  * @param {'compact'|'roomy'} [spacing='compact'] 줄 사이 간격. 업적 17px(compact), 꾸미기 25px(roomy)로 시안이 다르다.
+ * @param {(stampId: string) => void} [onSelect] 가진 우표를 눌렀을 때(7-7 상세). 없으면 누를 수 없다. 가지지 못한 우표는 누를 수 없다.
  */
-function StampGrid({ stamps, spacing = 'compact' }) {
+function StampGrid({ stamps, spacing = 'compact', onSelect }) {
   return (
     <ul className={`stamp-grid stamp-grid--${spacing}`}>
-      {stamps.map((stamp) => (
-        <li key={stamp.id} className="stamp-grid__cell">
+      {stamps.map((stamp) => {
+        const picture = (
           <Stamp
             id={stamp.id}
             size={68}
             alt={stamp.owned ? stamp.name : ''}
             className={`stamp-grid__stamp${stamp.owned ? '' : ' is-locked'}`}
           />
-          {!stamp.owned && (
-            <span className="stamp-grid__lock" role="img" aria-label={`${stamp.name} 잠김`}>
-              <Icon name="lock" size={20} />
-            </span>
-          )}
-        </li>
-      ))}
+        )
+        return (
+          <li key={stamp.id} className="stamp-grid__cell">
+            {onSelect && stamp.owned ? (
+              <button
+                type="button"
+                className="stamp-grid__button"
+                aria-label={`${stamp.name} 자세히 보기`}
+                onClick={() => onSelect(stamp.id)}
+              >
+                {picture}
+              </button>
+            ) : (
+              picture
+            )}
+            {!stamp.owned && (
+              <span className="stamp-grid__lock" role="img" aria-label={`${stamp.name} 잠김`}>
+                <Icon name="lock" size={20} />
+              </span>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }

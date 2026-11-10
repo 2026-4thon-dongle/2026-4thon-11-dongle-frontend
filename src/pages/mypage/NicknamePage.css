@@ -1,0 +1,84 @@
+/* 시안 7-9 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. 아래 버튼은 화면 맨 아래에 붙는다. */
+.nickname-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+}
+
+.nickname-page__body {
+  flex: 1;
+  padding: 12px 20px 0;
+}
+
+.nickname-page__field {
+  position: relative;
+  margin-top: 24px;
+}
+
+/* 시안은 입력 중인 상태라 테두리가 주황색이다 */
+.nickname-page__input {
+  padding-right: 52px;
+}
+
+.nickname-page__check {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  display: flex;
+  color: var(--brand-sage);
+  transform: translateY(-50%);
+}
+
+.nickname-page__help {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 18px;
+  margin: 8px 4px 0;
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.nickname-page__message {
+  margin: 0;
+  color: var(--text-sub);
+}
+
+.nickname-page__message.is-ok {
+  color: var(--brand-sage);
+}
+
+.nickname-page__message.is-error {
+  color: var(--brand-berry);
+}
+
+.nickname-page__count {
+  flex: none;
+  color: var(--text-sub);
+}
+
+/* 적용 안내: 높이 64, radius 20, butter */
+.nickname-page__notice {
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  margin: 20px 0 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--bg-butter);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.nickname-page__footer {
+  padding: 16px 20px 30px;
+}
+
+.nickname-page__footer .ui-button:disabled {
+  box-shadow: none;
+  opacity: 0.45;
+  cursor: default;
+}
