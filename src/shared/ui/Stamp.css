@@ -1,0 +1,78 @@
+/* 우표 (시안 우표 컴포넌트). 96×120 기준으로 그리고, 크기는 transform scale로 줄여서 글자도 같이 줄어든다. */
+.ui-stamp {
+  position: relative;
+  display: inline-block;
+  flex: none;
+}
+
+.ui-stamp__body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 96px;
+  height: 120px;
+  filter: drop-shadow(0 3px 3px rgba(115, 77, 38, 0.18));
+  transform-origin: 0 0;
+}
+
+.ui-stamp__body > * {
+  position: absolute;
+}
+
+.ui-stamp__art {
+  top: 0;
+  left: 0;
+  display: block;
+}
+
+/* 이름 띠: 기본 우표는 위에서 89px, 꾸미기 우표는 91px */
+.ui-stamp__band {
+  top: 89px;
+  left: 13px;
+  width: 70px;
+  height: 17px;
+  border-radius: 8.5px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.ui-stamp--decoration .ui-stamp__band {
+  top: 91px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.ui-stamp__name {
+  top: 91px;
+  left: 13px;
+  width: 70px;
+  color: var(--text-brown);
+  font: 400 10px / normal var(--font-jua);
+  text-align: center;
+}
+
+.ui-stamp--decoration .ui-stamp__name {
+  top: 93px;
+}
+
+.ui-stamp__brand,
+.ui-stamp__number {
+  top: 12px;
+  color: var(--white);
+  font: 400 7px / normal var(--font-jua);
+  white-space: nowrap;
+}
+
+.ui-stamp__brand {
+  left: 13px;
+}
+
+.ui-stamp__number {
+  left: 66px;
+  opacity: 0.95;
+}
+
+.ui-stamp__heart {
+  top: 12px;
+  left: 76px;
+  color: var(--white);
+  font: 400 9px / normal 'Noto Sans KR', sans-serif;
+}
