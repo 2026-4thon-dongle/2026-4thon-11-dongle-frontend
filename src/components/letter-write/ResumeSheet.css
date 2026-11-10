@@ -1,0 +1,48 @@
+/* 시안 4-9 바텀시트 안쪽. 세로 간격은 시안 좌표의 차이에서 계산했다(시트 높이 370px). */
+.resume-sheet__saved {
+  margin: 5px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+/* 편지 미리보기 카드 */
+.resume-sheet__preview {
+  height: 96px;
+  margin: 9.5px -4px 0;
+  padding: 8.5px 16px 0;
+  overflow: hidden;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 20px;
+  background: var(--bg-cream);
+}
+
+.resume-sheet__to {
+  margin: 0;
+  color: var(--text-brown);
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.resume-sheet__excerpt {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-sub);
+  font-size: 17px;
+  line-height: 1.5;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* 새로 쓰기 110 : 이어 쓰기 200. 시안은 시트 높이가 정해져 있어 카드와 버튼 사이가 넓다. */
+.resume-sheet__actions {
+  display: grid;
+  grid-template-columns: 110fr 200fr;
+  gap: 10px;
+  margin: 94px -4px -8px;
+}
+
+.resume-sheet__actions .ui-button {
+  width: 100%;
+}

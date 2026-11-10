@@ -37,3 +37,9 @@ export const MAX_CONTENT_LENGTH = 1000
 export const MOCK_STAMP_COUNT = MOCK_OWNED_STAMPS.length
 // 답장하는 일기의 앞부분. 일기 상세 데이터가 연결되면 일기에서 가져온다.
 export const MOCK_DIARY_EXCERPT = '오늘 학교 앞 호수 색이 유난히…'
+// 우표 단계(4-6)에서 쓰는 임시 값: 내 거주 지역, 받는 지역을 모를 때의 지역, 도착 시간, 받은 편지 번호.
+// 지역 데이터(shared/region)와 보내기 API가 정해지면 실제 값으로 바꾼다.
+export const MOCK_MY_REGION = '서울 성북'
+export const MOCK_RECEIVER_REGION = '충남 천안'
+export const MOCK_ARRIVAL = '약 6시간'
+export const MOCK_LETTER_ID = 'mock'

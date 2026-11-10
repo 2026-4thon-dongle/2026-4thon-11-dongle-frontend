@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Stamp from '../../shared/ui/Stamp.jsx'
-import { MOCK_STAMPS } from '../../shared/mocks/stamps.js'
 import foldLine from './assets/stamping-fold.svg'
 import postmarkRing from './assets/stamping-postmark.png'
 import './StampingScene.css'
@@ -24,10 +23,6 @@ function StampingScene({ stampId = 'handwriting-master', place = '서울', date,
   const stampedAt = date ?? today
   const monthDay = `${String(stampedAt.getMonth() + 1).padStart(2, '0')}.${String(stampedAt.getDate()).padStart(2, '0')}`
 
-  const stampIndex = MOCK_STAMPS.findIndex((stamp) => stamp.id === stampId)
-  const stampName = MOCK_STAMPS[stampIndex]?.name ?? ''
-  const stampNumber = `No.${String(stampIndex + 1).padStart(2, '0')}`
-
   useEffect(() => {
     if (!onDone) return undefined
     const timer = setTimeout(onDone, DONE_AFTER)
@@ -47,10 +42,6 @@ function StampingScene({ stampId = 'handwriting-master', place = '서울', date,
           <img className="stamping__fold" src={foldLine} alt="" />
           <div className="stamping__stamp">
             <Stamp id={stampId} size={57.6} />
-            <span className="stamping__stamp-band" />
-            <span className="stamping__stamp-name">{stampName}</span>
-            <span className="stamping__stamp-no">{stampNumber}</span>
-            <span className="stamping__stamp-brand">동글</span>
           </div>
         </div>
 
