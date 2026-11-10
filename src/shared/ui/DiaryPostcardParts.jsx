@@ -17,6 +17,6 @@ export function Postmark({ province, date, small = false, waves = false }) {
 }
 
 /** @param {{large?: boolean}} props */
-export function DiaryPhoto({ large = false }) {
-  return <div className={`postcard-photo ${large ? 'postcard-photo--large' : ''}`}><img src={large ? detail : preview} alt="노을 아래 초록 언덕을 담은 동네 풍경 일러스트" />{large && <span className="postcard-photo-tape" aria-hidden="true" />}</div>
+export function DiaryPhoto({ large = false, photo }) {
+  return <div className={`postcard-photo ${large ? 'postcard-photo--large' : ''}`}><img src={photo?.url || (large ? detail : preview)} alt={photo?.url ? "일기에 첨부한 동네 사진" : "노을 아래 초록 언덕을 담은 동네 풍경 일러스트"} />{large && <span className="postcard-photo-tape" aria-hidden="true" />}</div>
 }

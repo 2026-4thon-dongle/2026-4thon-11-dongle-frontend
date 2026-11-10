@@ -25,6 +25,12 @@ export const DISTRICTS = {
   ...CITIES,
 }
 
+const alphabetical = (a, b) => a.localeCompare(b, 'ko')
+PROVINCES.sort(alphabetical)
+for (const regions of Object.values(DISTRICTS)) {
+  regions.sort(alphabetical)
+}
+
 export function regionLabel(region) {
   return region.district && region.district !== '세종 전체' ? `${region.province} ${region.district}` : region.province
 }

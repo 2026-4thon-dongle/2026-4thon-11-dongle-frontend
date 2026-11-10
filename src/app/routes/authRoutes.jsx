@@ -34,10 +34,6 @@ export const authRoutes = [
     element: <HomeRoute />,
   },
   {
-    path: '/diary/write',
-    element: <RoutePlaceholder title="일기 쓰기" />,
-  },
-  {
     path: '/diary/:diaryId',
     element: <DiaryReadRoute />,
   },
@@ -52,6 +48,8 @@ export const authRoutes = [
   {
     path: '/diary/published/:diaryId',
     element: <OwnedDiaryRoute />,
+  },
+  {
     path: '/signup/complete',
     element: <SignupCompleteEntry />,
   },
