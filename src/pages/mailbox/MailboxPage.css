@@ -1,0 +1,75 @@
+/* 시안 5-1 (360 기준). 가로는 화면 너비를 따라 늘고 줄며 좌우 20px 여백을 둔다. */
+.mailbox-page {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding: 52px 20px 24px;
+}
+
+.mailbox-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.mailbox-page__title {
+  margin: 0;
+  font: 400 28px / 1.35 var(--font-jua);
+}
+
+.mailbox-page__filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-brown);
+  cursor: pointer;
+}
+
+.mailbox-page__chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mailbox-page__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.mailbox-page__chips > * {
+  flex: none;
+}
+
+.mailbox-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mailbox-page__chips + .mailbox-page__list {
+  margin-top: 15px;
+}
+
+/* 보관 탭: 안내 박스 아래 18px에서 카드가 시작하고, 카드 사이는 12px */
+.mailbox-page__notice {
+  margin-top: 16px;
+}
+
+.mailbox-page__notice + .mailbox-page__list {
+  margin-top: 18px;
+}
+
+/* 배송 중 탭: 마지막 카드 아래 26px에 배달 게임 안내 */
+.mailbox-page__banner {
+  margin-top: 26px;
+}

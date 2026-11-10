@@ -1,0 +1,65 @@
+/* 시안 5-2 / 5-4: 탭 아래 46px 지점부터 가운데 정렬 */
+.mailbox-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 46px;
+  text-align: center;
+}
+
+.mailbox-empty__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-butter);
+}
+
+.mailbox-empty--large .mailbox-empty__circle {
+  width: 220px;
+  height: 220px;
+}
+
+.mailbox-empty--small .mailbox-empty__circle {
+  width: 150px;
+  height: 150px;
+}
+
+/* 고향이는 원 가운데에서 --mascot-shift 만큼 내려 앉는다 (시안 위치에 맞춤) */
+.mailbox-empty__circle img {
+  transform: translateY(var(--mascot-shift, 0));
+}
+
+.mailbox-empty__title {
+  margin: 30px 0 0;
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.mailbox-empty--small .mailbox-empty__title {
+  margin-top: 22px;
+}
+
+.mailbox-empty__description {
+  margin: 11px 0 0;
+  color: var(--text-sub);
+}
+
+.mailbox-empty--large .mailbox-empty__description {
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+}
+
+.mailbox-empty--small .mailbox-empty__description {
+  margin-top: 8px;
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+/* 버튼은 시안처럼 좌우 20px 더 안쪽에서 너비를 채운다 */
+.mailbox-empty__action {
+  width: 100%;
+  margin-top: 30px;
+  padding: 0 20px;
+}
+
+.mailbox-empty--small .mailbox-empty__action {
+  margin-top: 34px;
+}
