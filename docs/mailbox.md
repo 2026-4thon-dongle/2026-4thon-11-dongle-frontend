@@ -15,9 +15,12 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 | 5-7 보관 | `128:1746` | 보관 탭. 맨 위 안내 박스, 읽기 전용 보관 카드 |
 | 5-7-1 보관 비었을 때 | `340:5612` | 안내 문구만 있고 버튼은 없다 |
 
-- 탭(새 편지·대화 중·배송 중·보관)과 정렬은 주소가 아니라 화면 상태이다. 새로고침하면 새 편지 탭으로 돌아간다.
+- 탭(새 편지·대화 중·배송 중·보관)과 정렬, 지역 필터는 주소가 아니라 화면 상태이다. 새로고침하면 새 편지 탭으로 돌아간다.
+- 이미 선택된 탭이나 정렬 칩, 지역을 다시 누르면 아무 일도 일어나지 않는다(로딩을 켜지 않는다).
+- **지역 필터("지역별 ▾")**: 칩을 누르면 아래에 목록("전체" + 목록에 있는 시·도)이 열린다. **시안 없음, 임시 UI**이다(Figma 5-1에는 칩만 있고 선택 화면이 없다). 고르면 그 지역 편지만 보이고 칩에 지역 이름이 표시되며 "전체"를 고르면 풀린다. 바깥을 누르거나 Esc로 닫는다.
+  지역 표기는 mock마다 달라("전주시", "충남 천안") `mailboxMapper.toProvince`가 `shared/region` 이름의 시·도("전북", "충남")로 맞춘다. 필터 결과가 비면 5-2가 아니라 칩 아래 한 줄 안내가 나온다.
 - 정렬 칩은 새 편지 탭(비었을 때 제외)에만 있다. 오른쪽 위 필터 아이콘은 새 편지(비었을 때 제외)와 배송 중 탭에만 있다.
-- 새 편지 탭 글씨 옆 점은 읽지 않은 편지가 있을 때만 보인다. 5-2 시안에는 비어 있는데도 점이 있지만 시안과 다르게 구현했다.
+- 새 편지 탭 글씨 옆 점은 읽지 않은 편지가 있을 때만 보이고, 지역 필터와 상관없이 전체 기준이다. 5-2 시안에는 비어 있는데도 점이 있지만 시안과 다르게 구현했다.
 - 하단 탭바는 기존 `TabBarLayout`이 `/mailbox`에서 보여 준다.
 - 개발 모드에서 `/mailbox?mock=empty`로 들어가면 모든 탭의 mock이 비어 5-2, 5-4, 5-6, 5-7-1을 볼 수 있다. 운영 빌드에서는 동작하지 않는다.
 
@@ -51,7 +54,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 
 - 화면·상태: `pages/mailbox/MailboxPage` (탭, 정렬, 로딩, 비었을 때 판단).
 - 기능 전용 UI: `components/mailbox/`
-  - 탭·카드: `MailboxTabs`, `LetterCard`(5-1), `ChatCard`(5-3), `ShippingCard`(5-5), `StoredCard`(5-7)
+  - 탭·카드: `MailboxTabs`, `NewLetterFilters`(지역 드롭다운 + 정렬 칩), `LetterCard`(5-1), `ChatCard`(5-3), `ShippingCard`(5-5), `StoredCard`(5-7)
   - 안내: `MailboxEmpty`(비었을 때 4종 공용), `StoredNotice`(5-7), `GameBanner`(5-5)
   - 정의: `mailboxFilters.js`(탭·정렬 칩)
 - 데이터 흐름: `MailboxPage` → `mailboxApi.js`(`fetchMailboxLetters`) → `shared/mocks/mailbox.js` → `mailboxMapper.js`(`toMailboxPage`)
@@ -63,17 +66,14 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 - 최대 430px, 좌우 20px, 카드·탭·버튼은 100%와 flex로 맞춘다. 높이·폰트·아이콘 크기는 시안의 px를 그대로 쓴다.
 - 로딩은 `Skeleton`을 탭별 카드 높이(100·110·126·86)에 맞춰 보여 준다.
 
-## mock 처리와 백엔드 확인
-
-**문서 레포 API 확정 전이며 백엔드가 Notion에 올린 초안의 내용을 참고했다.** 문서 레포 `api/`에는 편지(letters) 문서가 아직 없다.
-필드 이름은 문서 레포 컨벤션(`api/common.md`: snake_case)을 따랐다. Notion 초안에서 참고한 것은 탭별 API 분리,
-카드 필드(편지 id, 보낸 사람 닉네임·지역, 우표, 배송 소요 분, 도착 시각, 읽음 여부), 응답(목록·다음 커서·`has_next`), 정렬 옵션(최신순·오래된순·안읽음순)이다.
+## mock 처리
 
 mock으로 처리한 부분:
 
 - **목록 응답 형식**: mock은 `{ results, next_cursor, has_next }`이다. `api/common.md`의 목록 규칙(`?page=`, `count`·`next`·`previous`·`results`)과 다르다. `has_next`는 받기만 하고 더 보기 UI는 없다(시안에 없음).
 - **정렬**: 새 편지 탭에서만 mock이 정렬한다. 다른 탭은 mock 순서 그대로이다.
-- **지역별 칩·필터 아이콘**: 표시만 있고 동작이 없다.
+- **오른쪽 위 필터 아이콘**: 표시만 있고 동작이 없다(디자인 확인 중).
+- **지역 필터**: 서버 파라미터가 정해지지 않아 `mailboxApi`가 mock 목록을 걸러 낸다. 지역 목록과 읽지 않음 점도 `mailboxApi`가 전체 목록에서 계산한다. 서버가 필터를 받으면 걸러내기를 파라미터로 바꾸고, 목록과 점은 서버 값을 쓴다.
 - **우표**: `stamp.code`로 그린다. `code`가 없고 `image_url`만 있으면 `<img>`로 그리는 대비책이 있으나 mock에서는 쓰지 않는다.
 - **대화 상대 프로필**: 표정과 색을 id로 돌려 가며 고른다.
 - **시간 표기**: 배송 시간은 시안에 보이는 글자 기준으로 올림한 시간만 보여 준다. 1시간 미만은 분이다.
@@ -84,19 +84,9 @@ mock으로 처리한 부분:
   - 배송 중: `direction`(`sent`·`received`), `counterpart_nickname`, `from_region`, `to_region`, `travel_minutes`, `remaining_minutes`. 진행률은 mapper가 이 둘로 계산한다.
   - 보관: `kind`(`passed_letter`·`ended_chat`), `stored_at`.
 
-백엔드에 확인할 것:
-
-1. 우표 식별 코드(`stamp.code`). Notion 초안은 이미지 URL뿐이라 `Stamp`로 그릴 수 없다.
-2. 위 mock 전용 필드를 API에 둘지, 탭별 응답 필드로 어떻게 줄지.
-3. 목록 형식: 커서(`next_cursor`, `has_next`)와 `?page=` 중 무엇으로 갈지.
-4. 지역별 필터와 정렬 파라미터 이름.
-5. 대화·보관 상세 화면의 경로와 5-5 "지도 보기"·게임 안내가 가리키는 편지를 넘기는 방법(letter id).
-
 ## 추후 연동·PR 참고
 
-- 시안 파일은 `CLAUDE.md`에 적힌 파일(`gxnOomQf4NPWFaYGKrEwaU`)이 아니라 `9OwwhbOqsCx2zGORvVCe45`를 기준으로 했다.
 - 5-5 "지도 보기"와 보관 카드 이동 경로는 mapper에서 정한다.
-- 에러 화면은 따로 만들지 않았고 기존 `ErrorBoundary`에 맡긴다.
 - `../2026-4thon-11-dongle-documents`의 `api/common.md`는 대조했고 `letters.md`가 없어 편지 API 대조는 할 수 없었다.
   PR에 관련 명세 경로(`api/common.md`)와 위 미연결 항목을 적는다.
 
