@@ -31,20 +31,33 @@
   cursor: pointer;
 }
 
+/* 바깥 칸은 지역 드롭다운 기준점, 안쪽 줄만 가로 스크롤한다(목록이 스크롤 영역에 잘리지 않게) */
 .mailbox-page__chips {
+  position: relative;
+  margin-top: 12px;
+}
+
+.mailbox-page__chips-row {
   display: flex;
   gap: 6px;
-  margin-top: 12px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.mailbox-page__chips::-webkit-scrollbar {
+.mailbox-page__chips-row::-webkit-scrollbar {
   display: none;
 }
 
-.mailbox-page__chips > * {
+.mailbox-page__chips-row > * {
   flex: none;
+}
+
+/* 지역 필터 결과가 비었을 때(5-2가 아님) 칩 아래 한 줄 안내 */
+.mailbox-page__filtered-empty {
+  margin: 40px 0 0;
+  text-align: center;
+  font: 400 14px / 1.55 var(--font-body);
+  color: var(--text-sub);
 }
 
 .mailbox-page__list {

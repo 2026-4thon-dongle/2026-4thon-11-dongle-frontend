@@ -3,6 +3,8 @@
 // 화면과 컴포넌트는 서버 필드 이름을 직접 쓰지 않고 이 파일의 결과만 쓴다.
 // 문서 레포에 편지 API가 확정돼 필드나 페이지네이션이 바뀌면 이 파일만 고친다.
 
+import { PROVINCES, CITIES } from '../../shared/region/regions.js'
+
 const DATE_FORMAT = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
   month: 'long',
@@ -24,8 +26,28 @@ export function formatArrivedAt(isoString) {
 }
 
 /**
+ * 보낸 사람 지역 표기 → 시·도("전북"). 지역 필터(5-1)에 쓴다.
+ * mock의 표기가 탭마다 달라서("전주시", "부산시", "충남 천안") shared/region의 이름으로 맞춘다.
+ * 첫 단어가 시·도면 그대로, 아니면 끝의 "시/군"을 떼고 시·도 또는 소속 시·군을 찾는다. 못 찾으면 null이다.
+ */
+export function toProvince(regionText) {
+  if (!regionText) return null
+  const first = regionText.trim().split(/\s+/)[0]
+  if (PROVINCES.includes(first)) return first
+  const name = first.replace(/(시|군)$/, '')
+  if (PROVINCES.includes(name)) return name
+  return PROVINCES.find((province) => CITIES[province]?.includes(name)) ?? null
+}
+
+/** 카드 목록에 있는 시·도를 shared/region 순서로 모은다. 지역 드롭다운 목록용. */
+export function listProvinces(cards) {
+  const found = new Set(cards.map((card) => card.province))
+  return PROVINCES.filter((province) => found.has(province))
+}
+
+/**
  * 카드 하나. 화면용 필드:
- * id, nickname, region, stampId, stampName, stampImageUrl, subtitle, travelLabel, arrivedLabel, isRead
+ * id, nickname, region, province, stampId, stampName, stampImageUrl, subtitle, travelLabel, arrivedLabel, isRead
  * subtitle은 Notion 초안에 없는 필드라 값이 없으면 null이다. 카드는 null이면 그 줄을 그리지 않는다.
  */
 export function toLetterCard(raw) {
@@ -33,6 +55,7 @@ export function toLetterCard(raw) {
     id: raw.id,
     nickname: raw.sender_nickname,
     region: raw.sender_region ?? null,
+    province: toProvince(raw.sender_region),
     stampId: raw.stamp?.code ?? null,
     stampName: raw.stamp?.name ?? '',
     stampImageUrl: raw.stamp?.image_url ?? null,

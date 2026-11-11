@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Icon from '../../shared/ui/Icon.jsx'
-import Chip from '../../shared/ui/Chip.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import MailboxTabs from '../../components/mailbox/MailboxTabs.jsx'
 import LetterCard from '../../components/mailbox/LetterCard.jsx'
@@ -11,6 +10,7 @@ import StoredCard from '../../components/mailbox/StoredCard.jsx'
 import StoredNotice from '../../components/mailbox/StoredNotice.jsx'
 import GameBanner from '../../components/mailbox/GameBanner.jsx'
 import MailboxEmpty from '../../components/mailbox/MailboxEmpty.jsx'
+import NewLetterFilters from '../../components/mailbox/NewLetterFilters.jsx'
 import { MAILBOX_TAB_OPTIONS, MAILBOX_SORT_OPTIONS } from '../../components/mailbox/mailboxFilters.js'
 import { fetchMailboxLetters } from '../../components/mailbox/mailboxApi.js'
 import './MailboxPage.css'
@@ -44,7 +44,8 @@ function renderCard(tab, item) {
  * - 보관(5-7, 비었으면 5-7-1): 안내 박스 + 보관 카드
  * 정렬 칩은 새 편지 탭에만 있고, 오른쪽 위 필터 아이콘은 새 편지·배송 중 탭에만 있다(시안).
  * 목록은 mock이다(문서 레포 API 확정 전, Notion 초안 참고). 요청과 변환은 components/mailbox에서 한다.
- * 가정: 탭·정렬은 화면 상태로만 두고 URL에는 넣지 않았다.
+ * 가정: 탭·정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다.
+ * 지역 필터("지역별 ▾")는 새 편지 탭에만 있다. 선택 UI는 시안이 없어 임시로 만들었다(NewLetterFilters).
  * 개발 중 확인용: 주소 뒤에 ?mock=empty 를 붙이면 mock 데이터가 비어 비었을 때 화면이 나온다.
  */
 function MailboxPage() {
@@ -54,37 +55,52 @@ function MailboxPage() {
 
   const [tab, setTab] = useState('new')
   const [sort, setSort] = useState('latest')
+  const [region, setRegion] = useState(null)
+  const [regionOptions, setRegionOptions] = useState([])
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasNewDot, setHasNewDot] = useState(false)
 
   useEffect(() => {
     let cancelled = false
-    fetchMailboxLetters(tab, { sort, empty: forceEmpty }).then((page) => {
+    fetchMailboxLetters(tab, { sort, region, empty: forceEmpty }).then((page) => {
       if (cancelled) return
       setItems(page.items)
-      if (tab === 'new') setHasNewDot(page.items.some((item) => !item.isRead))
+      if (tab === 'new') {
+        // 점과 지역 목록은 필터를 건 결과가 아니라 전체 기준이다(api가 따로 계산해 준다)
+        setHasNewDot(page.hasUnread)
+        setRegionOptions(page.regions)
+      }
       setIsLoading(false)
     })
     return () => {
       cancelled = true
     }
-  }, [tab, sort, forceEmpty])
+  }, [tab, sort, region, forceEmpty])
 
   // 탭·정렬을 바꾸는 순간 로딩 표시로 돌린다(효과 안에서 setState를 바로 부르지 않기 위해 여기서 처리)
+  // 이미 고른 값이면 아무것도 하지 않는다: 값이 그대로면 효과가 다시 돌지 않아 로딩이 끝나지 않기 때문이다.
   const changeTab = (next) => {
+    if (next === tab) return
     setIsLoading(true)
     setTab(next)
   }
   const changeSort = (next) => {
+    if (next === sort) return
     setIsLoading(true)
     setSort(next)
+  }
+  const changeRegion = (next) => {
+    if (next === region) return
+    setIsLoading(true)
+    setRegion(next)
   }
 
   const isEmpty = !isLoading && items.length === 0
   const hasItems = !isLoading && items.length > 0
-  // 정렬 칩은 새 편지 탭에만 있고, 비었을 때(5-2)는 없다
-  const showChips = tab === 'new' && !isEmpty
+  // 정렬 칩은 새 편지 탭에만 있고, 비었을 때(5-2)는 없다.
+  // 지역 필터를 걸어서 빈 경우는 5-2가 아니므로 칩을 남겨 필터를 풀 수 있게 한다.
+  const showChips = tab === 'new' && (!isEmpty || region !== null)
   // 필터 아이콘: 새 편지(비었을 때 제외)와 배송 중(비었을 때도 있다)
   const showFilter = showChips || tab === 'shipping'
   const view = TAB_VIEW[tab]
@@ -109,19 +125,14 @@ function MailboxPage() {
       />
 
       {showChips && (
-        <div className="mailbox-page__chips">
-          {/* 지역별 필터는 지역 선택(shared/region) 연결 전이라 표시만 한다 */}
-          <Chip>지역별 ▾</Chip>
-          {MAILBOX_SORT_OPTIONS.map((option) => (
-            <Chip
-              key={option.id}
-              variant={option.id === sort ? 'selected' : 'default'}
-              onClick={() => changeSort(option.id)}
-            >
-              {option.label}
-            </Chip>
-          ))}
-        </div>
+        <NewLetterFilters
+          regions={regionOptions}
+          region={region}
+          onRegionChange={changeRegion}
+          sortOptions={MAILBOX_SORT_OPTIONS}
+          sort={sort}
+          onSortChange={changeSort}
+        />
       )}
 
       {tab === 'stored' && !isEmpty && (
@@ -154,7 +165,11 @@ function MailboxPage() {
         </div>
       )}
 
-      {isEmpty && tab === 'new' && (
+      {isEmpty && tab === 'new' && region !== null && (
+        <p className="mailbox-page__filtered-empty">{region}에서 온 새 편지가 없어요</p>
+      )}
+
+      {isEmpty && tab === 'new' && region === null && (
         <MailboxEmpty
           size="large"
           pose="sleepy"
