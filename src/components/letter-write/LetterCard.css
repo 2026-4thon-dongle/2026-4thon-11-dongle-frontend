@@ -1,6 +1,6 @@
 /* 시안 4-2: 카드 320×420, 줄 간격 30px. 글씨체는 style로 받는다.
    색·줄·테두리는 Paper.css(편지지 스펙)의 변수를 쓴다. */
-.letter-card {
+.write-card {
   position: relative;
   height: 420px;
   border: var(--paper-border);
@@ -10,7 +10,7 @@
   color: var(--paper-text);
 }
 
-.letter-card__to {
+.write-card__to {
   position: absolute;
   top: 16px;
   left: 20px;
@@ -21,7 +21,7 @@
 }
 
 /* 줄 노트: 줄 10개(첫 줄 아래 86px부터 30px 간격). 글줄이 줄 위에 얹히게 줄 높이를 30px로 맞춘다. */
-.letter-card__text {
+.write-card__text {
   position: absolute;
   top: 56px;
   right: 20px;
@@ -42,12 +42,12 @@
   overflow-y: auto;
 }
 
-.letter-card__text::placeholder {
+.write-card__text::placeholder {
   color: var(--paper-hint);
 }
 
 /* 글자 수: 시안은 카드 왼쪽에서 167px 위치에 놓여 있어 그대로 따른다(카드 너비의 52%). */
-.letter-card__count {
+.write-card__count {
   position: absolute;
   top: 394px;
   left: 52%;
@@ -58,14 +58,14 @@
 }
 
 /* 장식은 글씨 뒤에 깔린다. */
-.letter-card__deco {
+.write-card__deco {
   position: absolute;
   z-index: 0;
   pointer-events: none;
 }
 
 /* 3. 체크: 줄 대신 카드 전체에 정사각형 격자(30px 칸). 가로선은 글줄 아래에 맞춘다. */
-.letter-card--check::before {
+.write-card--check::before {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -75,24 +75,24 @@
   content: '';
 }
 
-.letter-card--check .letter-card__text {
+.write-card--check .write-card__text {
   background: none;
 }
 
 /* 4. 고향이 테두리: 줄 없음, 위쪽에 고향이. 글은 고향이 아래에서 시작한다. */
-.letter-card--mascot .letter-card__text {
+.write-card--mascot .write-card__text {
   top: 104px;
   height: 252px;
   background: none;
 }
 
-.letter-card__deco--cat {
+.write-card__deco--cat {
   top: 12px;
   right: 24px;
 }
 
 /* 5. 밤하늘: 달과 별은 오른쪽 위(스펙: 위 12px, 오른쪽 12px) */
-.letter-card__deco--sky {
+.write-card__deco--sky {
   top: 12px;
   right: 12px;
 }

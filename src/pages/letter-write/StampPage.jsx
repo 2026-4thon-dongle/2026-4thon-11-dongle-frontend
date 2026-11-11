@@ -55,7 +55,7 @@ function StampPage() {
             updateDraft({ stampId })
             clearLetterDraft(reply) // 보낸 편지는 임시저장에서 지운다.
             close()
-            navigate(`/delivery/${MOCK_LETTER_ID}/sending`)
+            navigate(`/delivery/${MOCK_LETTER_ID}/sending`, { state: { stampId } })
           }}
         />
       ),

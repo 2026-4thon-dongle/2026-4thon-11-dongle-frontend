@@ -5,6 +5,7 @@ import PaperPage from '../../pages/letter-write/PaperPage.jsx'
 import ContentPage from '../../pages/letter-write/ContentPage.jsx'
 import SignaturePage from '../../pages/letter-write/SignaturePage.jsx'
 import StampPage from '../../pages/letter-write/StampPage.jsx'
+import SendingPage from '../../pages/delivery/SendingPage.jsx'
 import DonePage from '../../pages/delivery/DonePage.jsx'
 import MapPage from '../../pages/delivery/MapPage.jsx'
 
@@ -22,7 +23,7 @@ export const letterRoutes = [
     ],
   },
   // 발송 연출·완료·배송 지도 (4-10 ~ 4-12). letterId는 편지를 보낸 뒤 받는 편지 번호이다(가정).
-  { path: '/delivery/:letterId/sending', element: <RoutePlaceholder title="발송 연출" /> }, // 4-10
+  { path: '/delivery/:letterId/sending', element: <SendingPage /> }, // 4-10
   { path: '/delivery/:letterId/done', element: <DonePage /> }, // 4-11
   { path: '/delivery/:letterId/map', element: <MapPage /> }, // 4-12
   {

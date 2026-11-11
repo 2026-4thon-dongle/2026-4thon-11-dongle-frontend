@@ -15,21 +15,21 @@ import './LetterCard.css'
  */
 function LetterCard({ paperId = 'basic', recipient, value, onChange, fontFamily, maxLength }) {
   return (
-    <div className={`paper paper--${paperId} letter-card letter-card--${paperId}`} style={{ fontFamily }}>
-      {paperId === 'mascot' && <Mascot pose="face" size={88} className="letter-card__deco letter-card__deco--cat" />}
+    <div className={`paper paper--${paperId} write-card write-card--${paperId}`} style={{ fontFamily }}>
+      {paperId === 'mascot' && <Mascot pose="face" size={88} className="write-card__deco write-card__deco--cat" />}
       {paperId === 'night' && (
-        <img className="letter-card__deco letter-card__deco--sky" src={nightSky} alt="" width="108" height="106" />
+        <img className="write-card__deco write-card__deco--sky" src={nightSky} alt="" width="108" height="106" />
       )}
-      <p className="letter-card__to">To. {recipient}</p>
+      <p className="write-card__to">To. {recipient}</p>
       <textarea
-        className="letter-card__text"
+        className="write-card__text"
         value={value}
         maxLength={maxLength}
         placeholder="하고 싶은 이야기를 적어보세요"
         aria-label="편지 본문"
         onChange={(event) => onChange(event.target.value)}
       />
-      <p className="letter-card__count">
+      <p className="write-card__count">
         {value.length} / {maxLength}
       </p>
     </div>
