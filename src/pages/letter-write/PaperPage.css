@@ -147,3 +147,16 @@
   color: var(--text-sub);
   transform: translateX(-50%);
 }
+
+/* 개발 중에만 보이는 작은 글씨 버튼 */
+.paper-page__dev {
+  display: block;
+  margin: 16px auto 0;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-decoration: underline;
+  cursor: pointer;
+}
