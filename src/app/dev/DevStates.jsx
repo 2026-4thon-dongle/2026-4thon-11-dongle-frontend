@@ -8,7 +8,7 @@ import useStartLetter from '../../components/letter-write/useStartLetter.js'
 import { clearLetterDraft } from '../../components/letter-write/letterDraftStorage.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
-import StampingScene from '../../components/letter-write/StampingScene.jsx'
+import StampingScene from '../../components/delivery/StampingScene.jsx'
 
 // /preview/loading : 8-1 로딩 화면
 export function DevLoading() {

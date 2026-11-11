@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
+import { getMockMailboxResponse } from '../../shared/mocks/mailbox.js'
 import { MOCK_MAP_DELIVERY, MOCK_TOWNS } from '../../components/delivery/data.js'
 import { pickMapTheme } from '../../components/delivery/mapThemes.js'
 import { ROUTE_POINTS, pointAt, toPolyline, traveledPoints } from '../../components/delivery/mapRoute.js'
@@ -44,7 +45,12 @@ function MapPage() {
   const navigate = useNavigate()
   const { letterId } = useParams()
   const { showToast } = useOverlay()
-  const { from, to, recipient, totalMinutes, elapsedMinutes } = MOCK_MAP_DELIVERY
+  // mock: 우체통 배송 중 편지(letterId)의 출발·도착 지역을 쓴다. 없는 편지(발송 직후 등)는 기본 mock을 쓴다.
+  // 배송 API가 정해지면 편지 한 통의 응답에서 가져온다.
+  const shipping = getMockMailboxResponse('shipping').results.find((letter) => String(letter.id) === letterId)
+  const { recipient, totalMinutes, elapsedMinutes } = MOCK_MAP_DELIVERY
+  const from = shipping?.from_region ?? MOCK_MAP_DELIVERY.from
+  const to = shipping?.to_region ?? MOCK_MAP_DELIVERY.to
   const { remainingMinutes, progress } = useArrivalCountdown({ totalMinutes, elapsedMinutes })
   const theme = pickMapTheme(letterId)
 
