@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { saveSignupProfile } from '../../shared/api/profile.js'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import AuthFrame, { AuthHeading } from '../../shared/ui/AuthFrame.jsx'
 import Button from '../../shared/ui/Button.jsx'
@@ -50,7 +51,7 @@ export default function SignupPage() {
       finally { setBusy(false) }
     } else if (step === 'residence') {
       setBusy(true)
-      try { setResult(await completeSignup({ challengeKey: challenge.key, nickname, hometowns, residence: residence[0], agreements })); go('complete') }
+      try { const profile = saveSignupProfile(await completeSignup({ challengeKey: challenge.key, nickname, hometowns, residence: residence[0], agreements })); setResult(profile); navigate('/signup/complete', { state: { profile } }) }
       catch (err) { setError(err.message) }
       finally { setBusy(false) }
     } else go(STEPS[index + 1])

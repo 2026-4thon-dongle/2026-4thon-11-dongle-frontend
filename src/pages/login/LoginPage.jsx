@@ -30,7 +30,7 @@ function LoginPage() {
     finally { setBusy(false) }
   }
 
-  if (path === 'code') return challenge ? <CodeVerification login challenge={challenge} onChallenge={setChallenge} onBack={() => navigate('/login')} onVerified={() => { navigate('/login'); setNotice('개발용 로그인 확인 완료. 실제 로그인은 인증 서버 연동 후 가능') }} /> : <Navigate to="/login" replace />
+  if (path === 'code') return challenge ? <CodeVerification login challenge={challenge} onChallenge={setChallenge} onBack={() => navigate('/login')} onVerified={() => navigate('/home', { replace: true })} /> : <Navigate to="/login" replace />
 
   return (
     <AuthFrame title="로그인" onBack={() => navigate('/start')} className="login-page" footer={<div className="login-actions"><Button type="submit" form="login-form" className="login-submit" disabled={busy}>{busy ? '확인 중…' : '로그인 코드 받기'}</Button><Link className="login-signup text-label-15" to="/signup">처음이신가요?&nbsp; 회원가입</Link></div>}>

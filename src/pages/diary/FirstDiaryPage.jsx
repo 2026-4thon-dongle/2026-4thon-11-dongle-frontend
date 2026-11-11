@@ -5,6 +5,8 @@ import FirstDiaryEditor from '../../components/diary/FirstDiaryEditor.jsx'
 import FirstDiaryComplete from '../../components/diary/FirstDiaryComplete.jsx'
 import { isFirstDiaryDemo, publishFirstDiary } from '../../shared/api/firstDiary.js'
 import { MOCK_DIARY_PROMPTS, MOCK_FIRST_DIARY_PROFILE } from '../../shared/mocks/firstDiary.js'
+import { getOwnedDiarySnapshot } from '../../shared/api/ownedDiary.js'
+import { getSignupProfile } from '../../shared/api/profile.js'
 import './FirstDiaryPage.css'
 
 function validProfile(profile) {
@@ -16,11 +18,11 @@ export default function FirstDiaryPage() {
   const step = path || 'welcome'
   const location = useLocation()
   const navigate = useNavigate()
-  const [profile] = useState(() => validProfile(location.state?.profile) ? location.state.profile : isFirstDiaryDemo ? MOCK_FIRST_DIARY_PROFILE : null)
+  const [profile] = useState(() => validProfile(location.state?.profile) ? location.state.profile : getSignupProfile() || (isFirstDiaryDemo ? MOCK_FIRST_DIARY_PROFILE : null))
   const [content, setContent] = useState('')
   const [photo, setPhoto] = useState(null)
   const [promptIndex, setPromptIndex] = useState(0)
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState(() => getOwnedDiarySnapshot().diaries.find((diary) => diary.isFirstDiary) || null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const submitting = useRef(false)
