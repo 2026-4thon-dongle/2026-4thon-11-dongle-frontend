@@ -1,0 +1,18 @@
+/* 5-9 "…" 메뉴 시트. 시안에 없어서 정한 모양이다. */
+.letter-menu {
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+
+.letter-menu__item {
+  display: block;
+  width: 100%;
+  padding: 14px 4px;
+  border: 0;
+  background: none;
+  color: var(--text-brown);
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+  text-align: left;
+  cursor: pointer;
+}

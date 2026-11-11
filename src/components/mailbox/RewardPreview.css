@@ -1,0 +1,73 @@
+/* 시안 5-13 보상 그림: 240×168, radius 21.6, 버터 바탕. 안의 스티커는 시안 위치(px) 그대로 둔다. */
+.reward-preview {
+  position: relative;
+  width: 240px;
+  height: 168px;
+  border-radius: 21.6px;
+  background: var(--bg-butter);
+  overflow: hidden;
+}
+
+/* 스티커: 흰 타원 69.6×64.8 위에 고향이 얼굴 */
+.reward-preview__oval {
+  position: absolute;
+  width: 69.6px;
+  height: 64.8px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 3.6px 7px rgba(115, 77, 38, 0.14);
+}
+
+.reward-preview__face {
+  position: absolute;
+  display: block;
+  line-height: 0;
+}
+
+/* 하트 스티커: 흰 원 45.6, 시안 (184.8, 98.4) */
+.reward-preview__heart {
+  position: absolute;
+  top: 98.4px;
+  left: 184.8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45.6px;
+  height: 45.6px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 3.6px 7px rgba(115, 77, 38, 0.14);
+  color: #ff7f95;
+}
+
+/* 편지지·우표·엽서: 시안이 없어서 이름이 적힌 종이로 근사했다 */
+.reward-preview__sheet {
+  position: absolute;
+  top: 19px;
+  left: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 140px;
+  height: 130px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--bg-surface);
+  box-shadow: 0 2px 6px rgba(115, 77, 38, 0.12);
+  color: var(--brand-orange-deep);
+  text-align: center;
+}
+
+.reward-preview--paper .reward-preview__sheet {
+  background: color-mix(in srgb, var(--brand-sky) 55%, var(--bg-surface));
+}
+
+.reward-preview--postcard .reward-preview__sheet {
+  border: 2px solid var(--brand-orange);
+}
+
+.reward-preview__name {
+  font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
+}

@@ -1,0 +1,72 @@
+/* 시안 5-14 카드: 높이 80, radius 24, 프로필 원 56. 너비는 부모를 채운다. */
+.pen-pal-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  height: 80px;
+  padding: 0 14px 0 12px;
+  border-radius: 24px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--text-brown);
+  text-decoration: none;
+}
+
+.pen-pal-card__avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+/* 프로필 원 색: 브랜드 색을 35% 투명도로 */
+.pen-pal-card__avatar--peach {
+  background: color-mix(in srgb, var(--bg-peach) 70%, transparent);
+}
+.pen-pal-card__avatar--sky {
+  background: color-mix(in srgb, var(--brand-sky) 35%, transparent);
+}
+.pen-pal-card__avatar--sage {
+  background: color-mix(in srgb, var(--brand-sage) 35%, transparent);
+}
+
+.pen-pal-card__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pen-pal-card__name {
+  overflow: hidden;
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pen-pal-card__info {
+  overflow: hidden;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 오른쪽: 위에 최근 시간, 아래에 › */
+.pen-pal-card__side {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  color: var(--text-hint);
+}
+
+.pen-pal-card__ago {
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  white-space: nowrap;
+}

@@ -1,0 +1,42 @@
+/* 시안 5-14 (360 기준). 가로는 화면 너비를 따라 늘고 줄며 좌우 20px 여백을 둔다. */
+.pen-pal-page {
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.pen-pal-page__body {
+  padding: 8px 20px 0;
+}
+
+/* 안내 박스: 높이 60, 버터 바탕, radius 20 */
+.pen-pal-page__notice {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 60px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: 20px;
+  background: var(--bg-butter);
+  color: var(--text-brown);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.pen-pal-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pen-pal-page__empty {
+  margin: 80px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
+  text-align: center;
+}
