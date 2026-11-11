@@ -31,7 +31,14 @@ class ErrorBoundary extends Component {
     const { error } = this.state
     if (!error) return this.props.children
     if (this.props.fallback) return this.props.fallback({ error, reset: this.reset })
-    return <ErrorScreen onRetry={this.reset} />
+    // 렌더링 에러는 연결 문제가 아니라 화면 문제라서 네트워크 에러 문구(ErrorScreen 기본값)를 쓰지 않는다.
+    return (
+      <ErrorScreen
+        title="문제가 생겼어요"
+        description={'고향이가 편지를 들고 잠깐 길을 잃었어요.\n잠시 후 다시 시도해주세요'}
+        onRetry={this.reset}
+      />
+    )
   }
 }
 

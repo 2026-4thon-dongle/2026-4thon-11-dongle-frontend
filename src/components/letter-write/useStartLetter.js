@@ -14,7 +14,7 @@ import { LETTER_STEPS } from './steps.js'
  *
  * - 임시저장이 없으면 바로 /letter-write로 간다.
  * - 있으면 시트가 뜨고, "새로 쓰기"는 저장본을 지우고 처음부터, "이어 쓰기"는 저장했던 단계로 간다.
- * - 일기에 답장하는 게 아니면 diaryId, nickname 없이 region만 넘긴다.
+ * - 편지는 일기나 받은 편지에 답장할 때만 쓴다. 받은 편지 답장의 쿼리(letterId 등)는 채원과 합의 전이다.
  */
 export default function useStartLetter() {
   const navigate = useNavigate()
