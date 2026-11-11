@@ -19,7 +19,7 @@ function ContentPage() {
   // 고른 글씨체는 본문에 쓰이므로 이 화면에 들어올 때 불러온다.
   useEffect(() => loadLetterFont(draft.fontId), [draft.fontId])
 
-  // 받는 사람: 일기에 답장하면 상대 닉네임, 아니면 고향 사람에게 띄우는 편지(가정: 문구는 임시)
+  // 받는 사람: 답장하는 상대 닉네임. 쿼리 없이 들어온 경우만 임시 문구를 쓴다.
   const recipient = draft.reply.nickname ?? '고향 친구'
   const warn = hasPhoneNumber(draft.content)
 

@@ -4,11 +4,13 @@
 const PREFIX = 'dongle:letter-draft:'
 
 /**
- * 어떤 편지의 임시저장인지 가르는 값. 일기에 답장하는 편지는 일기마다 하나, 그 밖의 편지는 하나만 둔다.
+ * 어떤 편지의 임시저장인지 가르는 값. 일기에 답장하는 편지는 일기마다 하나를 둔다.
+ * 답장 대상을 모르면(diaryId가 없으면) 하나를 같이 쓰는 안전장치용 키이다.
+ * TODO: 받은 편지에 답장하는 경우(letterId)는 쿼리 규칙을 채원과 합의한 뒤 편지마다 따로 둔다.
  * @param {{diaryId: string | null}} reply 작성 중 상태의 reply
  */
 function getDraftKey(reply) {
-  return PREFIX + (reply?.diaryId ? `diary-${reply.diaryId}` : 'free')
+  return PREFIX + (reply?.diaryId ? `diary-${reply.diaryId}` : 'unknown')
 }
 
 /**

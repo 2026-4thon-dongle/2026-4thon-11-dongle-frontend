@@ -6,7 +6,7 @@ export const LetterDraftContext = createContext(null)
 /**
  * 편지 작성 중 상태. 단계를 오가도 유지된다.
  * - reply: 이 편지가 답장하는 대상. 일기 상세·우체통에서 들어올 때 URL 파라미터로 전달받는다.
- *   { diaryId, nickname, region } — 일기에 답장하는 게 아니면 diaryId는 null이다.
+ *   { diaryId, nickname, region } — 쿼리 없이 들어오면 모두 null이다(정상 흐름은 아니고, 개발 중 확인용).
  * - paperId: 고른 편지지
  * - content: 본문
  * - fontId: 고른 글씨체 (shared/fonts의 편지 글씨체 id)
