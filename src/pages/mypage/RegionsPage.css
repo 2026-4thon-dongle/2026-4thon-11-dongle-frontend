@@ -1,0 +1,51 @@
+/* 시안 7-10 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. */
+.regions-page {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.regions-page__body {
+  padding: 10px 20px 0;
+}
+
+.regions-page__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 섹션 이름: Label 14, 보조 글씨색 */
+.regions-page__label {
+  margin: 0 0 10px;
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+.regions-page__label--next {
+  margin-top: 14px;
+}
+
+.regions-page__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 6px;
+}
+
+/* 적용 안내: 높이 84, radius 20, butter */
+.regions-page__notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 84px;
+  margin: 16px 0 0;
+  padding: 8px 14px 8px 10px;
+  border-radius: 20px;
+  background: var(--bg-butter);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.regions-page__notice > img {
+  flex: none;
+}

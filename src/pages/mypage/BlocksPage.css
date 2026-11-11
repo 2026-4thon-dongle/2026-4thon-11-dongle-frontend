@@ -1,0 +1,44 @@
+/* 시안 7-12 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. */
+.blocks-page {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.blocks-page__body {
+  padding: 4px 20px 0;
+}
+
+/* 안내: 높이 56, radius 20, butter */
+.blocks-page__notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: var(--bg-butter);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.blocks-page__notice .ui-icon {
+  color: var(--brand-orange-deep);
+}
+
+.blocks-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blocks-page__footnote {
+  margin: 34px 0 0;
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-align: center;
+}

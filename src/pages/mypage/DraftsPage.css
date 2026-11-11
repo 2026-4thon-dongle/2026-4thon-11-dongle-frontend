@@ -1,0 +1,37 @@
+/* 시안 7-3 (360 기준). 헤더는 화면 끝까지, 안내와 카드는 좌우 20px 안쪽. */
+.drafts-page {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.drafts-page__body {
+  padding: 4px 20px 0;
+}
+
+/* 안내 박스: 높이 52, radius 18, butter */
+.drafts-page__notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--bg-butter);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.drafts-page__notice .ui-icon {
+  color: var(--brand-orange-deep);
+}
+
+.drafts-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}

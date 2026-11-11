@@ -1,0 +1,88 @@
+/* 시안 7-3 카드: 높이 160, radius 22, 안쪽 좌우 16. 너비는 부모를 채운다. */
+.draft-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 160px;
+  padding: 16px;
+  border-radius: 22px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 16px rgba(140, 97, 51, 0.12);
+}
+
+.draft-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 편지 종류 알약: 첫 편지 / 답장 */
+.draft-card__kind {
+  flex: none;
+  height: 22px;
+  min-width: 56px;
+  padding: 0 8px;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--bg-cream);
+  color: var(--text-sub);
+  font: 400 12px / 19px var(--font-jua);
+  text-align: center;
+}
+
+.draft-card__title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  font: 400 14px / 1.4 var(--font-jua);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 본문 미리보기: 손글씨체 18px, 두 줄까지 */
+.draft-card__preview {
+  display: -webkit-box;
+  margin: 10px 0 0;
+  overflow: hidden;
+  font: 400 18px / 1.5 var(--font-letter);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.draft-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+}
+
+.draft-card__meta {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-hint);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.draft-card__delete {
+  display: flex;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-hint);
+  cursor: pointer;
+}
+
+.draft-card__resume {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--brand-orange);
+  color: var(--white);
+  font: 400 13px / 1.4 var(--font-jua);
+  text-decoration: none;
+}

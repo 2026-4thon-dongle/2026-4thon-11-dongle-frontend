@@ -2,6 +2,7 @@ import { useRoutes } from 'react-router-dom'
 import { authRoutes } from './authRoutes.jsx'
 import { letterRoutes } from './letterRoutes.jsx'
 import { mailboxRoutes } from './mailboxRoutes.jsx'
+import { mypageRoutes } from './mypageRoutes.jsx'
 import DevPreview from '../dev/DevPreview.jsx' // 개발 전용
 import { DevLoading, DevError, DevBoundary, DevStamping, DevStampSheet, DevDiaryReply } from '../dev/DevStates.jsx' // 개발 전용
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
@@ -16,6 +17,7 @@ const routes = [
       ...authRoutes,
       ...letterRoutes,
       ...mailboxRoutes,
+      ...mypageRoutes,
       { path: '/preview', element: <DevPreview /> }, // 개발 전용
       { path: '/preview/loading', element: <DevLoading /> }, // 개발 전용
       { path: '/preview/error', element: <DevError /> }, // 개발 전용

@@ -1,0 +1,41 @@
+/* 시안 7-4 다음 보상 카드: 높이 64, radius 20, butter. 진행 바는 높이 10. */
+.next-reward {
+  width: 100%;
+  padding: 10px 14px 16px;
+  border-radius: 20px;
+  background: var(--bg-butter);
+}
+
+.next-reward__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--brand-orange-deep);
+  font: 400 13px / 1.4 var(--font-jua);
+}
+
+.next-reward__text {
+  margin: 0;
+  min-width: 0;
+}
+
+.next-reward__count {
+  flex: none;
+}
+
+.next-reward__bar {
+  height: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  background: var(--bg-surface);
+}
+
+/* 0개여도 시안처럼 점(10px)은 보인다 */
+.next-reward__fill {
+  display: block;
+  height: 100%;
+  min-width: 10px;
+  border-radius: 5px;
+  background: var(--brand-orange);
+}

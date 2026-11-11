@@ -1,0 +1,14 @@
+.region-sheet {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.region-sheet__action {
+  margin-top: 20px;
+}
+
+.region-sheet__action .ui-button:disabled {
+  box-shadow: none;
+  opacity: 0.45;
+  cursor: default;
+}

@@ -1,0 +1,58 @@
+/* 시안 7-4: 우표 68×85, 한 줄 4개. 칸은 4등분하고 우표는 칸 가운데에 둔다. */
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stamp-grid--compact {
+  row-gap: 17px;
+}
+
+.stamp-grid--roomy {
+  row-gap: 25px;
+}
+
+.stamp-grid__cell {
+  position: relative;
+  display: flex;
+  width: 68px;
+}
+
+.stamp-grid__stamp {
+  display: block;
+  filter: drop-shadow(0 2.125px 2.125px rgba(115, 77, 38, 0.18));
+}
+
+/* 아직 갖지 못한 우표 */
+.stamp-grid__stamp.is-locked {
+  opacity: 0.22;
+}
+
+/* 자물쇠: 우표 가운데에 놓인 32px 원 (우표는 흐리지만 자물쇠는 또렷하다) */
+.stamp-grid__lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--text-hint);
+  transform: translate(-50%, -50%);
+}
+
+/* 가진 우표를 누르면 상세(7-7)가 열린다 */
+.stamp-grid__button {
+  display: flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}

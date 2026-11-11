@@ -1,0 +1,67 @@
+/* 시안 7-12 카드: 높이 72, radius 22, 안쪽 좌우 12 */
+.blocked-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 72px;
+  padding: 0 14px 0 12px;
+  border-radius: 22px;
+  background: var(--bg-surface);
+  box-shadow: 0 8px 22px rgba(140, 97, 51, 0.12);
+}
+
+.blocked-card__avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+/* 프로필 원 색: 브랜드 색을 35% 투명도로 */
+.blocked-card__avatar--sage {
+  background: color-mix(in srgb, var(--brand-sage) 35%, transparent);
+}
+
+.blocked-card__avatar--sky {
+  background: color-mix(in srgb, var(--brand-sky) 35%, transparent);
+}
+
+.blocked-card__who {
+  flex: 1;
+  min-width: 0;
+}
+
+.blocked-card__name {
+  margin: 0;
+  overflow: hidden;
+  font: 400 var(--title-17-size) / var(--title-17-lh) var(--font-jua);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blocked-card__info {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 해제 버튼: 64×32, 테두리만 있는 알약 */
+.blocked-card__release {
+  flex: none;
+  width: 64px;
+  height: 32px;
+  padding: 0;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 16px;
+  background: var(--bg-surface);
+  color: var(--text-brown);
+  font: 400 14px / 1.4 var(--font-jua);
+  cursor: pointer;
+}

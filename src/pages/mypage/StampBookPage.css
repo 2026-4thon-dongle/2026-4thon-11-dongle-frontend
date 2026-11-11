@@ -1,0 +1,65 @@
+/* 시안 7-4 ~ 7-6 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. 아래 버튼은 화면 맨 아래에 붙는다. */
+.stamp-book {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+}
+
+.stamp-book__body {
+  flex: 1;
+  padding: 0 20px;
+}
+
+.stamp-book__title {
+  margin: 10px 0 0;
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.stamp-book__subtitle {
+  margin: 3px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.stamp-book__card {
+  margin-top: 8px;
+}
+
+.stamp-book__grid {
+  margin-top: 18px;
+}
+
+.stamp-book__grid--decoration {
+  margin-top: 20px;
+}
+
+.stamp-book__note {
+  margin: 27px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-align: center;
+}
+
+.stamp-book__note--far {
+  margin-top: 41px;
+}
+
+.stamp-book__first {
+  margin-top: 31px;
+}
+
+.stamp-book__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* 아래 버튼: 시안은 화면 아래에서 30px 위 */
+.stamp-book__footer {
+  padding: 16px 20px 30px;
+}
