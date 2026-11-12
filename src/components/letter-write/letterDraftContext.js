@@ -12,7 +12,7 @@ export const LetterDraftContext = createContext(null)
  * - fontId: 고른 글씨체 (shared/fonts의 편지 글씨체 id)
  * - signature: 서명 그림. { ops: [...] } 그린 순서대로 쌓은 작업 목록이고, 되돌리기는 맨 뒤에서 하나씩 뺀다.
  *   - 선: { type: 'stroke', erase, color, points: [[x, y], ...] }  좌표는 그림판 크기에 대한 0~1 비율이다.
- *   - 스티커: { type: 'sticker', id, pose, x, y }  x, y는 스티커 중심의 0~1 비율이다.
+ *   - 스티커: { type: 'sticker', id, pose, x, y, size, rotate }  x, y는 스티커 중심의 0~1 비율, size는 px(없으면 64), rotate는 도(없으면 8)이다.
  * - stampId: 고른 우표
  */
 export const EMPTY_DRAFT = {

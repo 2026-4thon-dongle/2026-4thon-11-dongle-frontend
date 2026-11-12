@@ -10,8 +10,9 @@ import './SignatureTools.css'
  * @param {boolean} canUndo 되돌릴 것이 있는지
  * @param {string} colorId 지금 고른 펜 색
  * @param {(id: string) => void} onColorChange
+ * @param {Array} colors 고를 수 있는 펜 색(data.js의 penColorsFor). 없으면 PEN_COLORS 전부.
  */
-function SignatureTools({ tool, onToolChange, onUndo, canUndo, colorId, onColorChange }) {
+function SignatureTools({ tool, onToolChange, onUndo, canUndo, colorId, onColorChange, colors = PEN_COLORS }) {
   return (
     <div className="signature-tools">
       <div className="signature-tools__row">
@@ -48,14 +49,14 @@ function SignatureTools({ tool, onToolChange, onUndo, canUndo, colorId, onColorC
       </div>
 
       <div className="signature-tools__colors" role="radiogroup" aria-label="펜 색">
-        {PEN_COLORS.map((color) => (
+        {colors.map((color) => (
           <button
             key={color.id}
             type="button"
             role="radio"
             aria-checked={colorId === color.id}
             aria-label={color.label}
-            className={`signature-tools__color${colorId === color.id ? ' is-selected' : ''}`}
+            className={`signature-tools__color${color.id === 'white' ? ' signature-tools__color--white' : ''}${colorId === color.id ? ' is-selected' : ''}`}
             style={{ '--dot': `var(${color.token})` }}
             onClick={() => {
               onColorChange(color.id)

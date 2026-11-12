@@ -22,3 +22,11 @@
 .signature-page__panel--tools {
   margin-top: 12px;
 }
+
+/* 붙인 스티커를 누르면 조정할 수 있다는 안내 */
+.signature-page__sticker-hint {
+  margin: 10px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-align: center;
+}

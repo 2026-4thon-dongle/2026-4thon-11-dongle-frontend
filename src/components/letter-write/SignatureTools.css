@@ -66,5 +66,18 @@
 .signature-tools__color.is-selected {
   box-shadow:
     0 0 0 2px var(--bg-cream),
-    0 0 0 4px var(--dot);
+    0 0 0 4px var(--ring, var(--dot));
+}
+
+/* 흰색(어두운 편지지에서만 나온다): 밝은 바탕에서 사라지지 않게 가는 테두리를 두른다. */
+.signature-tools__color--white {
+  --ring: var(--text-hint);
+  box-shadow: inset 0 0 0 1px var(--text-hint);
+}
+
+.signature-tools__color--white.is-selected {
+  box-shadow:
+    inset 0 0 0 1px var(--text-hint),
+    0 0 0 2px var(--bg-cream),
+    0 0 0 4px var(--ring);
 }

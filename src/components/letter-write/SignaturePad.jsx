@@ -1,30 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
 import Mascot from '../../shared/ui/Mascot.jsx'
-import { PEN_COLORS } from './data.js'
+import Icon from '../../shared/ui/Icon.jsx'
+import { STICKER_SIZE, STICKER_TILT } from './data.js'
+import { drawStrokes, fitCanvas, paintSegment } from './signatureCanvas.js'
+import './Paper.css'
 import './SignaturePad.css'
-
-const PEN_WIDTH = 3
-const ERASER_WIDTH = 18
-const STICKER_SIZE = 64
-const STICKER_TILT = 8 // 붙인 스티커는 시안처럼 살짝 기울인다(도).
-
-// 색 id → 실제 색. 토큰(CSS 변수) 값을 읽어 쓴다.
-function colorOf(id) {
-  const token = PEN_COLORS.find((color) => color.id === id)?.token ?? PEN_COLORS[0].token
-  return getComputedStyle(document.documentElement).getPropertyValue(token).trim()
-}
-
-function paintSegment(ctx, op, from, to, width, height) {
-  ctx.globalCompositeOperation = op.erase ? 'destination-out' : 'source-over'
-  ctx.strokeStyle = op.erase ? '#000' : colorOf(op.color)
-  ctx.lineWidth = op.erase ? ERASER_WIDTH : PEN_WIDTH
-  ctx.lineCap = 'round'
-  ctx.lineJoin = 'round'
-  ctx.beginPath()
-  ctx.moveTo(from[0] * width, from[1] * height)
-  ctx.lineTo(to[0] * width, to[1] * height)
-  ctx.stroke()
-}
 
 /**
  * 손글씨 서명 그림판(시안 4-4, 4-5). 손가락·마우스로 그리고, 스티커를 붙이고 옮긴다.
@@ -35,12 +15,17 @@ function paintSegment(ctx, op, from, to, width, height) {
  * @param {(ops: Array) => void} onOpsChange
  * @param {'pen'|'eraser'} tool 그리기 도구
  * @param {string} colorId 펜 색(PEN_COLORS의 id)
- * @param {'draw'|'sticker'} mode draw: 선을 그린다 / sticker: 스티커를 옮긴다
+ * @param {'draw'|'sticker'} mode draw: 선을 그린다 / sticker: 스티커를 고르고 옮긴다
+ * @param {string} paperId 고른 편지지 id. 그림판 바탕이 편지지와 같은 색이 된다.
+ * @param {string|null} selectedId 고른 스티커의 id (스티커 모드에서만 표시된다)
+ * @param {(id: string|null) => void} onSelect 스티커를 고르거나(id) 선택을 푼다(null)
+ * @param {(id: string) => void} onRemove 스티커를 지운다
  */
-function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
+function SignaturePad({ ops, onOpsChange, tool, colorId, mode, paperId = 'basic', selectedId = null, onSelect, onRemove }) {
   const canvasRef = useRef(null)
   const currentRef = useRef(null) // 지금 그리고 있는 선
   const dragRef = useRef(null) // 지금 옮기고 있는 스티커
+  const resizeRef = useRef(null) // 지금 크기·각도를 조절하고 있는 스티커
 
   const size = () => {
     const rect = canvasRef.current.getBoundingClientRect()
@@ -51,15 +36,8 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
   const redraw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
     const { width, height } = canvas.getBoundingClientRect()
-    ctx.clearRect(0, 0, width, height)
-    ops.forEach((op) => {
-      if (op.type !== 'stroke') return
-      op.points.forEach((point, index) => {
-        paintSegment(ctx, op, op.points[Math.max(index - 1, 0)], point, width, height)
-      })
-    })
+    drawStrokes(canvas.getContext('2d'), ops, width, height)
   }, [ops])
 
   // ops가 바뀌면 다시 그린다.
@@ -76,11 +54,7 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
   useEffect(() => {
     const canvas = canvasRef.current
     const fit = () => {
-      const dpr = window.devicePixelRatio || 1
-      const { width, height } = canvas.getBoundingClientRect()
-      canvas.width = Math.round(width * dpr)
-      canvas.height = Math.round(height * dpr)
-      canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0)
+      fitCanvas(canvas)
       redrawRef.current()
     }
     fit()
@@ -99,7 +73,10 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
 
   // ── 선 그리기 ──
   const handleDown = (event) => {
-    if (mode !== 'draw') return
+    if (mode !== 'draw') {
+      onSelect?.(null) // 빈 곳을 누르면 스티커 선택을 푼다.
+      return
+    }
     event.currentTarget.setPointerCapture(event.pointerId)
     const start = point(event)
     currentRef.current = { type: 'stroke', erase: tool === 'eraser', color: colorId, points: [start] }
@@ -129,6 +106,19 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
     if (mode !== 'sticker') return
     event.currentTarget.setPointerCapture(event.pointerId)
     dragRef.current = index
+    onSelect?.(ops[index].id)
+  }
+
+  // 키보드: Enter·Space로 고르고, 고른 스티커는 Delete·Backspace로 지운다.
+  const handleStickerKey = (event, op) => {
+    if (mode !== 'sticker') return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onSelect?.(op.id)
+    } else if (event.key === 'Delete' || event.key === 'Backspace') {
+      event.preventDefault()
+      onRemove?.(op.id)
+    }
   }
 
   const handleStickerMove = (event) => {
@@ -142,8 +132,58 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
     dragRef.current = null
   }
 
+  // ── 스티커 크기·각도 조절: 모서리 손잡이를 끌면 스티커 중심을 기준으로 크기와 각도가 함께 바뀐다. ──
+  const handleResizeDown = (event, op) => {
+    event.stopPropagation() // 스티커 끌기가 시작되지 않게 한다.
+    event.currentTarget.setPointerCapture(event.pointerId)
+    const rect = canvasRef.current.getBoundingClientRect()
+    const cx = rect.left + op.x * rect.width
+    const cy = rect.top + op.y * rect.height
+    resizeRef.current = {
+      id: op.id,
+      cx,
+      cy,
+      startDistance: Math.max(Math.hypot(event.clientX - cx, event.clientY - cy), 1),
+      startAngle: Math.atan2(event.clientY - cy, event.clientX - cx),
+      startSize: op.size ?? STICKER_SIZE.initial,
+      startRotate: op.rotate ?? STICKER_TILT.initial,
+    }
+  }
+
+  const handleResizeMove = (event) => {
+    const start = resizeRef.current
+    if (!start) return
+    const distance = Math.hypot(event.clientX - start.cx, event.clientY - start.cy)
+    const angle = Math.atan2(event.clientY - start.cy, event.clientX - start.cx)
+    const size = Math.min(Math.max(Math.round((start.startSize * distance) / start.startDistance), STICKER_SIZE.min), STICKER_SIZE.max)
+    // 각도는 -180~180도로 맞춘다.
+    let rotate = start.startRotate + ((angle - start.startAngle) * 180) / Math.PI
+    rotate = Math.round(((((rotate + 180) % 360) + 360) % 360) - 180)
+    onOpsChange(ops.map((op) => (op.id === start.id ? { ...op, size, rotate } : op)))
+  }
+
+  const handleResizeUp = () => {
+    resizeRef.current = null
+  }
+
+  // 손잡이 키보드: 위·아래 화살표는 크기, 왼쪽·오른쪽 화살표는 각도를 바꾼다.
+  const handleResizeKey = (event, op) => {
+    const size = op.size ?? STICKER_SIZE.initial
+    const rotate = op.rotate ?? STICKER_TILT.initial
+    const patch = {
+      ArrowUp: { size: Math.min(size + STICKER_SIZE.step, STICKER_SIZE.max) },
+      ArrowDown: { size: Math.max(size - STICKER_SIZE.step, STICKER_SIZE.min) },
+      ArrowRight: { rotate: Math.min(rotate + 5, 180) },
+      ArrowLeft: { rotate: Math.max(rotate - 5, -180) },
+    }[event.key]
+    if (!patch) return
+    event.preventDefault()
+    event.stopPropagation()
+    onOpsChange(ops.map((item) => (item.id === op.id ? { ...item, ...patch } : item)))
+  }
+
   return (
-    <div className={`signature-pad signature-pad--${mode}`}>
+    <div className={`paper paper--${paperId} signature-pad signature-pad--${mode}`}>
       <canvas
         ref={canvasRef}
         className="signature-pad__canvas"
@@ -152,25 +192,66 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode }) {
         onPointerUp={handleUp}
         onPointerCancel={handleUp}
       />
-      {ops.map((op, index) =>
-        op.type === 'sticker' ? (
+      {ops.map((op, index) => {
+        if (op.type !== 'sticker') return null
+        const selected = mode === 'sticker' && op.id === selectedId
+        const size = op.size ?? STICKER_SIZE.initial
+        return (
           <div
             key={op.id}
-            className="signature-pad__sticker"
+            className={`signature-pad__sticker${selected ? ' is-selected' : ''}`}
+            role="button"
+            tabIndex={mode === 'sticker' ? 0 : -1}
+            aria-label="붙인 스티커"
+            aria-pressed={selected}
             style={{
               left: `${op.x * 100}%`,
               top: `${op.y * 100}%`,
-              transform: `translate(-50%, -50%) rotate(${STICKER_TILT}deg)`,
+              transform: `translate(-50%, -50%) rotate(${op.rotate ?? STICKER_TILT.initial}deg)`,
+              '--rotate': `${op.rotate ?? STICKER_TILT.initial}deg`,
+              // 고른 스티커의 원 테두리: 스티커 크기에 비례해 조금 넉넉하게 두르고(귀가 안 나오게), 버튼은 이 원 위에 놓는다.
+              '--ring-offset': `${size * 0.12}px`,
+              '--ring-radius': `${size * 0.62 + 1}px`,
             }}
             onPointerDown={(event) => handleStickerDown(event, index)}
             onPointerMove={handleStickerMove}
             onPointerUp={handleStickerUp}
             onPointerCancel={handleStickerUp}
+            onKeyDown={(event) => handleStickerKey(event, op)}
           >
-            <Mascot pose={op.pose} size={STICKER_SIZE} />
+            <Mascot pose={op.pose} size={size} />
+            {selected && (
+              <button
+                type="button"
+                className="signature-pad__sticker-handle"
+                aria-label="스티커 크기·각도 조절 (끌어서 조절, 방향키로도 가능)"
+                onPointerDown={(event) => handleResizeDown(event, op)}
+                onPointerMove={handleResizeMove}
+                onPointerUp={handleResizeUp}
+                onPointerCancel={handleResizeUp}
+                onKeyDown={(event) => handleResizeKey(event, op)}
+              >
+                {/* 대각선 양방향 화살표 */}
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M8.5 2H12V5.5M5.5 12H2V8.5M12 2L8 6M2 12L6 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+            {selected && (
+              <button
+                type="button"
+                className="signature-pad__sticker-remove"
+                aria-label="스티커 삭제"
+                // 끌기가 시작되지 않게 막아야 이 버튼의 클릭이 동작한다.
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => onRemove?.(op.id)}
+              >
+                <Icon name="close" size={14} />
+              </button>
+            )}
           </div>
-        ) : null,
-      )}
+        )
+      })}
     </div>
   )
 }

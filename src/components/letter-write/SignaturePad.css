@@ -1,12 +1,30 @@
-/* 시안 4-4: 320×220, 흰 바탕, 연한 점선 테두리 */
+/* 시안 4-4: 320×220, 흰 바탕, 연한 점선 테두리.
+   바탕은 고른 편지지와 같은 색이다(Paper.css의 --paper-bg). 점선은 편지지 색에 묻히지 않게 --paper-edge로 정한다. */
 .signature-pad {
+  --paper-edge: var(--line-soft);
   position: relative;
   height: 220px;
   overflow: hidden;
-  border: 2px dashed var(--line-soft);
+  border: 2px dashed var(--paper-edge);
   border-radius: 24px;
-  background: var(--bg-surface);
+  background: var(--paper-bg);
   user-select: none;
+}
+
+.signature-pad.paper--ruled {
+  --paper-edge: #bfdce6;
+}
+
+.signature-pad.paper--mascot {
+  --paper-edge: #f5c9a8;
+}
+
+.signature-pad.paper--night {
+  --paper-edge: rgba(255, 255, 255, 0.5);
+}
+
+.signature-pad.paper--gold {
+  --paper-edge: #e2a93b;
 }
 
 .signature-pad__canvas {
@@ -37,4 +55,49 @@
 .signature-pad__sticker img {
   pointer-events: none;
   -webkit-user-drag: none;
+}
+
+.signature-pad__sticker:focus-visible {
+  outline: 2px solid var(--brand-orange-deep);
+  outline-offset: 2px;
+}
+
+/* 고른 스티커: 주황 점선 원 + 원 위의 삭제·조절 버튼 */
+.signature-pad__sticker.is-selected {
+  outline: 2px dashed var(--brand-orange);
+  outline-offset: var(--ring-offset, 6px);
+  border-radius: 50%;
+}
+
+.signature-pad__sticker-remove,
+.signature-pad__sticker-handle {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand-orange);
+  box-shadow: 0 2px 6px rgba(140, 97, 51, 0.3);
+  color: var(--white);
+  cursor: pointer;
+  /* 버튼 가운데를 원 위의 점에 맞추고, 스티커가 기울어져도 글자는 바로 보이게 같은 만큼 반대로 돌린다. */
+  transform: translate(-50%, -50%) rotate(calc(var(--rotate, 0deg) * -1));
+}
+
+/* 원 위에서 오른쪽 위(45도)와 오른쪽 아래(45도) 지점: 가운데에서 반지름 × 0.7071만큼 떨어진 곳 */
+.signature-pad__sticker-remove {
+  top: calc(50% - var(--ring-radius, 38px) * 0.7071);
+  left: calc(50% + var(--ring-radius, 38px) * 0.7071);
+}
+
+/* 크기·각도 손잡이: 삭제 버튼 맞은편(오른쪽 아래). 끌면 크기와 각도가 함께 바뀐다. */
+.signature-pad__sticker-handle {
+  top: calc(50% + var(--ring-radius, 38px) * 0.7071);
+  left: calc(50% + var(--ring-radius, 38px) * 0.7071);
+  touch-action: none;
+  cursor: nwse-resize;
 }
