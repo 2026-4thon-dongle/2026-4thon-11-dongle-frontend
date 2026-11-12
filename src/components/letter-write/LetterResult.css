@@ -1,0 +1,126 @@
+/* 편지 완성본: 편지지는 편지 쓰는 카드(LetterCard, 시안 4-2)와 같은 420px 높이로 고정한다. 본문이 길어도 편지지는
+   늘어나지 않고 본문만 스크롤된다. 손글씨가 있으면 편지지 아래에 이어 붙어서 카드가 그만큼 길어진다.
+   줄은 LetterCard와 같은 30px 간격이고, 색·줄·테두리는 Paper.css의 변수를 쓴다. */
+.letter-result {
+  --body-height: 344px; /* 편지지 420 - 위 56 - 아래 20 */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 56px 20px 20px;
+  border: var(--paper-border);
+  border-radius: 24px;
+  background: var(--paper-bg);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  color: var(--paper-text);
+}
+
+.letter-result__to {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  z-index: 1;
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.5;
+}
+
+/* 줄 노트: 글줄이 줄 위에 얹히게 줄 높이를 30px로 맞춘다. 줄은 글과 같이 움직이고(local), 빈 곳도 줄로 채운다. */
+.letter-result__body {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  height: var(--body-height);
+  overflow-y: auto;
+  background:
+    linear-gradient(to bottom, transparent 28.5px, var(--paper-line) 28.5px 30px)
+    0 0 / 100% 30px local;
+  font-size: 21px;
+  line-height: 30px;
+  overflow-wrap: anywhere;
+  scrollbar-width: thin;
+  white-space: pre-wrap;
+}
+
+.letter-result__body:focus-visible {
+  outline: 2px solid var(--brand-orange-deep);
+  outline-offset: 2px;
+}
+
+/* 우표: 오른쪽 위에 똑바로 붙는다. 다른 우표를 고르면 새로 붙는 모션이 나온다. */
+.letter-result__stamp {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  z-index: 2;
+  display: block;
+  line-height: 0;
+  animation: letter-result-stamp-in 0.28s ease-out;
+}
+
+@keyframes letter-result-stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-result__stamp {
+    animation: none;
+  }
+}
+
+/* 첫 줄(56~86px)은 우표(아래 끝 약 75px)와 겹치므로 그 줄만 오른쪽을 비운다. */
+.letter-result__stamp-gap {
+  float: right;
+  width: 52px;
+  height: 30px;
+}
+
+/* 손글씨: 편지지 아래에 이어 붙는다. 그린 부분만 잘라 높이 132px 영역의 가운데에 둔다(SignatureView의 fit).
+   카드 너비를 꽉 채워 너비를 잰다. */
+.letter-result__signature {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  margin: 12px -20px 0;
+}
+
+/* 장식은 글씨 뒤에 깔린다. */
+.letter-result__deco {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 3. 체크: 줄 대신 정사각형 격자(30px 칸). 본문 안에서 글과 같이 움직인다. 가로선은 글줄 아래에 맞춘다. */
+.letter-result--check .letter-result__body {
+  background:
+    linear-gradient(to right, var(--paper-line) 1.5px, transparent 1.5px) 0 0 / 30px 100% local,
+    linear-gradient(to bottom, transparent 28.5px, var(--paper-line) 28.5px 30px) 0 0 / 100% 30px local;
+}
+
+/* 4. 고향이 테두리: 줄 없음, 위쪽에 고향이. 글은 고향이 아래에서 시작한다. */
+.letter-result--mascot {
+  --body-height: 296px; /* 편지지 420 - 위 104 - 아래 20 */
+  padding-top: 104px;
+}
+
+.letter-result--mascot .letter-result__body {
+  background: none;
+}
+
+.letter-result__deco--cat {
+  top: 12px;
+  right: 80px; /* 오른쪽 위 우표를 피해 왼쪽으로 옮겼다(편지 쓰는 카드에서는 24px). */
+}
+
+/* 5. 밤하늘: 달과 별은 오른쪽 위 */
+.letter-result__deco--sky {
+  top: 12px;
+  right: 76px; /* 오른쪽 위 우표를 피해 왼쪽으로 옮겼다(편지 쓰는 카드에서는 12px). */
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import StepLayout from '../../app/layouts/StepLayout.jsx'
 import StepFooter from '../../components/letter-write/StepFooter.jsx'
 import StampSheet from '../../components/letter-write/StampSheet.jsx'
+import LetterResult from '../../components/letter-write/LetterResult.jsx'
 import useStepNavigation from '../../components/letter-write/useStepNavigation.js'
 import { clearLetterDraft } from '../../components/letter-write/letterDraftStorage.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
@@ -16,22 +17,23 @@ import {
 import { getLetterFontFamily, loadLetterFont } from '../../shared/fonts/letterFonts.js'
 import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
-import './StampPage.css'
 
 /**
  * 4-6 우표 고르고 보내기, 4-7 우표가 1장일 때.
- * 화면에는 쓴 편지를 보여 주고, 들어오면 "편지를 보낼까요?" 바텀시트가 바로 열린다.
+ * 화면에는 쓴 편지의 완성본(편지지·본문·서명)을 보여 주고, 들어오면 "편지를 보낼까요?" 바텀시트가 바로 열린다.
  * "다시 보기"로 시트를 닫으면 편지를 볼 수 있고, 아래 버튼으로 다시 시트를 연다.
+ * 시트에서 우표를 고르면 편지 오른쪽 위에 바로 붙어 보인다.
  */
 function StampPage() {
   const navigate = useNavigate()
   const { goBack } = useStepNavigation(4)
   const { draft, updateDraft } = useLetterDraft()
   const { openSheet, showToast, close } = useOverlay()
-  const { reply, content, fontId } = draft
+  const { reply, content, fontId, paperId, signature } = draft
 
   const recipient = reply.nickname ?? '고향 친구'
-  const firstLine = content.split('\n').find((line) => line.trim() !== '') ?? ''
+  // 편지에 붙여 보여 주는 우표: 시트에서 고른 우표, 아직 안 골랐으면 시트가 처음 골라 두는 첫 우표
+  const previewStampId = draft.stampId ?? MOCK_OWNED_STAMPS[0]?.id
 
   useEffect(() => {
     loadLetterFont(fontId)
@@ -48,6 +50,7 @@ function StampPage() {
           to={reply.region ?? MOCK_RECEIVER_REGION}
           arrival={MOCK_ARRIVAL}
           onReview={close}
+          onSelect={(stampId) => updateDraft({ stampId })}
           onAdd={() => showToast('우표 만들기는 준비 중이에요')}
           onGame={() => showToast('직접 배달하기는 준비 중이에요')}
           onSend={(stampId) => {
@@ -76,18 +79,15 @@ function StampPage() {
       onBack={goBack}
       footer={<StepFooter onNext={openStampSheet} nextLabel="우표 고르기" />}
     >
-      {/* 쓴 편지 미리보기: 받는 사람과 본문 첫 줄 */}
-      <div className="stamp-page__letter">
-        <div className="stamp-page__card" />
-        <p className="stamp-page__to" style={{ fontFamily: getLetterFontFamily(fontId) }}>
-          To. {recipient}
-        </p>
-        {firstLine && (
-          <p className="stamp-page__excerpt" style={{ fontFamily: getLetterFontFamily(fontId) }}>
-            {firstLine}
-          </p>
-        )}
-      </div>
+      {/* 편지 완성본: 1 편지지 + 2 내용 + 3 서명을 합친 보내기 전 모습. 시트에서 우표를 고르면 오른쪽 위에 바로 붙는다. */}
+      <LetterResult
+        paperId={paperId}
+        recipient={recipient}
+        content={content}
+        fontFamily={getLetterFontFamily(fontId)}
+        signatureOps={signature.ops}
+        stampId={previewStampId}
+      />
     </StepLayout>
   )
 }

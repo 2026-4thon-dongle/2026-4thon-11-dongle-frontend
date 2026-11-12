@@ -1,0 +1,42 @@
+/* 서명 그림판(220px 높이)과 같은 크기의 무대(stage)에 그린다. 너비는 부모를 채운다. */
+.signature-view {
+  pointer-events: none;
+}
+
+.signature-view__crop {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.signature-view__stage {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+.signature-view__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.signature-view__sticker {
+  position: absolute;
+  display: flex;
+}
+
+/* fit: 높이가 고정된 영역(132px)의 가운데에 그린 부분만 보이는 작은 창을 둔다. 무대는 왼쪽 위를 기준으로 줄인다. */
+.signature-view--fit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 132px; /* SignatureView.jsx의 FIT_HEIGHT와 같다 */
+}
+
+.signature-view--fit .signature-view__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}

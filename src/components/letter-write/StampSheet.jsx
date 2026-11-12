@@ -18,8 +18,9 @@ import './StampSheet.css'
  * @param {() => void} onReview "다시 보기"를 눌렀을 때 (시트를 닫고 편지를 다시 본다)
  * @param {() => void} [onGame] "직접 배달하기"를 눌렀을 때 (9-1 보류라 아직 연결하지 않는다)
  * @param {() => void} [onAdd] 우표 추가(+) 칸을 눌렀을 때
+ * @param {(stampId: string) => void} [onSelect] 우표를 골랐을 때(고를 때마다). 뒤의 편지에 우표를 바로 붙여 보여 줄 때 쓴다.
  */
-function StampSheet({ stamps, selectedId, from, to, arrival, onSend, onReview, onGame, onAdd }) {
+function StampSheet({ stamps, selectedId, from, to, arrival, onSend, onReview, onGame, onAdd, onSelect }) {
   const [selected, setSelected] = useState(selectedId ?? stamps[0]?.id ?? null)
   const only = stamps.length === 1 ? stamps[0] : null
 
@@ -67,7 +68,10 @@ function StampSheet({ stamps, selectedId, from, to, arrival, onSend, onReview, o
                   className={`stamp-sheet__cell${isSelected ? ' is-selected' : ''}`}
                   aria-label={stamp.name}
                   aria-pressed={isSelected}
-                  onClick={() => setSelected(stamp.id)}
+                  onClick={() => {
+                    setSelected(stamp.id)
+                    onSelect?.(stamp.id)
+                  }}
                 >
                   <Stamp id={stamp.id} size={54.4} />
                 </button>
