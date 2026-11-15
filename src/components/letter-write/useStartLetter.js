@@ -12,24 +12,25 @@ import { LETTER_STEPS } from './steps.js'
  * const startLetter = useStartLetter()
  * startLetter({ diaryId: '12', nickname: '하늘빛', region: '충남 천안' })
  *
- * - 임시저장이 없으면 바로 /letter-write로 간다.
- * - 있으면 시트가 뜨고, "새로 쓰기"는 저장본을 지우고 처음부터, "이어 쓰기"는 저장했던 단계로 간다.
- * - 편지는 일기나 받은 편지에 답장할 때만 쓴다. 받은 편지 답장의 쿼리(letterId 등)는 채원과 합의 전이다.
+ * - 임시저장이 없으면 바로 /letter-write로 간다. 임시저장은 서버에서 확인하므로 잠깐 기다린다.
+ * - 있으면 시트가 뜨고, "새로 쓰기"는 저장본을 지우고 처음부터, "이어 쓰기"는 내용 쓰기 단계로 간다(서버는 본문·편지지·글씨체만 저장한다).
+ * - 편지는 일기(diaryId)나 받은 편지(letterId)에 답장할 때만 쓴다. 받은 편지 답장의 쿼리(letterId 등)는 채원과 합의 전의 가정이다.
  */
 export default function useStartLetter() {
   const navigate = useNavigate()
   const { openSheet } = useOverlay()
 
   return useCallback(
-    ({ diaryId = null, nickname = null, region = null } = {}) => {
+    async ({ diaryId = null, letterId = null, nickname = null, region = null } = {}) => {
       const params = new URLSearchParams()
       if (diaryId) params.set('diaryId', diaryId)
+      if (letterId) params.set('letterId', letterId)
       if (nickname) params.set('nickname', nickname)
       if (region) params.set('region', region)
       const search = params.size ? `?${params}` : ''
 
-      const reply = { diaryId, nickname, region }
-      const saved = loadLetterDraft(reply)
+      const reply = { diaryId, letterId, nickname, region }
+      const saved = await loadLetterDraft(reply)
       if (!saved) {
         navigate(`/letter-write${search}`)
         return
@@ -40,9 +41,9 @@ export default function useStartLetter() {
         content: ({ close }) =>
           createElement(ResumeSheet, {
             saved,
-            onNew: () => {
+            onNew: async () => {
               close()
-              clearLetterDraft(reply)
+              await clearLetterDraft(reply, saved.draft.draftId)
               navigate(`/letter-write${search}`)
             },
             onResume: () => {
