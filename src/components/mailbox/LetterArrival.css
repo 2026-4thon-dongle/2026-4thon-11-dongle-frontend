@@ -44,6 +44,7 @@
 
 /* 고향이 얼굴 아래쪽은 봉투 뒤에 가려진다 (시안: 얼굴 높이 109, 봉투가 11px 겹침) */
 .letter-arrival__scene {
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -59,27 +60,43 @@
 
 .letter-arrival__envelope {
   position: relative;
-  z-index: 1;
   width: 100%;
   max-width: 260px;
   height: 180px;
   margin-top: -11px;
-  overflow: hidden;
   border-radius: 16px;
   background: var(--bg-surface);
   box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
 }
 
+/* 봉투 윗면(V자 삼각형). 윗변을 축으로 뒤로 젖혀져 180도 넘어가면 봉투 위로 서서 안쪽 면이 보인다.
+   기본 모습이 닫힌 시안이다. 열려 있는 동안(z-index -1)은 고향이와 편지지 뒤로 가고, 닫혀 있을 때는 원래 겹침이다. */
 .letter-arrival__fold {
   position: absolute;
   top: 6px;
   right: 4px;
   left: 4px;
   display: block;
+  transform-origin: 50% 0;
+  animation:
+    letter-arrival-flap 1800ms ease-in-out 300ms backwards,
+    letter-arrival-flap-layer 1800ms step-end 300ms backwards;
+}
+
+/* 삼각형 면: 앞면은 봉투색, 넘어간 뒤에는 안쪽 면(진한 복숭아색)으로 바뀐다 */
+.letter-arrival__fold::before {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-surface);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: '';
+  animation: letter-arrival-flap-face 1800ms step-end 300ms backwards;
 }
 
 .letter-arrival__fold img {
+  position: relative;
   display: block;
+  animation: letter-arrival-flap-line 1800ms step-end 300ms backwards;
   width: 100%;
   height: auto;
 }
@@ -132,4 +149,100 @@
   color: var(--text-sub);
   font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
   cursor: pointer;
+}
+
+/* 봉투 안 편지지: 봉투 몸통(DOM에서 뒤따르는 envelope)이 아랫부분을 가리고, 고향이보다 앞에 있다.
+   닫힌 모습에서는 윗변이 봉투 윗변과 같아 전부 가려진다. 140px 중 100px이 입구 밖으로 올라온다(약 70%). */
+.letter-arrival__sheet {
+  position: absolute;
+  right: 0;
+  bottom: 40px;
+  left: 0;
+  width: 176px;
+  height: 140px;
+  margin: 0 auto;
+  border: 1px solid #f0e2ca;
+  border-radius: 10px 10px 0 0;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 21px, #f3e7d2 21px, #f3e7d2 22px) 14px 16px / calc(100% - 28px) 100px no-repeat,
+    var(--bg-surface);
+  box-shadow: 0 -2px 8px rgba(140, 97, 51, 0.12);
+  animation: letter-arrival-sheet 1800ms ease-in-out 300ms backwards;
+}
+
+/* 전체 1.8초(0.3초 뒤 시작): 윗면 열림 0~22%(0.4초) → 편지지 올라옴 22~50%(0.5초) → 머묾 50~62%(0.2초)
+   → 편지지 들어감 62~80%(0.3초) → 윗면 닫힘 80~100%(0.36초) */
+@keyframes letter-arrival-flap {
+  0% {
+    transform: perspective(700px) rotateX(0);
+  }
+  22%,
+  80% {
+    transform: perspective(700px) rotateX(-180deg);
+  }
+  100% {
+    transform: perspective(700px) rotateX(0);
+  }
+}
+
+/* 90도(가장자리가 보이는 때)를 넘으면 안쪽 면과 뒤쪽 겹침으로, 돌아올 때 90도 전에 되돌린다 */
+@keyframes letter-arrival-flap-layer {
+  0% {
+    z-index: 0;
+  }
+  11% {
+    z-index: -1;
+  }
+  91% {
+    z-index: 0;
+  }
+}
+
+@keyframes letter-arrival-flap-face {
+  0% {
+    background: var(--bg-surface);
+  }
+  11% {
+    background: #f5bf99;
+  }
+  91% {
+    background: var(--bg-surface);
+  }
+}
+
+/* 접힌 선(V자)은 앞면에만 있다 */
+@keyframes letter-arrival-flap-line {
+  0% {
+    opacity: 1;
+  }
+  11% {
+    opacity: 0;
+  }
+  91% {
+    opacity: 1;
+  }
+}
+
+@keyframes letter-arrival-sheet {
+  0%,
+  22% {
+    transform: translateY(0);
+  }
+  50%,
+  62% {
+    transform: translateY(-100px);
+  }
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-arrival__fold,
+  .letter-arrival__fold::before,
+  .letter-arrival__fold img,
+  .letter-arrival__sheet {
+    animation: none;
+  }
 }

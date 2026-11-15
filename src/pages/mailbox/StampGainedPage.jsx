@@ -23,8 +23,8 @@ const DOTS = [
  * 가정:
  *  - 언제 뜨는지가 정해지지 않았다(답장 발송 직후라는 흐름만 있고, 4-10, 4-11과의 순서는 채현님과 확인 전).
  *    그래서 어디서도 이 화면으로 보내지 않고, 주소(/mailbox/stamp-gained)로 직접 연다.
- *  - "우표첩 보기"는 /mypage/stamps 로, "확인"은 우체통(/mailbox)으로 간다.
- *    이번에 보상이 열렸으면 "확인"이 보상 해금(5-13)으로 이어진다.
+ *  - "우표첩 보기"(흰 버튼)는 /mypage/stamps 로, "확인"은 5-3 대화 중 탭(/mailbox, state.tab = 'chatting')으로 간다.
+ *    이번에 보상이 열렸으면 "확인"이 보상 해금(5-13)으로 이어지고, 5-13의 "확인"이 5-3으로 간다.
  * 개발 중 확인용: 주소 뒤에 ?unlock=3 을 붙이면 "확인"이 5-13(/mailbox/reward-unlocked?threshold=3)으로 이어진다.
  */
 function StampGainedPage() {
@@ -69,10 +69,10 @@ function StampGainedPage() {
         ))}
         actions={
           <>
-            <Button variant="secondary" onClick={() => navigate(gain.stampBookPath)}>
+            <Button variant="ghost" onClick={() => navigate(gain.stampBookTarget.path)}>
               우표첩 보기
             </Button>
-            <Button onClick={() => navigate(gain.confirmPath)}>확인</Button>
+            <Button onClick={() => navigate(gain.confirmTarget.path, { state: gain.confirmTarget.state })}>확인</Button>
           </>
         }
       >

@@ -1,5 +1,6 @@
 // 받은 편지 상세(5-8, 5-9) 변환 함수. 서버(지금은 mock) 응답 → 화면용 데이터.
 // mock, 문서 레포 API 확정 전. 화면과 컴포넌트는 서버 필드 이름을 직접 쓰지 않고 이 파일의 결과만 쓴다.
+import { PROVINCES } from '../../shared/region/regions.js'
 import { formatTravelTime } from './mailboxMapper.js'
 
 // 가정: 답장은 편지 쓰기로 들어간다. docs/letter-write.md의 제안 쿼리(letterId, nickname, region)를 따른다.
@@ -10,6 +11,33 @@ const LETTER_WRITE_PATH = '/letter-write'
 export function buildReplyPath({ letterId, nickname, region }) {
   const query = new URLSearchParams({ letterId: String(letterId), nickname, region })
   return `${LETTER_WRITE_PATH}?${query.toString()}`
+}
+
+const POSTMARK_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Seoul',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+/** 보낸 시각(ISO 8601) → 소인 날짜 "11.04". 값이 없거나 잘못되면 "" (소인 글자를 숨긴다) */
+export function formatPostmarkDate(isoString) {
+  const date = new Date(isoString)
+  if (!isoString || Number.isNaN(date.getTime())) return ''
+  const parts = Object.fromEntries(POSTMARK_DATE_FORMAT.formatToParts(date).map((part) => [part.type, part.value]))
+  return `${parts.month}.${parts.day}`
+}
+
+/**
+ * 지역 표기 → 소인에 적을 짧은 이름. "충남 천안" → "천안", "전북" → "전북", "전주시" → "전주".
+ * 시·도 뒤에 시·군이 있으면 시·군을, 시·도만 있으면 그대로 쓴다. 이미 있는 mailboxMapper.toProvince는 시·도 필터용이라
+ * 짧은 이름 규칙(시·군 이름 우선)과 달라 따로 둔다. 없으면 "".
+ */
+export function toShortRegion(regionText) {
+  if (!regionText) return ''
+  const words = regionText.trim().split(/\s+/)
+  if (words.length >= 2) return words[words.length - 1].replace(/(시|군)$/, '') || words[words.length - 1]
+  const [only] = words
+  return PROVINCES.includes(only) ? only : only.replace(/(시|군)$/, '') || only
 }
 
 /**
@@ -42,6 +70,8 @@ export function toLetterView(raw) {
     isFirstLetter: Boolean(raw.is_first_letter),
     routeLabel: `${raw.sender_region} → ${raw.receiver_region}`,
     travelLabel: formatTravelTime(raw.travel_minutes),
+    postmarkDate: formatPostmarkDate(raw.sent_at),
+    postmarkPlace: toShortRegion(raw.sender_region),
     stampId: raw.stamp?.code ?? null,
     stampName: raw.stamp?.name ?? '',
     body: raw.body ?? '',

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import Icon from '../../shared/ui/Icon.jsx'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import MailboxTabs from '../../components/mailbox/MailboxTabs.jsx'
 import LetterCard from '../../components/mailbox/LetterCard.jsx'
@@ -29,6 +28,13 @@ const TAB_VIEW = {
   stored: { skeletonHeight: 86, skeletonRadius: 22 },
 }
 
+const DEFAULT_TAB = 'new'
+
+/** 탭 id로 쓸 수 있는 값이면 그대로, 아니면 null(없는 탭·잘못된 값) */
+function pickTab(value) {
+  return typeof value === 'string' && Object.hasOwn(TAB_VIEW, value) ? value : null
+}
+
 function renderCard(tab, item) {
   if (tab === 'chatting') return <ChatCard chat={item} />
   if (tab === 'shipping') return <ShippingCard shipping={item} />
@@ -42,24 +48,38 @@ function renderCard(tab, item) {
  * - 대화 중(5-3, 비었으면 5-4): 대화 카드
  * - 배송 중(5-5, 비었으면 5-6): 진행 바 카드 + 배달 게임 안내
  * - 보관(5-7, 비었으면 5-7-1): 안내 박스 + 보관 카드
- * 정렬 칩은 새 편지 탭에만 있고, 오른쪽 위 필터 아이콘은 새 편지·배송 중 탭에만 있다(시안).
+ * 정렬 칩은 새 편지 탭에만 있다. 배송 중 탭은 도착 임박순으로 고정이다(정렬은 mailboxApi). 오른쪽 위 필터 아이콘은 없다.
+ * 대화 중 카드는 5-15(/pen-pal/:friendId)로 이동한다.
  * 목록은 mock이다(문서 레포 API 확정 전, Notion 초안 참고). 요청과 변환은 components/mailbox에서 한다.
- * 가정: 탭·정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다.
+ * 탭은 주소 쿼리(/mailbox?tab=new|chatting|shipping|stored)에 둔다. 상세 화면에 갔다가 뒤로 나와도 보던 탭이 남는다.
+ *   시작 탭 우선순위: navigate의 state.tab(5-9 넘기기, 5-12, 5-13) > 쿼리 ?tab > 새 편지. 잘못된 값은 새 편지로 본다.
+ *   탭을 바꿀 때와 state로 열렸을 때는 replace로 쿼리를 맞춰 히스토리를 쌓지 않는다(뒤로 가기가 탭을 거슬러 오르지 않는다).
+ * 가정: 정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다(상세에 다녀오면 처음으로 돌아간다).
  * 지역 필터("지역별 ▾")는 새 편지 탭에만 있다. 선택 UI는 시안이 없어 임시로 만들었다(NewLetterFilters).
  * 개발 중 확인용: 주소 뒤에 ?mock=empty 를 붙이면 mock 데이터가 비어 비었을 때 화면이 나온다.
  */
 function MailboxPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const forceEmpty = import.meta.env.DEV && searchParams.get('mock') === 'empty'
 
-  const [tab, setTab] = useState('new')
+  const tab = pickTab(location.state?.tab) ?? pickTab(searchParams.get('tab')) ?? DEFAULT_TAB
   const [sort, setSort] = useState('latest')
   const [region, setRegion] = useState(null)
   const [regionOptions, setRegionOptions] = useState([])
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasNewDot, setHasNewDot] = useState(false)
+
+  // 주소 쿼리를 지금 탭에 맞춘다(없거나 잘못된 값, state로 열린 경우). 쓴 state는 지워서 새로고침해도 쿼리를 따른다.
+  useEffect(() => {
+    if (location.state?.tab || searchParams.get('tab') !== tab) {
+      const next = new URLSearchParams(searchParams)
+      next.set('tab', tab)
+      navigate({ pathname: location.pathname, search: `?${next.toString()}` }, { replace: true, state: null })
+    }
+  }, [tab, location, searchParams, navigate])
 
   useEffect(() => {
     let cancelled = false
@@ -83,7 +103,9 @@ function MailboxPage() {
   const changeTab = (next) => {
     if (next === tab) return
     setIsLoading(true)
-    setTab(next)
+    const params = new URLSearchParams(searchParams)
+    params.set('tab', next)
+    navigate({ pathname: location.pathname, search: `?${params.toString()}` }, { replace: true })
   }
   const changeSort = (next) => {
     if (next === sort) return
@@ -101,20 +123,12 @@ function MailboxPage() {
   // 정렬 칩은 새 편지 탭에만 있고, 비었을 때(5-2)는 없다.
   // 지역 필터를 걸어서 빈 경우는 5-2가 아니므로 칩을 남겨 필터를 풀 수 있게 한다.
   const showChips = tab === 'new' && (!isEmpty || region !== null)
-  // 필터 아이콘: 새 편지(비었을 때 제외)와 배송 중(비었을 때도 있다)
-  const showFilter = showChips || tab === 'shipping'
   const view = TAB_VIEW[tab]
 
   return (
     <main className="mailbox-page">
       <header className="mailbox-page__header">
         <h1 className="mailbox-page__title">우체통</h1>
-        {/* 필터 시트는 이 화면들의 범위 밖이라 아직 동작이 없다 */}
-        {showFilter && (
-          <button type="button" className="mailbox-page__filter" aria-label="필터">
-            <Icon name="filter" />
-          </button>
-        )}
       </header>
 
       <MailboxTabs

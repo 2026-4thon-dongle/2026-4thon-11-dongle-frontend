@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Button from '../../shared/ui/Button.jsx'
@@ -8,7 +8,12 @@ import useOverlay from '../../shared/hooks/useOverlay.js'
 import LetterArrival from '../../components/mailbox/LetterArrival.jsx'
 import LetterPaper from '../../components/mailbox/LetterPaper.jsx'
 import LetterMenuSheet from '../../components/mailbox/LetterMenuSheet.jsx'
-import { fetchLetterDetail, markLetterRead, passLetter } from '../../components/mailbox/letterReceiveApi.js'
+import {
+  fetchLetterDetail,
+  markLetterRead,
+  markLetterReplied,
+  passLetter,
+} from '../../components/mailbox/letterReceiveApi.js'
 import './LetterPage.css'
 
 const MAILBOX_PATH = '/mailbox'
@@ -20,9 +25,10 @@ const SHOW_STAMP_MAKE_ENTRY = true
  * 데이터는 mock이다(문서 레포에 편지 API가 없다). 요청과 변환은 components/mailbox에서 한다.
  * 가정:
  *  - 읽지 않은 편지는 5-8, 읽은 편지는 5-9로 연다. 5-8에서 "봉투 열기"를 누르면 읽음 처리하고 5-9로 바꾼다.
- *  - "나중에 읽을래요"는 읽음 처리 없이 우체통(/mailbox)으로 돌아간다.
- *  - "넘기기"는 보관으로 옮기고 토스트를 보여 준 뒤 우체통으로 돌아간다. 토스트 문구는 시안에 없어서 정했다.
- *  - "답장하기"는 /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다).
+ *  - "나중에 읽을래요"는 읽음 처리 없이 한 칸 뒤로 돌아가 보던 탭에 머문다(주소로 바로 들어왔으면 /mailbox). 편지는 빨간 점이 유지된 채 새 편지 탭에 남는다.
+ *  - 열어서 읽기만 한 편지는 새 편지 탭에 남되 빨간 점이 사라진다(읽음 상태는 mock 저장소에 있다).
+ *  - "넘기기"는 보관으로 옮기고 토스트("보관함으로 옮겼어요")를 보여 준 뒤 우체통의 보관 탭으로 이동한다. 토스트 문구는 시안에 없어서 정했다.
+ *  - "답장하기"는 편지를 대화 중 탭으로 옮기고(mock) /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다).
  *  - 오른쪽 위 "…"는 신고·차단 메뉴 시트를 열고, 항목은 토스트만 보여 준다(효령님 3-6~3-8과 연결 전).
  *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이다. SHOW_STAMP_MAKE_ENTRY로 켜고 끈다(눌러도 토스트만).
  * 개발 중 확인용 주소: /mailbox/101, /mailbox/102(읽지 않음 → 5-8), /mailbox/103, /mailbox/104(읽음 → 5-9)
@@ -30,6 +36,7 @@ const SHOW_STAMP_MAKE_ENTRY = true
 function LetterPage() {
   const { letterId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { openSheet, showToast, close } = useOverlay()
   // undefined: 불러오는 중, null: 없는 편지
   const [detail, setDetail] = useState(undefined)
@@ -45,6 +52,12 @@ function LetterPage() {
     }
   }, [letterId])
 
+  // 5-8 "나중에 읽을래요": 우체통에서 들어왔으면 한 칸 뒤로(보던 탭 그대로), 주소로 바로 들어왔으면 우체통으로
+  const handleLater = () => {
+    if (location.key !== 'default') navigate(-1)
+    else navigate(MAILBOX_PATH, { replace: true })
+  }
+
   const handleOpen = async () => {
     await markLetterRead(letterId)
     setOpened(true)
@@ -52,8 +65,15 @@ function LetterPage() {
 
   const handlePass = async () => {
     await passLetter(letterId)
-    showToast('보관함으로 넘겼어요')
-    navigate(MAILBOX_PATH, { replace: true })
+    showToast('보관함으로 옮겼어요')
+    // 우체통은 보관 탭으로 연다(탭은 주소가 아니라 화면 상태라 location.state로 넘긴다)
+    navigate(MAILBOX_PATH, { replace: true, state: { tab: 'stored' } })
+  }
+
+  // mock: 답장하기를 누르는 순간 대화 중 탭으로 옮긴다(실제 API에서는 서버가 답장 발송 후 옮긴다)
+  const handleReply = async () => {
+    await markLetterReplied(letterId)
+    navigate(detail.view.replyPath)
   }
 
   const openMenu = () =>
@@ -91,7 +111,7 @@ function LetterPage() {
   if (!detail.arrival.isRead && !opened) {
     return (
       <main className="letter-page letter-page--arrival">
-        <LetterArrival arrival={detail.arrival} onOpen={handleOpen} onLater={() => navigate(MAILBOX_PATH)} />
+        <LetterArrival arrival={detail.arrival} onOpen={handleOpen} onLater={handleLater} />
       </main>
     )
   }
@@ -127,7 +147,7 @@ function LetterPage() {
           <Button variant="ghost" className="letter-page__pass" onClick={handlePass}>
             넘기기
           </Button>
-          <Button onClick={() => navigate(detail.view.replyPath)}>답장하기</Button>
+          <Button onClick={handleReply}>답장하기</Button>
         </div>
         <p className="letter-page__hint">넘겨도 상대에게 알림이 가지 않아요</p>
       </footer>

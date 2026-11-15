@@ -1,11 +1,16 @@
 // 우표 획득(5-12)·보상 해금(5-13) 변환 함수. 서버(지금은 mock) 응답 → 화면용 데이터.
 // mock, 문서 레포 API 확정 전. 화면과 컴포넌트는 서버 필드 이름을 직접 쓰지 않고 이 파일의 결과만 쓴다.
 
-// 가정: 이동 경로. 우표첩은 마이(7-4, 같은 담당이지만 다른 브랜치), 편지 쓰기는 채현님 담당이다.
+// 가정: 이동 경로. 우표첩은 마이(7-4, 같은 담당이지만 다른 브랜치)이다.
+// 이동 대상은 { path, state }이다. 우체통 탭은 주소가 아니라 location.state.tab으로 연다(MailboxPage가 시작 탭으로 쓴다).
 const MAILBOX_PATH = '/mailbox'
 const STAMP_BOOK_PATH = '/mypage/stamps'
-const LETTER_WRITE_PATH = '/letter-write'
+export const HOME_PATH = '/home' // 3-1 홈(authRoutes의 /home/*)
 export const REWARD_UNLOCKED_PATH = '/mailbox/reward-unlocked'
+
+/** 5-1 새 편지 탭 / 5-3 대화 중 탭으로 가는 대상 */
+export const NEW_LETTERS_TARGET = { path: MAILBOX_PATH, state: { tab: 'new' } }
+export const CHATTING_TARGET = { path: MAILBOX_PATH, state: { tab: 'chatting' } }
 
 const ORDINALS = ['첫', '두', '세', '네']
 
@@ -18,7 +23,7 @@ function byThreshold(rewards) {
  * title        "첫 왕복 완성!" (우표 이름 + " 완성!")
  * descLines    ["하늘빛님과 편지를 주고받아", "「첫 왕복」 우표를 받았어요"]
  * progressLabel "모은 우표 6개 · 보상까지 4개" (다음 보상이 없으면 "모은 우표 N개")
- * confirmPath  "확인" 뒤에 가는 곳. 이번에 보상이 열렸으면 5-13, 아니면 우체통
+ * stampBookTarget, confirmTarget  { path, state }. "확인" 뒤에는 이번에 보상이 열렸으면 5-13, 아니면 5-3(대화 중 탭)
  */
 export function toStampGain(raw, rewards) {
   const sorted = byThreshold(rewards)
@@ -32,8 +37,8 @@ export function toStampGain(raw, rewards) {
     progressLabel: next
       ? `모은 우표 ${raw.total_count}개 · 보상까지 ${next.threshold - raw.total_count}개`
       : `모은 우표 ${raw.total_count}개`,
-    stampBookPath: STAMP_BOOK_PATH,
-    confirmPath: unlocked ? `${REWARD_UNLOCKED_PATH}?threshold=${unlocked}` : MAILBOX_PATH,
+    stampBookTarget: { path: STAMP_BOOK_PATH },
+    confirmTarget: unlocked ? { path: `${REWARD_UNLOCKED_PATH}?threshold=${unlocked}` } : CHATTING_TARGET,
   }
 }
 
@@ -45,7 +50,8 @@ export function toStampGain(raw, rewards) {
  * rewardLabel  "고향이 표정 스티커 5종"
  * usage        "편지 서명 단계에서 스티커를 붙일 수 있어요"
  * next         { ratio, label("다음 보상 · 5개: 편지지 「밤하늘」") } 또는 null (마지막 보상)
- * tryLabel, tryPath  아래 보조 버튼 이름과 경로
+ * tryLabel    아래 보조 버튼 이름(어디로 갈지는 stampRewardApi.resolveTryTarget이 정한다)
+ * confirmTarget  "확인" 뒤에 가는 곳({ path, state }): 5-3 대화 중 탭
  */
 export function toRewardUnlock(threshold, rewards) {
   const sorted = byThreshold(rewards)
@@ -68,7 +74,6 @@ export function toRewardUnlock(threshold, rewards) {
         }
       : null,
     tryLabel: reward.try_label,
-    tryPath: LETTER_WRITE_PATH,
-    confirmPath: MAILBOX_PATH,
+    confirmTarget: CHATTING_TARGET,
   }
 }

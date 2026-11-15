@@ -2,13 +2,17 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
+import useOverlay from '../../shared/hooks/useOverlay.js'
 import CelebrationFrame from '../../components/mailbox/CelebrationFrame.jsx'
 import RewardPreview from '../../components/mailbox/RewardPreview.jsx'
-import { fetchRewardUnlock } from '../../components/mailbox/stampRewardApi.js'
+import { fetchRewardUnlock, resolveTryTarget } from '../../components/mailbox/stampRewardApi.js'
 import './RewardUnlockedPage.css'
 
 // 시안 5-13은 우표 3개 보상이다. 주소에 threshold가 없으면 3으로 본다.
 const DEFAULT_THRESHOLD = 3
+
+// "스티커 써보기"를 눌렀을 때 토스트. 시안에 없어서 정한 문구이다.
+const TRY_TOAST = '답장할 때 서명 단계에서 붙여보세요'
 
 // 꾸밈 점(시안 left, top, 지름, 색). 5-13에는 배경 큰 원이 없다.
 const DOTS = [
@@ -25,12 +29,14 @@ const DOTS = [
  * 가정:
  *  - 언제 뜨는지가 정해지지 않았다(5-12 다음이라는 흐름만 있다). 어디서도 이 화면으로 보내지 않고, 주소로 직접 연다.
  *    다만 5-12에서 보상이 열렸다고 하면(`?unlock=3`) "확인"이 이 화면으로 이어진다.
- *  - 보조 버튼("스티커 써보기")은 /letter-write 로 간다. 편지 쓰기에서 해금된 보상을 어떻게 고르게 할지는 채현님과 확인 전이다.
- *  - "확인"은 우체통(/mailbox)으로 간다.
+ *  - 보조 버튼("스티커 써보기")은 토스트("답장할 때 서명 단계에서 붙여보세요")를 보여 주고 5-1 새 편지 탭으로 간다.
+ *    받은 새 편지가 없으면 3-1 홈(/home)으로 간다. 새 편지가 있는지는 mock 목록 기준이다(stampRewardApi.resolveTryTarget).
+ *  - "확인"은 5-3 대화 중 탭(/mailbox, state.tab = 'chatting')으로 간다.
  * 개발 중 확인용 주소: /mailbox/reward-unlocked (3개), ?threshold=5, ?threshold=10, ?threshold=15
  */
 function RewardUnlockedPage() {
   const navigate = useNavigate()
+  const { showToast } = useOverlay()
   const [searchParams] = useSearchParams()
   const threshold = Number(searchParams.get('threshold')) || DEFAULT_THRESHOLD
   // undefined: 불러오는 중, null: 해당하는 보상 없음
@@ -45,6 +51,12 @@ function RewardUnlockedPage() {
       cancelled = true
     }
   }, [threshold])
+
+  const handleTry = async () => {
+    const target = await resolveTryTarget()
+    showToast(TRY_TOAST)
+    navigate(target.path, { state: target.state })
+  }
 
   if (reward === undefined) {
     return (
@@ -74,10 +86,10 @@ function RewardUnlockedPage() {
         description={reward.subtitle}
         actions={
           <>
-            <Button variant="ghost" onClick={() => navigate(reward.tryPath)}>
+            <Button variant="ghost" onClick={handleTry}>
               {reward.tryLabel}
             </Button>
-            <Button onClick={() => navigate(reward.confirmPath)}>확인</Button>
+            <Button onClick={() => navigate(reward.confirmTarget.path, { state: reward.confirmTarget.state })}>확인</Button>
           </>
         }
       >
