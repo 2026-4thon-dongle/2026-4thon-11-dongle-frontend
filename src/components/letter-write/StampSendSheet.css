@@ -1,0 +1,161 @@
+/* 우표 고르고 보내기 시트(4-6)와 접힌 시트(4-6-1)를 합친 하나의 시트.
+   좌우 여백은 열려 있을 때도 접혀 있을 때도 시안의 20px이다. 안쪽 내용(StampSheet)은 이 여백 안에서 시트 너비에 맞춰 늘고 줄며,
+   삐져나오는 부분이 없다(공용 시트는 24px 여백에 내용을 4px씩 넓혀 쓰지만 여기서는 넓히지 않는다).
+   열린 모습: 바탕 surface, 위쪽 모서리 32px, 안쪽 위 14px·아래 공용 시트와 같은 간격. 제목만 공용 시트처럼 24px 위치에 둔다.
+   접힌 모습(시안 4-6-1 「바텀시트 · 접힘」): 위로 번지는 그림자, 안쪽 위 14px, 손잡이 48×5 → 10px → 안내 문구 → 10px → 버튼 54px.
+   앱 너비(--app-width) 안에서만 보이게 가운데 정렬한다. 공용 Overlay 레이어(100)보다 아래라서 토스트가 시트 위에 보인다. */
+.stamp-send {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  pointer-events: none; /* 시트와 어두운 곳만 눌린다. 접힌 동안은 뒤의 편지를 스크롤할 수 있다. */
+}
+
+.stamp-send__dim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(75, 58, 44, 0.55);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.stamp-send.is-open .stamp-send__dim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.stamp-send__sheet {
+  --pad-x: 20px;
+  --pad-bottom: 18px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 14px var(--pad-x) calc(var(--pad-bottom) + env(safe-area-inset-bottom));
+  border-radius: 32px 32px 0 0;
+  background: var(--bg-surface);
+  box-shadow: 0 -4px 18px rgba(140, 97, 51, 0.12);
+  transition:
+    padding 0.25s ease,
+    transform 0.2s ease-out;
+  pointer-events: auto;
+}
+
+.stamp-send.is-open .stamp-send__sheet {
+  --pad-bottom: 26px; /* 공용 시트의 아래 40px에서, 아래 안내 문구가 14px 내려오는 만큼(.stamp-send__content)을 뺀 값 */
+}
+
+/* 손잡이 영역: 끌기를 받는다. 손잡이 위아래 여백까지 눌린다. */
+.stamp-send__grab {
+  margin: -14px calc(var(--pad-x) * -1) 0;
+  padding: 14px var(--pad-x) 10px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.stamp-send__grab:active {
+  cursor: grabbing;
+}
+
+.stamp-send__handle {
+  width: 48px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--line-soft);
+}
+
+/* 열린 쪽과 접힌 쪽이 높이를 서로 넘겨받으며 바뀐다(한쪽이 0으로 줄고 다른 쪽이 늘어난다).
+   칸 너비는 시트 너비로 고정한다(minmax(0, 1fr)). 그러지 않으면 안쪽 우표 목록(가로로 길게 늘어선 우표)의 전체 너비에 맞춰
+   칸이 넓어져서 내용이 시트 오른쪽으로 삐져나간다. */
+.stamp-send__fold {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.25s ease,
+    opacity 0.2s ease;
+}
+
+/* 접힐 때 내용이 잘리도록 세로만 자른다. 가로는 자르지 않는다: 우표 목록은 좌우 여백(20px)만큼 넓혀 시트 끝까지 닿는다. */
+.stamp-send__fold-inner {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: visible;
+  overflow-y: clip;
+}
+
+/* StampSheet는 위(-5px)와 아래(안내 문구 -14px)로 조금 삐져나온다. 세로로 자르는 선이 그 부분을 자르지 않게
+   여유를 두고, 위 여유는 음수 여백으로 상쇄해서 간격은 그대로 둔다.
+   StampSheet의 좌우 삐져나옴은 없애고(--stamp-bleed), 우표 목록은 시트 여백(20px)만큼만 넓힌다(--stamp-pad). */
+.stamp-send__content {
+  --stamp-bleed: 0px;
+  --stamp-pad: 20px;
+  margin-top: -6px;
+  padding: 6px 0 14px;
+}
+
+.stamp-send.is-open .stamp-send__fold--full,
+.stamp-send:not(.is-open) .stamp-send__fold--peek {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* 제목: 공용 시트 제목과 같은 값. 공용 시트는 손잡이와 제목 사이가 17px(손잡이 영역 아래 12px + 5px)이고,
+   여기는 손잡이 영역 아래가 접힌 시트(시안 4-6-1)에 맞춘 10px라서 7px를 더한다. */
+.stamp-send__title {
+  margin: 7px 0 0;
+  padding: 0 4px; /* 제목은 공용 시트처럼 좌우 24px 위치에 둔다 */
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.stamp-send__peek {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.stamp-send__hint {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+  cursor: pointer;
+  touch-action: none; /* 위로 끌 때 화면이 같이 스크롤되지 않게 한다. */
+}
+
+.stamp-send__hint:disabled {
+  cursor: default;
+}
+
+.stamp-send__hint:focus-visible {
+  outline: 2px solid var(--brand-orange-deep);
+  outline-offset: 4px;
+}
+
+.ui-button.stamp-send__send {
+  width: 100%;
+}
+
+.ui-button.stamp-send__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 모션을 줄이는 설정이면 애니메이션 없이 바로 바뀐다. */
+@media (prefers-reduced-motion: reduce) {
+  .stamp-send__dim,
+  .stamp-send__sheet,
+  .stamp-send__fold {
+    transition: none;
+  }
+}

@@ -1,6 +1,9 @@
 /* 시안 4-6, 4-7 바텀시트 안쪽. 세로 간격은 시안 좌표의 차이에서 계산했다.
-   시트 틀(BottomSheet)의 좌우 여백은 24px인데 시안의 버튼·배너는 20px 여백이라 4px씩 넓혀 쓴다. */
+   시트 틀(BottomSheet)의 좌우 여백은 24px인데 시안의 버튼·배너는 20px 여백이라 4px씩 넓혀 쓴다(--stamp-bleed, 기본 4px).
+   우표 목록은 시트 끝까지 닿게 시트 좌우 여백만큼 넓힌다(--stamp-pad, 기본 24px).
+   시트 좌우 여백이 20px인 시트(StampSendSheet)는 두 값을 0px, 20px로 두어 내용이 시트 너비에 딱 맞게 한다. */
 .stamp-sheet {
+  position: relative; /* 잠금 우표 말풍선이 이 시트 안에서 우표 위에 놓인다. */
   color: var(--text-brown);
 }
 
@@ -49,7 +52,7 @@
 .stamp-sheet__places {
   display: flex;
   justify-content: space-between;
-  margin: -5px -4px 0;
+  margin: -5px calc(var(--stamp-bleed, 4px) * -1) 0;
   font: 400 var(--body-13-size) / 1.4 var(--font-jua);
 }
 
@@ -70,7 +73,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 2px -24px 0;
+  margin: 2px calc(var(--stamp-pad, 24px) * -1) 0;
   padding: 0 18px;
   overflow-x: auto;
   list-style: none;
@@ -102,20 +105,61 @@
   border-color: var(--brand-orange);
 }
 
-/* 우표 추가 칸 (점선 박스) */
-.stamp-sheet__add {
+/* 잠금 우표(시안 4-6-2): 다음에 받을 우표가 22% 흐리게 보이고, 가운데에 32px 흰 원과 자물쇠(20px)가 올라간다. 칸 크기는 다른 우표와 같다. */
+.stamp-sheet__locked {
+  position: relative;
+}
+
+.stamp-sheet__locked-art {
+  display: flex;
+  opacity: 0.22;
+}
+
+.stamp-sheet__lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 54px;
-  height: 66px;
-  margin-left: 6px;
-  padding: 0;
-  border: 2px dashed var(--line-soft);
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   background: var(--bg-surface);
   color: var(--text-sub);
-  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+/* 잠금 우표 말풍선(시안 4-6-2): 갈색 바탕, 모서리 12px, 안쪽 위아래 8px·좌우 12px, 흰 글씨(Caption/11).
+   우표 그림 위쪽 끝에서 6px 위에 놓이고, 아래 꼬리(12×6)가 우표를 가리킨다. 위치는 StampSheet.jsx가 잰다. */
+.stamp-sheet__tip {
+  position: absolute;
+  z-index: 2;
+  padding-bottom: 6px;
+  transform: translateY(-100%);
+  pointer-events: auto;
+}
+
+.stamp-sheet__tip-bubble {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--text-brown);
+  color: var(--white);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  white-space: nowrap;
+}
+
+.stamp-sheet__tip-tail {
+  position: absolute;
+  bottom: 0;
+  left: var(--tail-x);
+  width: 0;
+  height: 0;
+  border-top: 6px solid var(--text-brown);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translateX(-50%);
 }
 
 /* 4-7: 우표가 1장일 때 안내 카드 */
@@ -124,7 +168,7 @@
   align-items: center;
   gap: 12px;
   height: 98px; /* 우표 칸(77px) 위아래로 약 10px씩 띄우도록 시안(74px)보다 키웠다 */
-  margin: 3px -4px 0;
+  margin: 3px calc(var(--stamp-bleed, 4px) * -1) 0;
   padding: 0 12px 0 12px;
   border: 1.5px solid var(--line-soft);
   border-radius: 20px;
@@ -161,9 +205,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  width: calc(100% + 8px);
+  width: calc(100% + var(--stamp-bleed, 4px) * 2);
   height: 46px;
-  margin: 8px -4px 0;
+  margin: 8px calc(var(--stamp-bleed, 4px) * -1) 0;
   padding: 0 10px 0 14px;
   border: 2px solid var(--brand-orange);
   border-radius: 23px;
@@ -200,7 +244,7 @@
   display: grid;
   grid-template-columns: 110fr 200fr;
   gap: 10px;
-  margin: 18px -4px 0;
+  margin: 18px calc(var(--stamp-bleed, 4px) * -1) 0;
 }
 
 .stamp-sheet__actions .ui-button {
