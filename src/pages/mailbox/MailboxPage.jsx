@@ -28,6 +28,13 @@ const TAB_VIEW = {
   stored: { skeletonHeight: 86, skeletonRadius: 22 },
 }
 
+const DEFAULT_TAB = 'new'
+
+/** 탭 id로 쓸 수 있는 값이면 그대로, 아니면 null(없는 탭·잘못된 값) */
+function pickTab(value) {
+  return typeof value === 'string' && Object.hasOwn(TAB_VIEW, value) ? value : null
+}
+
 function renderCard(tab, item) {
   if (tab === 'chatting') return <ChatCard chat={item} />
   if (tab === 'shipping') return <ShippingCard shipping={item} />
@@ -44,7 +51,10 @@ function renderCard(tab, item) {
  * 정렬 칩은 새 편지 탭에만 있다. 배송 중 탭은 도착 임박순으로 고정이다(정렬은 mailboxApi). 오른쪽 위 필터 아이콘은 없다.
  * 대화 중 카드는 5-15(/pen-pal/:friendId)로 이동한다.
  * 목록은 mock이다(문서 레포 API 확정 전, Notion 초안 참고). 요청과 변환은 components/mailbox에서 한다.
- * 가정: 탭·정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다.
+ * 탭은 주소 쿼리(/mailbox?tab=new|chatting|shipping|stored)에 둔다. 상세 화면에 갔다가 뒤로 나와도 보던 탭이 남는다.
+ *   시작 탭 우선순위: navigate의 state.tab(5-9 넘기기, 5-12, 5-13) > 쿼리 ?tab > 새 편지. 잘못된 값은 새 편지로 본다.
+ *   탭을 바꿀 때와 state로 열렸을 때는 replace로 쿼리를 맞춰 히스토리를 쌓지 않는다(뒤로 가기가 탭을 거슬러 오르지 않는다).
+ * 가정: 정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다(상세에 다녀오면 처음으로 돌아간다).
  * 지역 필터("지역별 ▾")는 새 편지 탭에만 있다. 선택 UI는 시안이 없어 임시로 만들었다(NewLetterFilters).
  * 개발 중 확인용: 주소 뒤에 ?mock=empty 를 붙이면 mock 데이터가 비어 비었을 때 화면이 나온다.
  */
@@ -54,8 +64,7 @@ function MailboxPage() {
   const [searchParams] = useSearchParams()
   const forceEmpty = import.meta.env.DEV && searchParams.get('mock') === 'empty'
 
-  // 5-9 "넘기기"처럼 다른 화면에서 특정 탭으로 열 때만 location.state.tab을 쓴다. 쓰고 나면 지워서 새로고침하면 새 편지 탭으로 돌아간다.
-  const [tab, setTab] = useState(() => (location.state?.tab in TAB_VIEW ? location.state.tab : 'new'))
+  const tab = pickTab(location.state?.tab) ?? pickTab(searchParams.get('tab')) ?? DEFAULT_TAB
   const [sort, setSort] = useState('latest')
   const [region, setRegion] = useState(null)
   const [regionOptions, setRegionOptions] = useState([])
@@ -63,9 +72,14 @@ function MailboxPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasNewDot, setHasNewDot] = useState(false)
 
+  // 주소 쿼리를 지금 탭에 맞춘다(없거나 잘못된 값, state로 열린 경우). 쓴 state는 지워서 새로고침해도 쿼리를 따른다.
   useEffect(() => {
-    if (location.state?.tab) navigate(location.pathname + location.search, { replace: true, state: null })
-  }, [location, navigate])
+    if (location.state?.tab || searchParams.get('tab') !== tab) {
+      const next = new URLSearchParams(searchParams)
+      next.set('tab', tab)
+      navigate({ pathname: location.pathname, search: `?${next.toString()}` }, { replace: true, state: null })
+    }
+  }, [tab, location, searchParams, navigate])
 
   useEffect(() => {
     let cancelled = false
@@ -89,7 +103,9 @@ function MailboxPage() {
   const changeTab = (next) => {
     if (next === tab) return
     setIsLoading(true)
-    setTab(next)
+    const params = new URLSearchParams(searchParams)
+    params.set('tab', next)
+    navigate({ pathname: location.pathname, search: `?${params.toString()}` }, { replace: true })
   }
   const changeSort = (next) => {
     if (next === sort) return
