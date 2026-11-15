@@ -1,0 +1,39 @@
+/* 시안 7-10-3 다이얼로그 내용(지역 설정·닉네임 변경 공용). 카드 틀(radius 32, 흰 바탕)은 shared의 .ui-dialog가 그린다. */
+.leave-edit-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.leave-edit-dialog__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--bg-butter);
+}
+
+.leave-edit-dialog__title {
+  margin: 18px 0 0;
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.leave-edit-dialog__stay {
+  width: 100%;
+  margin-top: 20px;
+  padding: 0 4px;
+}
+
+/* "저장 안 하고 나갈게요": 눈에 덜 띄는 글씨 버튼 */
+.leave-edit-dialog__leave {
+  margin-top: 10px;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--text-hint);
+  font: 400 14px / 1.4 var(--font-jua);
+  cursor: pointer;
+}

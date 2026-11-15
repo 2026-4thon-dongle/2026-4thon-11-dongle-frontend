@@ -4,11 +4,12 @@ import './MenuList.css'
 
 /**
  * 마이의 메뉴 카드(7-1). 줄마다 아이콘, 이름, 오른쪽 값, 화살표가 있고 누르면 해당 화면으로 간다.
- * @param {Array<{id: string, icon: string, label: string, value: string, to: string}>} items mypageMapper.toMyPage의 menu
+ * @param {Array<{id: string, icon: string, label: string, value: string, to: string}>} items mypageMapper.toMyPage의 menu (설정 7-1-1도 같은 모양을 쓴다)
+ * @param {string} [ariaLabel] 스크린 리더용 이름
  */
-function MenuList({ items }) {
+function MenuList({ items, ariaLabel = '마이 메뉴' }) {
   return (
-    <nav className="menu-list" aria-label="마이 메뉴">
+    <nav className="menu-list" aria-label={ariaLabel}>
       {items.map((item) => (
         <Link key={item.id} to={item.to} className="menu-list__row">
           <span className="menu-list__icon">

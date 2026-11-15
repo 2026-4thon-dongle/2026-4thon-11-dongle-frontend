@@ -13,7 +13,7 @@ import './MyPage.css'
 /**
  * 7-1 마이. 프로필, 본가·거주 지역, 활동 숫자, 메뉴.
  * 데이터는 mock이다(문서 레포 API 확정 전, GET /api/users/me/ 필드 이름을 따랐다). 요청과 변환은 components/mypage에서 한다.
- * 오른쪽 위 설정 아이콘은 /mypage/settings 로 가정했다(시안에 설정 화면이 없다).
+ * 오른쪽 위 설정 아이콘은 설정 화면(7-1-1, /mypage/settings)으로 간다.
  */
 function MyPage() {
   const [profile, setProfile] = useState(null)

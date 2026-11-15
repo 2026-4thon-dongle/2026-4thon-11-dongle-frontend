@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
-import Chip from '../../shared/ui/Chip.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import { regionLabel } from '../../shared/region/regions.js'
 import HeaderSaveButton from '../../components/mypage/HeaderSaveButton.jsx'
 import RegionSummaryCard from '../../components/mypage/RegionSummaryCard.jsx'
+import LeaveEditDialog from '../../components/mypage/LeaveEditDialog.jsx'
 import RegionPickerSheet from '../../components/mypage/RegionPickerSheet.jsx'
 import { fetchRegionSettings, saveRegions } from '../../components/mypage/mypageApi.js'
 import { MYPAGE_PATHS } from '../../components/mypage/mypagePaths.js'
@@ -23,15 +23,20 @@ const sameRegions = (a, b) => a.length === b.length && a.every((item, index) => 
  *  - 설정 화면으로 들어오는 길이 시안에 없어서 /mypage/regions 주소로 직접 연다. 7-1의 "지역 수정 ›"도 이 주소로 온다.
  *  - 지역 카드를 누르면 바텀시트에 공용 지역 선택기(shared/region)를 띄운다. 이 시트는 시안에 없다.
  *  - 바뀐 게 없으면 저장을 누를 수 없다. 저장하면 토스트를 보여 주고 마이(/mypage)로 간다. 토스트 문구는 시안에 없어서 정했다.
- *  - "자주 다니던 동네"는 mock 전용 표시이다(명세에 없음). "+ 다시 칠하기"는 아직 동작이 없어서 토스트만 보여 준다.
+ *  - 저장하지 않고 나가기(7-10-3): 바꾼 값이 있을 때 헤더의 뒤로 가기를 누르면 확인 팝업("저장하지 않고 나갈까요?")을 띄운다.
+ *    "계속 수정할게요"는 팝업만 닫고, "저장 안 하고 나갈게요"는 바꾼 내용을 버리고 이전 화면으로 간다. 딤이나 Esc로 닫으면 계속 수정하는 것과 같다.
+ *    시안에 닫기 방법이 따로 없어서 shared 팝업의 기본 동작을 따랐다.
+ *    앱이 BrowserRouter라서 useBlocker를 쓸 수 없다. 브라우저·기기 뒤로 가기와 주소창 이동, 새로고침은 막지 못한다.
+ * 개발 중 확인용: 주소 뒤에 ?dialog=leave 를 붙이면 확인 팝업이 열린 채로 시작한다(시안 7-10-3). 바꾼 값이 없어도 열린다.
  */
 function RegionsPage() {
   const navigate = useNavigate()
-  const { openSheet, showToast } = useOverlay()
+  const { openSheet, openDialog, showToast, close } = useOverlay()
+  const [searchParams] = useSearchParams()
+  const autoOpened = useRef(false)
   const [original, setOriginal] = useState(null)
   const [hometowns, setHometowns] = useState([])
   const [residence, setResidence] = useState(null)
-  const [frequentAreas, setFrequentAreas] = useState([])
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
@@ -41,7 +46,6 @@ function RegionsPage() {
       setOriginal({ hometowns: settings.hometowns, residence: settings.residence })
       setHometowns(settings.hometowns)
       setResidence(settings.residence)
-      setFrequentAreas(settings.frequentAreas)
     })
     return () => {
       cancelled = true
@@ -66,6 +70,36 @@ function RegionsPage() {
       setIsSaving(false)
     }
   }
+
+  const openLeaveDialog = () =>
+    openDialog({
+      label: '저장하지 않고 나가기 확인',
+      content: (
+        <LeaveEditDialog
+          onStay={close}
+          onLeave={() => {
+            close()
+            navigate(-1)
+          }}
+        />
+      ),
+    })
+
+  // 바꾼 값이 있을 때만 확인한다. 저장 중에는 저장이 끝나면 알아서 이동하므로 건드리지 않는다.
+  const handleBack = () => {
+    if (isChanged && !isSaving) openLeaveDialog()
+    else navigate(-1)
+  }
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || autoOpened.current) return
+    if (searchParams.get('dialog') === 'leave') {
+      autoOpened.current = true
+      openLeaveDialog()
+    }
+    // 처음 한 번만 연다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const openHometownSheet = () =>
     openSheet({
@@ -100,7 +134,7 @@ function RegionsPage() {
 
   return (
     <main className="regions-page">
-      <Header title="지역 설정" right={<HeaderSaveButton onClick={handleSave} disabled={!canSave} />} />
+      <Header title="지역 설정" onBack={handleBack} right={<HeaderSaveButton onClick={handleSave} disabled={!canSave} />} />
 
       <div className="regions-page__body">
         {!isReady ? (
@@ -125,20 +159,6 @@ function RegionsPage() {
               ariaLabel="거주 지역 고르기"
               onClick={openResidenceSheet}
             />
-
-            {frequentAreas.length > 0 && (
-              <>
-                <h2 className="regions-page__label regions-page__label--next">자주 다니던 동네</h2>
-                <div className="regions-page__chips">
-                  {frequentAreas.map((area) => (
-                    <Chip key={area.name} variant="light">
-                      {area.label}
-                    </Chip>
-                  ))}
-                  <Chip onClick={() => showToast('아직 준비 중이에요')}>+ 다시 칠하기</Chip>
-                </div>
-              </>
-            )}
 
             <p className="regions-page__notice">
               <Mascot pose="face" size={56} />

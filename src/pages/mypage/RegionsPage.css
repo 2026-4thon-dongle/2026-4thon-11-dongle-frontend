@@ -27,19 +27,13 @@
   margin-top: 14px;
 }
 
-.regions-page__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 6px;
-}
-
-/* 적용 안내: 높이 84, radius 20, butter */
+/* 적용 안내: 높이 84, radius 20, butter. 시안에서 거주 지역 카드 아래 14px */
 .regions-page__notice {
   display: flex;
   align-items: center;
   gap: 10px;
   min-height: 84px;
-  margin: 16px 0 0;
+  margin: 14px 0 0;
   padding: 8px 14px 8px 10px;
   border-radius: 20px;
   background: var(--bg-butter);

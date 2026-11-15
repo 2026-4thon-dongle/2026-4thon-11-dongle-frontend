@@ -1,0 +1,32 @@
+/* 시안 7-1-1 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. */
+.settings-page {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.settings-page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px 20px 0;
+}
+
+/* 섹션 이름: Label 14, 보조 글씨색. 카드와는 6px */
+.settings-page__label {
+  margin: 0 0 -10px;
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+}
+
+.settings-page__label--next {
+  margin-top: 2px;
+}
+
+.settings-page__version {
+  margin: 4px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  text-align: center;
+}

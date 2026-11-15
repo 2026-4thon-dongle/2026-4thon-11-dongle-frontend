@@ -77,13 +77,6 @@ export const MOCK_DRAFTS = [
 // 닉네임 중복 확인(7-9)용 mock. 이미 쓰고 있는 닉네임 목록이다. 실제로는 GET /api/auth/nickname/check/가 판단한다.
 export const MOCK_TAKEN_NICKNAMES = ['하늘빛', '갈매기', '귤껍질', '감자왕', '별빛', '바람']
 
-// "자주 다니던 동네"(7-10). mock 전용 — 문서 레포에 이 필드가 없다. level은 동그라미(●) 개수(1~3)이다.
-export const MOCK_FREQUENT_AREAS = [
-  { name: '돈암동', level: 3 },
-  { name: '정릉동', level: 2 },
-  { name: '안암동', level: 1 },
-]
-
 // 차단 목록(7-12). GET /api/blocks/ 응답 모양(api/safety.md): { count, next, previous, results: [{ user: { id, nickname }, created_at }] }
 // mock 전용: region("경북 경주") — 시안 7-12는 "경북 경주 · 11월 1일 차단"처럼 지역도 보여 주지만 명세에는 user{id, nickname}뿐이다.
 export const MOCK_BLOCKS = {

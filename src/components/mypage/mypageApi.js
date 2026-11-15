@@ -9,6 +9,7 @@
 //   PUT /api/users/me/regions/    → fetchRegionSettings, saveRegions (실제로 호출하지 않는다. 메모리 값만 바꾼다)
 //   GET·PATCH /api/users/me/settings/ → fetchSettings, updateSettings (실제로 호출하지 않는다)
 //   GET /api/blocks/, DELETE /api/blocks/{user_id}/ → fetchBlocks, unblock (실제로 호출하지 않는다)
+//   GET /api/users/me/, /settings/, GET /api/blocks/ → fetchSettingsHome (설정 7-1-1)
 //   POST /api/auth/logout/, DELETE /api/users/me/ → logout, withdraw (실제로 호출하지 않는다. withdraw는 아무것도 지우지 않는다)
 // 반환값은 항상 mypageMapper의 화면용 데이터이다.
 import {
@@ -17,7 +18,6 @@ import {
   MOCK_SETTINGS,
   MOCK_DRAFTS,
   MOCK_TAKEN_NICKNAMES,
-  MOCK_FREQUENT_AREAS,
   MOCK_BLOCKS,
 } from '../../shared/mocks/mypage.js'
 import { PROVINCES, CITIES, DISTRICTS, METROPOLITAN, regionLabel } from '../../shared/region/regions.js'
@@ -33,6 +33,7 @@ import {
   toNicknameStatus,
   toNotificationSettings,
   toBlockedUsers,
+  toSettingsHome,
 } from './mypageMapper.js'
 
 // 삭제가 7-1의 "N통"에도 반영되도록 메모리에 복사해 둔다(새로고침하면 처음 mock으로 돌아간다). mock 전용.
@@ -46,6 +47,11 @@ let settings = { ...MOCK_SETTINGS }
 
 export async function fetchMyPage() {
   return toMyPage({ ...me, stats: { ...me.stats, draft_count: drafts.length } }, settings)
+}
+
+/** 설정(7-1-1). 닉네임·지역·알림·차단 수를 한 번에 모아 메뉴 줄로 만든다. 7-9~7-13에서 바꾼 값이 곧바로 보인다. */
+export async function fetchSettingsHome() {
+  return toSettingsHome(me, settings, blocks.length)
 }
 
 export async function fetchDrafts() {
@@ -118,10 +124,10 @@ export async function updateNickname(nickname) {
 }
 
 /**
- * 지역 설정(7-10). GET /api/users/me/의 hometowns·residence와 자주 다니던 동네(mock 전용)를 화면용으로 바꿔 준다.
+ * 지역 설정(7-10). GET /api/users/me/의 hometowns·residence를 화면용으로 바꿔 준다.
  */
 export async function fetchRegionSettings() {
-  return toRegionSettings(me, MOCK_FREQUENT_AREAS)
+  return toRegionSettings(me)
 }
 
 // 지역 선택기({province, district})의 지역에 임시 id를 붙인다. 실제 id는 GET /api/regions/에 있고 아직 연결 전이다. mock 전용.
