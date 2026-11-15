@@ -4,8 +4,9 @@ import PaperPreview from '../../components/letter-write/PaperPreview.jsx'
 import useStepNavigation from '../../components/letter-write/useStepNavigation.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
 import useLetterMaterials, { findMaterial } from '../../components/letter-write/useLetterMaterials.js'
+import useReplyDiary, { firstLineOf } from '../../components/letter-write/useReplyDiary.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
-import { PAPERS, MOCK_STAMP_COUNT, MOCK_DIARY_EXCERPT } from '../../components/letter-write/data.js'
+import { PAPERS, MOCK_STAMP_COUNT } from '../../components/letter-write/data.js'
 import Icon from '../../shared/ui/Icon.jsx'
 import './PaperPage.css'
 
@@ -16,6 +17,10 @@ function PaperPage() {
   const { reply } = draft
   // 잠금·새 편지지 표시는 서버 값을 따른다. 서버에서 못 받았으면(서버 없이 화면만 볼 때) 기존 mock 규칙을 쓴다.
   const { materials } = useLetterMaterials()
+  // 답장하는 일기: 배너에 일기 작성자 닉네임과 본문 첫 줄을 서버에서 받은 값으로 보여 준다.
+  const { diary } = useReplyDiary(reply.diaryId)
+  const nickname = diary?.author.nickname ?? reply.nickname
+  const excerpt = firstLineOf(diary?.body)
 
   return (
     <StepLayout
@@ -30,9 +35,8 @@ function PaperPage() {
         <div className="paper-page__reply">
           <Icon name="letter" className="paper-page__reply-icon" />
           <div className="paper-page__reply-text">
-            <p className="paper-page__reply-title">Re. {reply.nickname}님의 고향 일기</p>
-            {/* mock: 일기 데이터가 연결되면 일기 본문 앞부분으로 바꾼다. */}
-            <p className="paper-page__reply-excerpt">{MOCK_DIARY_EXCERPT}</p>
+            <p className="paper-page__reply-title">Re. {nickname}님의 고향 일기</p>
+            {excerpt && <p className="paper-page__reply-excerpt">{excerpt}</p>}
           </div>
         </div>
       )}

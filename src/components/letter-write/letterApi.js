@@ -153,6 +153,19 @@ export function fetchLetterRoute(letterId) {
   return request(`/api/letters/${letterId}/route/`)
 }
 
+// ── 답장하는 일기 (api/feed.md) ──
+
+/**
+ * 답장하는 일기 하나(피드 상세). 편지 쓰기 첫 화면(4-1)의 「Re. 닉네임님의 고향 일기」 배너에 쓴다.
+ * 내 일기도 볼 수 있고, 차단·숨김·공개 범위 때문에 볼 수 없으면 404 NOT_FOUND이다.
+ * @param {number|string} diaryId
+ * @returns {Promise<{ id: number, author: { id: number, nickname: string }, region: object, body: string,
+ *   can_reply: boolean, reply_block_reason: string|null, delivery: object|null, my_draft: object|null }>}
+ */
+export function fetchFeedDiary(diaryId) {
+  return request(`/api/feed/diaries/${diaryId}/`)
+}
+
 // ── 우표 목록 (api/stamps.md). 우표 선택(4-6)의 잠금 우표 칸에 쓴다. ──
 
 /**
