@@ -54,7 +54,8 @@ function StampPage() {
           onAdd={() => showToast('우표 만들기는 준비 중이에요')}
           onGame={() => showToast('직접 배달하기는 준비 중이에요')}
           onSend={(stampId) => {
-            // TODO: 편지 보내기 API가 정해지면 여기서 보내고 받은 편지 번호(letterId)로 이동한다.
+            // TODO: 편지 보내기 API(POST /api/letters/, multipart)를 연결하면 여기서 보내고 받은 편지 번호(letterId)로 이동한다.
+            //   서명 PNG와 스티커 JSON은 buildSignatureParts(signature.ops)로 만든다(letterPayload.js).
             updateDraft({ stampId })
             clearLetterDraft(reply) // 보낸 편지는 임시저장에서 지운다.
             close()
