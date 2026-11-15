@@ -4,14 +4,32 @@ import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
 
 // 편지지. lockedStamps가 있으면 우표가 그만큼 모여야 열린다. badge는 이름 아래 작은 표시.
 // dark는 바탕이 어두운 편지지다(서명 펜 기본 색을 흰색으로 바꾼다).
+// code는 서버 편지지 코드이다(api/letters.md). id는 화면의 CSS 클래스(paper--ruled)와 에셋 이름에 묶여 있어 그대로 두고,
+// 서버와 주고받을 때만 paperCodeOf / paperIdOf로 바꾼다.
 export const PAPERS = [
-  { id: 'basic', name: '기본' },
-  { id: 'ruled', name: '줄노트' },
-  { id: 'check', name: '체크' },
-  { id: 'mascot', name: '고향이 테두리' },
-  { id: 'night', name: '밤하늘', badge: 'NEW', dark: true },
-  { id: 'gold', name: '금박 엽서', lockedStamps: 15 },
+  { id: 'basic', code: 'basic', name: '기본' },
+  { id: 'ruled', code: 'lined', name: '줄노트' },
+  { id: 'check', code: 'grid', name: '체크' },
+  { id: 'mascot', code: 'cat-border', name: '고향이 테두리' },
+  { id: 'night', code: 'night-sky', name: '밤하늘', badge: 'NEW', dark: true },
+  { id: 'gold', code: 'gold-postcard', name: '금박 엽서', lockedStamps: 15 },
 ]
+
+/** 편지지 id → 서버 코드. 모르는 id는 기본 편지지('basic')로 본다. */
+export const paperCodeOf = (paperId) => PAPERS.find((paper) => paper.id === paperId)?.code ?? 'basic'
+
+/** 서버 편지지 코드 → 편지지 id. 모르는 코드는 기본 편지지('basic')로 본다. */
+export const paperIdOf = (code) => PAPERS.find((paper) => paper.code === code)?.id ?? 'basic'
+
+// 글씨체 id → 서버 코드. 다른 것은 id와 코드가 같고, '맛있는체'만 다르다(shared/fonts/letterFonts.js는 'tasty', 서버는 'delicious').
+// shared의 id를 서버 코드로 바꾸면 이 표는 필요 없다.
+const FONT_CODE_BY_ID = { tasty: 'delicious' }
+
+/** 글씨체 id → 서버 코드 */
+export const fontCodeOf = (fontId) => FONT_CODE_BY_ID[fontId] ?? fontId
+
+/** 서버 글씨체 코드 → 글씨체 id */
+export const fontIdOf = (code) => Object.keys(FONT_CODE_BY_ID).find((id) => FONT_CODE_BY_ID[id] === code) ?? code
 
 /** 바탕이 어두운 편지지인지 */
 export const isDarkPaper = (paperId) => PAPERS.some((paper) => paper.id === paperId && paper.dark)

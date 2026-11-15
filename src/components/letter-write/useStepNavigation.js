@@ -37,16 +37,21 @@ export default function useStepNavigation(step) {
       label: '쓰던 편지 저장',
       content: ({ close }) =>
         createElement(ExitConfirm, {
-          onDiscard: () => {
+          onDiscard: async () => {
             close()
-            clearLetterDraft(draft.reply)
+            await clearLetterDraft(draft.reply, draft.draftId)
             resetDraft()
             leave()
           },
-          // 임시저장은 지금 이 브라우저에 저장한다(mock). 저장 방식(API)이 정해지면 letterDraftStorage만 바꾼다.
-          onSave: () => {
+          // 임시저장은 서버에 한다. 저장하지 못하면 쓰던 내용을 잃지 않게 나가지 않고 알려 준다.
+          onSave: async () => {
             close()
-            saveLetterDraft(draft, step)
+            try {
+              await saveLetterDraft(draft)
+            } catch (error) {
+              showToast(error.message)
+              return
+            }
             showToast('임시저장했어요')
             leave()
           },

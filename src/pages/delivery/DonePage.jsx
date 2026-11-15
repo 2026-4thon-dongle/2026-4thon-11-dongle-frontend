@@ -1,29 +1,56 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Stamp from '../../shared/ui/Stamp.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
-import { MOCK_STAMPS } from '../../shared/mocks/stamps.js'
 import { MOCK_DELIVERY, MOCK_EARNED_STAMP_ID } from '../../components/delivery/data.js'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
+import useDeliveryInfo from '../../components/delivery/useDeliveryInfo.js'
 import './DonePage.css'
 
-/** 4-11 발송 완료: 편지가 출발했고 도착까지 얼마나 남았는지 보여준다. */
+// 서버에서 받지 못했을 때(서버 없이 화면만 볼 때) 보여 주는 mock 배송 정보
+function mockInfo() {
+  const sentAt = Date.now() - MOCK_DELIVERY.elapsedMinutes * 60_000
+  return {
+    from: MOCK_DELIVERY.from,
+    to: MOCK_DELIVERY.to,
+    recipient: MOCK_DELIVERY.recipient,
+    sentAt: new Date(sentAt).toISOString(),
+    arrivesAt: new Date(sentAt + MOCK_DELIVERY.totalMinutes * 60_000).toISOString(),
+    direction: 'sent',
+    mapTheme: null,
+    towns: [],
+    grantedStamps: [{ code: MOCK_EARNED_STAMP_ID, name: '첫 편지' }],
+  }
+}
+
+/**
+ * 4-11 발송 완료: 편지가 출발했고 도착까지 얼마나 남았는지 보여준다.
+ * 발송 직후에는 편지 보내기 응답(location state의 letter)으로, 새로고침 등으로 없으면 배송 경로 API로 보여 준다.
+ */
 function DonePage() {
-  const navigate = useNavigate()
   const { letterId } = useParams()
+  const { state } = useLocation()
+  const { info } = useDeliveryInfo({ letterId, letter: state?.letter, fallback: mockInfo })
+  if (!info) return null
+  return <DoneView info={info} letterId={letterId} />
+}
+
+function DoneView({ info, letterId }) {
+  const navigate = useNavigate()
   const { showToast } = useOverlay()
-  const { from, to, totalMinutes, elapsedMinutes } = MOCK_DELIVERY
-  const { remainingMinutes, progress } = useArrivalCountdown({ totalMinutes, elapsedMinutes })
-  const earned = MOCK_STAMPS.find((stamp) => stamp.id === MOCK_EARNED_STAMP_ID)
+  const { from, to, sentAt, arrivesAt } = info
+  const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
+  // 새로 받은 우표: 첫 편지를 보내는 등 우표를 받았을 때만 알린다. 여러 장이면 첫 장을 보여 준다.
+  const earned = info.grantedStamps[0]
 
   return (
     <main className="done-page">
-      {/* 새로 받은 우표 알림: 잠깐 보였다가 사라진다. mock: 획득 API가 정해지면 받은 우표가 있을 때만 보여준다. */}
+      {/* 새로 받은 우표 알림: 잠깐 보였다가 사라진다. */}
       {earned && (
         <div className="done-page__earned" role="status">
-          <Stamp id={earned.id} size={28} />
+          <Stamp id={earned.code} size={28} />
           <p className="done-page__earned-text">「{earned.name}」 우표를 받았어요!</p>
         </div>
       )}

@@ -3,6 +3,7 @@ import StepFooter from '../../components/letter-write/StepFooter.jsx'
 import PaperPreview from '../../components/letter-write/PaperPreview.jsx'
 import useStepNavigation from '../../components/letter-write/useStepNavigation.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
+import useLetterMaterials, { findMaterial } from '../../components/letter-write/useLetterMaterials.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
 import { PAPERS, MOCK_STAMP_COUNT, MOCK_DIARY_EXCERPT } from '../../components/letter-write/data.js'
 import Icon from '../../shared/ui/Icon.jsx'
@@ -13,6 +14,8 @@ function PaperPage() {
   const { goNext, goBack } = useStepNavigation(1)
   const { draft, updateDraft } = useLetterDraft()
   const { reply } = draft
+  // 잠금·새 편지지 표시는 서버 값을 따른다. 서버에서 못 받았으면(서버 없이 화면만 볼 때) 기존 mock 규칙을 쓴다.
+  const { materials } = useLetterMaterials()
 
   return (
     <StepLayout
@@ -38,7 +41,10 @@ function PaperPage() {
 
       <ul className="paper-page__grid">
         {PAPERS.map((paper) => {
-          const locked = paper.lockedStamps > MOCK_STAMP_COUNT
+          const server = findMaterial(materials?.stationeries, paper.code)
+          const locked = server ? !server.unlocked : paper.lockedStamps > MOCK_STAMP_COUNT
+          const badge = server ? (server.is_new ? 'NEW' : null) : paper.badge
+          const lockLabel = server?.unlock_condition ?? `우표 ${paper.lockedStamps}개`
           const selected = draft.paperId === paper.id
           return (
             <li key={paper.id}>
@@ -51,12 +57,8 @@ function PaperPage() {
               >
                 <PaperPreview paperId={paper.id} />
                 <span className="paper-card__name">{paper.name}</span>
-                {paper.badge && <span className="paper-card__badge">{paper.badge}</span>}
-                {locked && (
-                  <span className="paper-card__badge paper-card__badge--stamps">
-                    우표 {paper.lockedStamps}개
-                  </span>
-                )}
+                {badge && !locked && <span className="paper-card__badge">{badge}</span>}
+                {locked && <span className="paper-card__badge paper-card__badge--stamps">{lockLabel}</span>}
                 {selected && (
                   <span className="paper-card__check">
                     <Icon name="check" size={16} />

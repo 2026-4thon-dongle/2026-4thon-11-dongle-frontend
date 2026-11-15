@@ -96,8 +96,8 @@ export function DevDiaryReply() {
       <Button onClick={() => startLetter(MOCK_DIARY)}>편지로 답장하기</Button>
       <Button
         variant="secondary"
-        onClick={() => {
-          clearLetterDraft(MOCK_DIARY)
+        onClick={async () => {
+          await clearLetterDraft(MOCK_DIARY)
           showToast('임시저장을 지웠어요')
         }}
       >
