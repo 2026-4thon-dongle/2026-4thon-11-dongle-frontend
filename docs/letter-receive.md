@@ -8,14 +8,20 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5
 | 5-8 새 편지 도착 | `/mailbox/:letterId` | 읽지 않은 편지(가정). "봉투 열기" → 읽음 처리 후 5-9, "나중에 읽을래요" → `/mailbox` |
 | 5-9 편지 열람 | `/mailbox/:letterId` | 읽은 편지. 넘기기(토스트 "보관함으로 옮겼어요" 후 `/mailbox`의 보관 탭), 답장하기, 오른쪽 위 "…"(시트) |
 | 5-10, 5-11 답장 | `/letter-write?letterId=…&nickname=…&region=…` | 새로 만들지 않고 편지 쓰기(4-1, 4-2)로 연결만 한다 |
-| 5-12 우표 획득 | `/mailbox/stamp-gained` | "우표첩 보기" → `/mypage/stamps`, "확인" → `/mailbox` |
-| 5-13 보상 해금 | `/mailbox/reward-unlocked` | "스티커 써보기" → `/letter-write`, "확인" → `/mailbox` |
+| 5-12 우표 획득 | `/mailbox/stamp-gained` | "우표첩 보기"(흰 버튼) → `/mypage/stamps`, "확인" → 5-3 대화 중 탭(보상이 열렸으면 5-13 먼저) |
+| 5-13 보상 해금 | `/mailbox/reward-unlocked` | "스티커 써보기" → 토스트 후 5-1 새 편지 탭(새 편지가 없으면 3-1 `/home`), "확인" → 5-3 대화 중 탭 |
 | 5-14 펜팔 친구 | `/pen-pal` | 친구 카드 → 5-15 |
 | 5-15 주고받은 편지 | `/pen-pal/:friendId` | 시간순 카드, "답장 쓰기" → 5-10으로 연결 |
 
 - 개발 모드에서만 동작하는 확인 주소: `/mailbox/101`·`102`(5-8), `/mailbox/103`·`104`(5-9), `/mailbox/reward-unlocked?threshold=3|5|10|15`, `/mailbox/stamp-gained?unlock=3`("확인"이 5-13으로 이어짐), `/pen-pal?mock=empty`, `/pen-pal/1`·`2`·`3`.
 - 5-12, 5-13은 언제 뜨는지가 정해지지 않아 어디에서도 보내지 않고 주소로 직접 연다.
 - 읽음·답장·넘김은 이번 접속의 메모리(`mailboxMockStore.js`)에만 있고 우체통 목록(5-1, 5-3, 5-7)에 반영된다. 새로고침하면 처음으로 돌아간다. 탭 이동 규칙은 `docs/mailbox.md`를 본다.
+
+## 탭으로 이동하는 방식
+
+- 우체통 탭은 주소가 아니라 `navigate('/mailbox', { state: { tab: 'new' | 'chatting' | 'stored' } })`로 연다. `MailboxPage`가 시작 탭으로 쓰고 바로 지운다(새로고침하면 새 편지 탭).
+- 5-12·5-13 "확인" → `tab: 'chatting'`, 5-13 "스티커 써보기" → `tab: 'new'`(토스트 "답장할 때 서명 단계에서 붙여보세요", 새 편지가 없으면 토스트 후 `/home`).
+- "새 편지가 있는지"는 mock 기준으로 `mailboxApi.fetchMailboxLetters('new')`의 목록이 비었는지 본다(`stampRewardApi.resolveTryTarget`). 연동하면 새 편지 개수 응답으로 바꾼다.
 
 ## 애니메이션 (CSS만, `prefers-reduced-motion`이면 모두 끄고 끝난 모습만 보인다)
 
