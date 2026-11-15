@@ -1,0 +1,4 @@
+/* 접힌 시트(StampSendSheet)는 화면 아래에 떠 있으므로, 편지 맨 끝이 가려지지 않게 그 높이(약 131px)에 여유를 더해 비운다. */
+.stamp-page__sheet-space {
+  height: calc(150px + env(safe-area-inset-bottom));
+}

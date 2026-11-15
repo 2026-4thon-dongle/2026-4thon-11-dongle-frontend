@@ -60,8 +60,8 @@ export function DevStampSheet() {
           from="서울 성북"
           to="충남 천안"
           arrival="약 6시간"
+          lockedStamp={{ id: 'first-roundtrip', art: 'first-roundtrip', name: '첫 왕복', hint: '편지를 주고받으면 받을 수 있어요' }}
           onReview={close}
-          onAdd={() => showToast('우표 추가')}
           onGame={() => showToast('직접 배달하기')}
           onSend={(stampId) => {
             showToast(`보내기: ${stampId}`)

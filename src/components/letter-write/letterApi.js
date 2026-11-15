@@ -153,6 +153,18 @@ export function fetchLetterRoute(letterId) {
   return request(`/api/letters/${letterId}/route/`)
 }
 
+// ── 우표 목록 (api/stamps.md). 우표 선택(4-6)의 잠금 우표 칸에 쓴다. ──
+
+/**
+ * 우표 목록과 보유 여부 (STAMP-02). 전체 우표에 owned(보유 여부)가 붙어 온다.
+ * @param {'achievement'|'decoration'} [kind] 없으면 전부
+ * @returns {Promise<{ owned_count: number, total_count: number, stamps: Array<{ code: string, number: number, name: string,
+ *   kind: string, owned: boolean }> }>}
+ */
+export function fetchStampList(kind) {
+  return request('/api/stamps/', { query: { kind } })
+}
+
 // ── 임시저장 (LETTER-11). 서명·스티커·우표는 저장하지 않는다(명세, 가정). ──
 
 /**
