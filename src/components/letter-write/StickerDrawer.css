@@ -46,3 +46,9 @@
   box-shadow: 0 6px 16px rgba(140, 97, 51, 0.12);
   cursor: pointer;
 }
+
+/* 아직 열리지 않은 스티커(우표를 더 모아야 한다) */
+.sticker-drawer__item.is-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

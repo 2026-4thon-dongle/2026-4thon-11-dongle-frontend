@@ -9,6 +9,8 @@ import {
   getLetterFontFamily,
   loadLetterFont,
 } from '../../shared/fonts/letterFonts.js'
+import { fontCodeOf, fontIdOf } from './data.js'
+import useLetterMaterials, { findMaterial } from './useLetterMaterials.js'
 import './FontPicker.css'
 
 /**
@@ -21,10 +23,25 @@ function FontPicker({ fontId, onChange }) {
   const [open, setOpen] = useState(false)
   const current = getLetterFont(fontId)
 
+  // 잠금은 서버 값을 따른다. 서버에서 못 받았으면(서버 없이 화면만 볼 때) 기존 mock 목록을 쓴다.
+  const { materials } = useLetterMaterials()
+  const isLocked = (font) => {
+    const server = findMaterial(materials?.fonts, fontCodeOf(font.id))
+    return server ? !server.unlocked : false
+  }
+  const fonts = LETTER_FONTS.filter((font) => !isLocked(font))
+  const lockedFonts = materials
+    ? materials.fonts
+        .filter((font) => !font.unlocked)
+        .map((font) => ({ id: fontIdOf(font.code), name: font.name, condition: font.unlock_condition }))
+    : LOCKED_LETTER_FONTS.map((font) => ({ id: font.id, name: font.name, condition: `우표 ${font.unlockCondition.count}개` }))
+
   // 목록에서 모든 글씨체를 미리보기로 보여 주므로, 열 때 파일을 받는다.
   useEffect(() => {
-    if (open) LETTER_FONTS.forEach((font) => loadLetterFont(font.id))
-  }, [open])
+    if (open) fonts.forEach((font) => loadLetterFont(font.id))
+    // fonts는 렌더마다 새로 만들어지므로 목록이 바뀌는 때(서버 응답)만 따른다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, materials])
 
   useEffect(() => {
     if (!open) return undefined
@@ -49,7 +66,7 @@ function FontPicker({ fontId, onChange }) {
             onClick={() => setOpen(false)}
           />
           <div className="font-picker__panel" role="listbox" aria-label="글씨체">
-            {LETTER_FONTS.map((font) => {
+            {fonts.map((font) => {
               const selected = font.id === fontId
               return (
                 <button
@@ -74,12 +91,12 @@ function FontPicker({ fontId, onChange }) {
               )
             })}
 
-            {/* 잠긴 글씨체: 우표를 모으면 열린다. 해제 조건은 우표 데이터가 연결될 때 정한다. */}
-            {LOCKED_LETTER_FONTS.map((font) => (
+            {/* 잠긴 글씨체: 우표를 모으면 열린다. 해제 조건 문구는 서버가 준다. */}
+            {lockedFonts.map((font) => (
               <div key={font.id} className="font-picker__locked">
                 <Icon name="lock" size={16} />
                 <span>
-                  {font.name} · 우표 {font.unlockCondition.count}개 모으면 열려요
+                  {font.name} · {font.condition} 모으면 열려요
                 </span>
               </div>
             ))}
