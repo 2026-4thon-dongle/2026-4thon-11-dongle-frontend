@@ -1,5 +1,6 @@
 import Mascot from '../../shared/ui/Mascot.jsx'
 import nightSky from './assets/night-sky.svg'
+import GoldFoil from './GoldFoil.jsx'
 import './Paper.css'
 import './LetterCard.css'
 
@@ -20,6 +21,7 @@ function LetterCard({ paperId = 'basic', recipient, value, onChange, fontFamily,
       {paperId === 'night' && (
         <img className="write-card__deco write-card__deco--sky" src={nightSky} alt="" width="108" height="106" />
       )}
+      {paperId === 'gold' && <GoldFoil shine={false} frameSparkles />}
       <p className="write-card__to">To. {recipient}</p>
       <textarea
         className="write-card__text"
