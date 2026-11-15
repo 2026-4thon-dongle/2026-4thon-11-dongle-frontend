@@ -14,7 +14,8 @@ import './PenPalLettersPage.css'
  *  - 경로는 /pen-pal/:friendId 이다.
  *  - "답장 쓰기"는 /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다).
  *  - 카드를 눌러도 아무 일도 없다(시안에 이동이 없다).
- * 개발 중 확인용 주소: /pen-pal/1, /pen-pal/2, /pen-pal/3
+ *  - 우체통 대화 중 카드(5-3)를 누르면 들어온다. 끝난 대화는 "답장 쓰기" 버튼을 숨긴다.
+ * 개발 중 확인용 주소: /pen-pal/1, /pen-pal/2, /pen-pal/3, /pen-pal/4(끝난 대화)
  */
 function PenPalLettersPage() {
   const { friendId } = useParams()
@@ -66,7 +67,7 @@ function PenPalLettersPage() {
         )}
       </div>
 
-      {data && (
+      {data?.canReply && (
         <footer className="pen-pal-letters__footer">
           <Button onClick={() => navigate(data.replyPath)}>답장 쓰기</Button>
         </footer>

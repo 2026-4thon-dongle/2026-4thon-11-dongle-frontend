@@ -68,7 +68,7 @@ const KIND_LABEL = { diary: '고향 일기', sent: '보냄', received: '받음' 
  * 상대별 주고받은 편지(5-15).
  * @param {object} friend 친구 한 명 (MOCK_PEN_PALS.results 항목)
  * @param {Array} entries 시간순 기록 (MOCK_PEN_PAL_LETTERS[id])
- * 반환: { title("하늘빛 · 충남 천안"), countLabel("주고받은 편지 6통"), replyPath, items: [{ id, side, preview, dateLabel, stampId }] }
+ * 반환: { title("하늘빛 · 충남 천안"), countLabel("주고받은 편지 6통"), replyPath, canReply(끝난 대화면 false), items: [{ id, side, preview, dateLabel, stampId }] }
  * side: 내가 보낸 것은 'right', 일기와 받은 것은 'left' (시안 5-15의 좌우 배치)
  */
 export function toPenPalLetters(friend, entries) {
@@ -76,6 +76,8 @@ export function toPenPalLetters(friend, entries) {
     title: `${friend.nickname} · ${friend.region}`,
     countLabel: `주고받은 편지 ${friend.letter_count}통`,
     replyPath: buildReplyPath({ letterId: friend.reply_letter_id, nickname: friend.nickname, region: friend.region }),
+    // 끝난 대화(7일 동안 답장 없음)는 답장 쓰기를 숨긴다. is_ended는 mock 전용 필드이다.
+    canReply: !friend.is_ended,
     items: entries.map((entry) => ({
       id: entry.id,
       side: entry.kind === 'sent' ? 'right' : 'left',

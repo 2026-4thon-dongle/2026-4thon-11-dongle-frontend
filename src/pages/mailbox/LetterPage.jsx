@@ -8,7 +8,12 @@ import useOverlay from '../../shared/hooks/useOverlay.js'
 import LetterArrival from '../../components/mailbox/LetterArrival.jsx'
 import LetterPaper from '../../components/mailbox/LetterPaper.jsx'
 import LetterMenuSheet from '../../components/mailbox/LetterMenuSheet.jsx'
-import { fetchLetterDetail, markLetterRead, passLetter } from '../../components/mailbox/letterReceiveApi.js'
+import {
+  fetchLetterDetail,
+  markLetterRead,
+  markLetterReplied,
+  passLetter,
+} from '../../components/mailbox/letterReceiveApi.js'
 import './LetterPage.css'
 
 const MAILBOX_PATH = '/mailbox'
@@ -20,9 +25,10 @@ const SHOW_STAMP_MAKE_ENTRY = true
  * 데이터는 mock이다(문서 레포에 편지 API가 없다). 요청과 변환은 components/mailbox에서 한다.
  * 가정:
  *  - 읽지 않은 편지는 5-8, 읽은 편지는 5-9로 연다. 5-8에서 "봉투 열기"를 누르면 읽음 처리하고 5-9로 바꾼다.
- *  - "나중에 읽을래요"는 읽음 처리 없이 우체통(/mailbox)으로 돌아간다.
- *  - "넘기기"는 보관으로 옮기고 토스트를 보여 준 뒤 우체통으로 돌아간다. 토스트 문구는 시안에 없어서 정했다.
- *  - "답장하기"는 /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다).
+ *  - "나중에 읽을래요"는 읽음 처리 없이 우체통(/mailbox)으로 돌아간다. 편지는 빨간 점이 유지된 채 새 편지 탭에 남는다.
+ *  - 열어서 읽기만 한 편지는 새 편지 탭에 남되 빨간 점이 사라진다(읽음 상태는 mock 저장소에 있다).
+ *  - "넘기기"는 보관 탭으로 옮기고 토스트를 보여 준 뒤 우체통으로 돌아간다. 토스트 문구는 시안에 없어서 정했다.
+ *  - "답장하기"는 편지를 대화 중 탭으로 옮기고(mock) /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다).
  *  - 오른쪽 위 "…"는 신고·차단 메뉴 시트를 열고, 항목은 토스트만 보여 준다(효령님 3-6~3-8과 연결 전).
  *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이다. SHOW_STAMP_MAKE_ENTRY로 켜고 끈다(눌러도 토스트만).
  * 개발 중 확인용 주소: /mailbox/101, /mailbox/102(읽지 않음 → 5-8), /mailbox/103, /mailbox/104(읽음 → 5-9)
@@ -54,6 +60,12 @@ function LetterPage() {
     await passLetter(letterId)
     showToast('보관함으로 넘겼어요')
     navigate(MAILBOX_PATH, { replace: true })
+  }
+
+  // mock: 답장하기를 누르는 순간 대화 중 탭으로 옮긴다(실제 API에서는 서버가 답장 발송 후 옮긴다)
+  const handleReply = async () => {
+    await markLetterReplied(letterId)
+    navigate(detail.view.replyPath)
   }
 
   const openMenu = () =>
@@ -127,7 +139,7 @@ function LetterPage() {
           <Button variant="ghost" className="letter-page__pass" onClick={handlePass}>
             넘기기
           </Button>
-          <Button onClick={() => navigate(detail.view.replyPath)}>답장하기</Button>
+          <Button onClick={handleReply}>답장하기</Button>
         </div>
         <p className="letter-page__hint">넘겨도 상대에게 알림이 가지 않아요</p>
       </footer>

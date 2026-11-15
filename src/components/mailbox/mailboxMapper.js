@@ -109,7 +109,7 @@ export const CHAT_ROUND_TRIP_MAX = 3
 
 /**
  * 대화 카드 하나(5-3). 화면용 필드:
- * id, nickname, region, avatarPose, avatarTone, badge, badgeTone, preview, roundTrips(0~3, 끝난 대화는 null), isEnded
+ * id, nickname, region, avatarPose, avatarTone, badge, badgeTone, preview, roundTrips(0~3, 끝난 대화는 null), isEnded, path(5-15)
  * 알 수 없는 status면 배지 없이 빈 문구로 둔다.
  */
 export function toChatCard(raw) {
@@ -125,6 +125,8 @@ export function toChatCard(raw) {
     ...status,
     roundTrips: isEnded ? null : Math.min(raw.round_trip_count ?? 0, CHAT_ROUND_TRIP_MAX),
     isEnded,
+    // 대화 카드를 누르면 그 상대와 주고받은 편지(5-15 /pen-pal/:friendId)로 간다. friend_id는 mock 전용 필드(API 필드 확정 시 이 줄만 바꾼다)
+    path: raw.friend_id != null ? `/pen-pal/${raw.friend_id}` : '/pen-pal',
   }
 }
 
@@ -185,8 +187,9 @@ export function toStoredCard(raw) {
     stampId: raw.stamp?.code ?? null,
     stampName: raw.stamp?.name ?? '',
     stampImageUrl: raw.stamp?.image_url ?? null,
-    // 가정: 마무리된 대화는 대화 화면, 넘긴 편지는 편지 화면으로 간다. 둘 다 아직 임시 화면이다.
-    path: raw.kind === 'ended_chat' ? `/mailbox/chats/${raw.id}` : `/mailbox/${raw.id}`,
+    // 임시 처리: 보관 카드는 종류와 상관없이 /mailbox/:id("찾을 수 없는 편지예요")로 보낸다.
+    // TODO: 넘긴 편지는 읽기 전용 화면, 끝난 대화는 5-15로 연결
+    path: `/mailbox/${raw.id}`,
   }
 }
 

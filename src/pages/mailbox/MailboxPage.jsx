@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Icon from '../../shared/ui/Icon.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import MailboxTabs from '../../components/mailbox/MailboxTabs.jsx'
 import LetterCard from '../../components/mailbox/LetterCard.jsx'
@@ -42,7 +41,8 @@ function renderCard(tab, item) {
  * - 대화 중(5-3, 비었으면 5-4): 대화 카드
  * - 배송 중(5-5, 비었으면 5-6): 진행 바 카드 + 배달 게임 안내
  * - 보관(5-7, 비었으면 5-7-1): 안내 박스 + 보관 카드
- * 정렬 칩은 새 편지 탭에만 있고, 오른쪽 위 필터 아이콘은 새 편지·배송 중 탭에만 있다(시안).
+ * 정렬 칩은 새 편지 탭에만 있다. 배송 중 탭은 도착 임박순으로 고정이다(정렬은 mailboxApi). 오른쪽 위 필터 아이콘은 없다.
+ * 대화 중 카드는 5-15(/pen-pal/:friendId)로 이동한다.
  * 목록은 mock이다(문서 레포 API 확정 전, Notion 초안 참고). 요청과 변환은 components/mailbox에서 한다.
  * 가정: 탭·정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다.
  * 지역 필터("지역별 ▾")는 새 편지 탭에만 있다. 선택 UI는 시안이 없어 임시로 만들었다(NewLetterFilters).
@@ -101,20 +101,12 @@ function MailboxPage() {
   // 정렬 칩은 새 편지 탭에만 있고, 비었을 때(5-2)는 없다.
   // 지역 필터를 걸어서 빈 경우는 5-2가 아니므로 칩을 남겨 필터를 풀 수 있게 한다.
   const showChips = tab === 'new' && (!isEmpty || region !== null)
-  // 필터 아이콘: 새 편지(비었을 때 제외)와 배송 중(비었을 때도 있다)
-  const showFilter = showChips || tab === 'shipping'
   const view = TAB_VIEW[tab]
 
   return (
     <main className="mailbox-page">
       <header className="mailbox-page__header">
         <h1 className="mailbox-page__title">우체통</h1>
-        {/* 필터 시트는 이 화면들의 범위 밖이라 아직 동작이 없다 */}
-        {showFilter && (
-          <button type="button" className="mailbox-page__filter" aria-label="필터">
-            <Icon name="filter" />
-          </button>
-        )}
       </header>
 
       <MailboxTabs
