@@ -122,15 +122,17 @@
 .stamp-sheet__only {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 74px;
+  gap: 12px;
+  height: 98px; /* 우표 칸(77px) 위아래로 약 10px씩 띄우도록 시안(74px)보다 키웠다 */
   margin: 3px -4px 0;
-  padding: 0 12px 0 6px;
+  padding: 0 12px 0 12px;
   border: 1.5px solid var(--line-soft);
   border-radius: 20px;
   background: var(--bg-cream);
 }
 
+/* 우표 칸: 주황 테두리는 우표에 바짝 붙여 두고, 우표와 글을 감싸는 카드 박스를 그만큼 키워서 주황 테두리가
+   카드 테두리에 닿거나 삐져나오지 않게 사방(약 10~12px)으로 띄운다. */
 .stamp-sheet__only .stamp-sheet__cell {
   flex: none;
   width: 64px;

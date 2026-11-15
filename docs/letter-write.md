@@ -87,7 +87,8 @@ updateDraft({ content: '안녕' })
 | `signature` | 서명 그림. `{ ops: [...] }` 그린 순서대로 쌓은 작업 목록(선, 스티커). 좌표는 그림판 크기에 대한 0~1 비율 |
 | `stampId` | 고른 우표 |
 
-- `signature.ops`의 선은 `{ type: 'stroke', erase, color, points }`, 스티커는 `{ type: 'sticker', id, pose, x, y }`이다.
+- `signature.ops`의 선은 `{ type: 'stroke', erase, color, points }`, 스티커는 `{ type: 'sticker', id, pose, x, y, size, rotate }`이다(`size` px, `rotate` 도. 없으면 64px, 8도).
+  펜 색 `color`는 `PEN_COLORS`의 id이고, 흰색(`white`)은 바탕이 어두운 편지지(`PAPERS`의 `dark`)에서만 고를 수 있다.
   되돌리기는 맨 뒤 작업 하나를 뺀다.
 - 서버로 보낼 때의 형식(이미지 또는 좌표 목록)은 API가 정해지면 맞춘다. 그림 데이터는 이미지가 아니라 좌표라서 어느 쪽으로도 만들 수 있다.
 
