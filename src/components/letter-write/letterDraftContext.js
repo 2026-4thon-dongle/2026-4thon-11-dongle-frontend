@@ -6,7 +6,8 @@ export const LetterDraftContext = createContext(null)
 /**
  * 편지 작성 중 상태. 단계를 오가도 유지된다.
  * - reply: 이 편지가 답장하는 대상. 일기 상세·우체통에서 들어올 때 URL 파라미터로 전달받는다.
- *   { diaryId, letterId, nickname, region } — 일기에 첫 편지를 쓰면 diaryId, 받은 편지에 답장하면 letterId(서버의 reply_to)가 있다.
+ *   { diaryId, letterId, nickname, region, preview } — 일기에 첫 편지를 쓰면 diaryId, 받은 편지에 답장하면 letterId(서버의 reply_to)가 있다.
+ *   preview는 받은 편지 답장일 때 4-1 배너에 보여 줄 받은 편지 첫 줄이다(없어도 된다).
  *   쿼리 없이 들어오면 모두 null이다(정상 흐름은 아니고, 개발 중 확인용).
  * - paperId: 고른 편지지
  * - content: 본문
@@ -18,7 +19,7 @@ export const LetterDraftContext = createContext(null)
  * - draftId: 이어 쓰는 서버 임시저장 id. 새로 쓰는 편지는 null이다. 보낼 때 서버가 이 임시저장을 지운다.
  */
 export const EMPTY_DRAFT = {
-  reply: { diaryId: null, letterId: null, nickname: null, region: null },
+  reply: { diaryId: null, letterId: null, nickname: null, region: null, preview: null },
   paperId: 'basic',
   content: '',
   fontId: 'nanum-pen',

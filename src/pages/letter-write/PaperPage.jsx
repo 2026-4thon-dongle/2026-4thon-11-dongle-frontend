@@ -6,6 +6,7 @@ import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
 import useLetterMaterials, { findMaterial } from '../../components/letter-write/useLetterMaterials.js'
 import useReplyDiary, { firstLineOf } from '../../components/letter-write/useReplyDiary.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
+import { isLetterReply, letterWriteTitle } from '../../components/letter-write/replyTitle.js'
 import { PAPERS, MOCK_STAMP_COUNT } from '../../components/letter-write/data.js'
 import Icon from '../../shared/ui/Icon.jsx'
 import './PaperPage.css'
@@ -20,22 +21,25 @@ function PaperPage() {
   // 답장하는 일기: 배너에 일기 작성자 닉네임과 본문 첫 줄을 서버에서 받은 값으로 보여 준다.
   const { diary } = useReplyDiary(reply.diaryId)
   const nickname = diary?.author.nickname ?? reply.nickname
-  const excerpt = firstLineOf(diary?.body)
+  // 받은 편지에 답장(5-10): 일기 대신 받은 편지가 대상이다. 첫 줄은 우체통이 쿼리(preview)로 넘겨 준다.
+  const letterReply = isLetterReply(reply)
+  const bannerTitle = letterReply ? `Re. ${nickname}님의 편지` : `Re. ${nickname}님의 고향 일기`
+  const excerpt = letterReply ? (reply.preview ?? '') : firstLineOf(diary?.body)
 
   return (
     <StepLayout
-      title="편지 쓰기"
+      title={letterWriteTitle(reply)}
       steps={LETTER_STEP_LABELS}
       current={1}
       onBack={goBack}
       footer={<StepFooter onNext={goNext} />}
     >
-      {/* 일기에 답장할 때만 어떤 일기인지 알려 준다. */}
-      {reply.diaryId && (
+      {/* 일기나 받은 편지에 답장할 때만 무엇에 답장하는지 알려 준다. */}
+      {(reply.diaryId || letterReply) && (
         <div className="paper-page__reply">
           <Icon name="letter" className="paper-page__reply-icon" />
           <div className="paper-page__reply-text">
-            <p className="paper-page__reply-title">Re. {nickname}님의 고향 일기</p>
+            <p className="paper-page__reply-title">{bannerTitle}</p>
             {excerpt && <p className="paper-page__reply-excerpt">{excerpt}</p>}
           </div>
         </div>

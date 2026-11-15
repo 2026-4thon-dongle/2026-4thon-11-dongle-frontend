@@ -7,9 +7,19 @@ import { formatTravelTime } from './mailboxMapper.js'
 // 편지 쓰기 쪽이 letterId를 아직 읽지 않는다(채현님과 합의 전). region은 편지를 받을 지역, 곧 보낸 사람의 지역이다.
 const LETTER_WRITE_PATH = '/letter-write'
 
+const PREVIEW_MAX_LENGTH = 60
+
+/** 본문의 첫 줄(빈 줄은 건너뜀). 주소가 길어지지 않게 60자까지만 쓴다. */
+export function toPreview(body) {
+  const line = body?.split(/\r?\n/).find((text) => text.trim())?.trim() ?? ''
+  return line.slice(0, PREVIEW_MAX_LENGTH)
+}
+
 /** 답장하기 경로. 예: /letter-write?letterId=101&nickname=하늘빛&region=충남 천안 (한글·공백은 인코딩된다) */
-export function buildReplyPath({ letterId, nickname, region }) {
+export function buildReplyPath({ letterId, nickname, region, preview }) {
   const query = new URLSearchParams({ letterId: String(letterId), nickname, region })
+  // 편지 쓰기 4-1 배너("Re. 닉네임님의 편지")에 보여 줄 받은 편지 첫 줄. 없으면 붙이지 않는다.
+  if (preview) query.set('preview', preview)
   return `${LETTER_WRITE_PATH}?${query.toString()}`
 }
 
@@ -76,6 +86,11 @@ export function toLetterView(raw) {
     stampName: raw.stamp?.name ?? '',
     body: raw.body ?? '',
     signature: raw.signature_text ?? '',
-    replyPath: buildReplyPath({ letterId: raw.id, nickname: raw.sender_nickname, region: raw.sender_region }),
+    replyPath: buildReplyPath({
+      letterId: raw.id,
+      nickname: raw.sender_nickname,
+      region: raw.sender_region,
+      preview: toPreview(raw.body),
+    }),
   }
 }

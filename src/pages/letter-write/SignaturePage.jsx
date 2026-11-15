@@ -8,6 +8,7 @@ import SegmentTabs from '../../components/letter-write/SegmentTabs.jsx'
 import useStepNavigation from '../../components/letter-write/useStepNavigation.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
+import { letterWriteTitle } from '../../components/letter-write/replyTitle.js'
 import {
   STICKER_SIZE,
   STICKER_TILT,
@@ -73,7 +74,7 @@ function SignaturePage() {
 
   return (
     <StepLayout
-      title="편지 쓰기"
+      title={letterWriteTitle(draft.reply)}
       steps={LETTER_STEP_LABELS}
       current={3}
       onBack={goBack}
