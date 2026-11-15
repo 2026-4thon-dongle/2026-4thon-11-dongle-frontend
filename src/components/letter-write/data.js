@@ -64,6 +64,33 @@ export const STICKERS = [
   { id: 'smile', pose: 'smile', code: 'cat-smile', label: '웃음' },
 ]
 
+// ── 잠금 우표(4-6): 우표 고르기 줄 맨 오른쪽에 「다음에 받을 우표」가 잠금으로 보이고, 누르면 말풍선이 뜬다(시안 4-6-2). ──
+// 말풍선 문구: 업적 우표 번호(number, 서버 우표 번호) → 문구. 시안 4-6-2의 「우표별 말풍선 문구」 표를 그대로 옮겼다.
+// 01 첫 걸음은 가입하면 바로 받아서 잠금으로 나오지 않는다.
+export const STAMP_LOCK_HINTS = {
+  2: '첫 고향 일기를 쓰면 받을 수 있어요',
+  3: '첫 편지를 보내면 받을 수 있어요',
+  4: '편지를 주고받으면 받을 수 있어요',
+  5: '펜팔 친구가 되면 받을 수 있어요',
+  6: '밤 12시~새벽 5시에 편지를 쓰면 받을 수 있어요',
+  7: '12시간 거리로 편지를 보내면 받을 수 있어요',
+  8: '손글씨 서명을 10번 남기면 받을 수 있어요',
+  9: '첫눈 오는 날 편지를 보내면 받을 수 있어요',
+  10: '4주 연속 편지를 보내면 받을 수 있어요',
+  11: '우표 10개를 모으면 받을 수 있어요',
+  12: '고향이 생일 이벤트에서 받을 수 있어요',
+}
+
+// 시즌·기간 한정 업적 우표(09 첫눈 편지, 12 고향이 생일)는 기간이 아닐 때 건너뛰고 다음 번호를 보여 준다.
+// 기간인지 알아낼 방법이 없어(서버가 운영자 지급으로 판정, spec/stamp.md) 지금은 항상 기간이 아닌 것으로 보고 건너뛴다.
+export const SEASONAL_STAMP_NUMBERS = [9, 12]
+
+// 서버 우표 코드와 우표 그림(shared/assets/stamp) 이름이 다른 우표: 서버 코드 → 그림 id
+const STAMP_ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hometown-birthday' }
+
+/** 서버 우표 코드 → 우표 그림 id(Stamp 컴포넌트의 id) */
+export const stampArtIdOf = (code) => STAMP_ART_ID_BY_CODE[code] ?? code
+
 export const MAX_CONTENT_LENGTH = 1000
 
 // ── 임시(mock) 값: 백엔드·우표 데이터가 정해지면 실제 값으로 바꾼다. ──
