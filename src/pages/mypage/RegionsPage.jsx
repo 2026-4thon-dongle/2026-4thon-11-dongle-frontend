@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
-import Chip from '../../shared/ui/Chip.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
@@ -23,7 +22,6 @@ const sameRegions = (a, b) => a.length === b.length && a.every((item, index) => 
  *  - 설정 화면으로 들어오는 길이 시안에 없어서 /mypage/regions 주소로 직접 연다. 7-1의 "지역 수정 ›"도 이 주소로 온다.
  *  - 지역 카드를 누르면 바텀시트에 공용 지역 선택기(shared/region)를 띄운다. 이 시트는 시안에 없다.
  *  - 바뀐 게 없으면 저장을 누를 수 없다. 저장하면 토스트를 보여 주고 마이(/mypage)로 간다. 토스트 문구는 시안에 없어서 정했다.
- *  - "자주 다니던 동네"는 mock 전용 표시이다(명세에 없음). "+ 다시 칠하기"는 아직 동작이 없어서 토스트만 보여 준다.
  */
 function RegionsPage() {
   const navigate = useNavigate()
@@ -31,7 +29,6 @@ function RegionsPage() {
   const [original, setOriginal] = useState(null)
   const [hometowns, setHometowns] = useState([])
   const [residence, setResidence] = useState(null)
-  const [frequentAreas, setFrequentAreas] = useState([])
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
@@ -41,7 +38,6 @@ function RegionsPage() {
       setOriginal({ hometowns: settings.hometowns, residence: settings.residence })
       setHometowns(settings.hometowns)
       setResidence(settings.residence)
-      setFrequentAreas(settings.frequentAreas)
     })
     return () => {
       cancelled = true
@@ -125,20 +121,6 @@ function RegionsPage() {
               ariaLabel="거주 지역 고르기"
               onClick={openResidenceSheet}
             />
-
-            {frequentAreas.length > 0 && (
-              <>
-                <h2 className="regions-page__label regions-page__label--next">자주 다니던 동네</h2>
-                <div className="regions-page__chips">
-                  {frequentAreas.map((area) => (
-                    <Chip key={area.name} variant="light">
-                      {area.label}
-                    </Chip>
-                  ))}
-                  <Chip onClick={() => showToast('아직 준비 중이에요')}>+ 다시 칠하기</Chip>
-                </div>
-              </>
-            )}
 
             <p className="regions-page__notice">
               <Mascot pose="face" size={56} />

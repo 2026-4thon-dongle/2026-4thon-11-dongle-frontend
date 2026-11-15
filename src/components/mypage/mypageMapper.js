@@ -217,9 +217,8 @@ export function toPickerRegion(region) {
 /**
  * 지역 설정(7-10) 화면용 데이터.
  * @param {object} me GET /api/users/me/ 응답 (hometowns[], residence)
- * @param {Array<{name: string, level: number}>} frequentAreas 자주 다니던 동네 (mock 전용)
  */
-export function toRegionSettings(me, frequentAreas = []) {
+export function toRegionSettings(me) {
   const hometowns = (me.hometowns ?? []).map(toPickerRegion)
   const residence = me.residence ? toPickerRegion(me.residence) : null
   return {
@@ -229,7 +228,6 @@ export function toRegionSettings(me, frequentAreas = []) {
     hometownLabel: (me.hometowns ?? []).map((region) => shortRegionName(region.name)).join(' · '),
     residenceProvince: residence?.province ?? '',
     residenceLabel: me.residence?.full_name ?? '',
-    frequentAreas: frequentAreas.map((area) => ({ name: area.name, label: `${area.name} ${'●'.repeat(area.level)}` })),
   }
 }
 
@@ -268,6 +266,46 @@ export function toNotificationSettings(settings) {
     hint: row.hint ?? '',
     checked: Boolean(settings[row.field]),
   }))
+}
+
+/**
+ * 설정(7-1-1) 화면용 데이터. 메뉴 5줄은 MenuList가 그대로 쓰는 모양({id, icon, label, value, to})이다.
+ * @param {object} me GET /api/users/me/ 응답
+ * @param {object} settings GET /api/users/me/settings/ 응답
+ * @param {number} blockCount 차단한 사람 수 (GET /api/blocks/의 count)
+ */
+export function toSettingsHome(me, settings, blockCount) {
+  const hometowns = me.hometowns ?? []
+  const firstHometown = shortRegionName(hometowns[0]?.name)
+  // 시안: "천안 외 2곳 · 성북구". 본가가 1곳이면 "천안 · 성북구"
+  const hometownText = hometowns.length > 1 ? `${firstHometown} 외 ${hometowns.length - 1}곳` : firstHometown
+  return {
+    menu: [
+      { id: 'nickname', icon: 'cat', label: '닉네임 변경', value: me.nickname, to: MYPAGE_PATHS.nickname },
+      {
+        id: 'regions',
+        icon: 'pin',
+        label: '지역 설정',
+        value: [hometownText, shortRegionName(me.residence?.name)].filter(Boolean).join(' · '),
+        to: MYPAGE_PATHS.regions,
+      },
+      {
+        id: 'notifications',
+        icon: 'bell',
+        label: '알림 · 편지 설정',
+        value: settings.daily_digest_enabled ? '하루 한 번' : '',
+        to: MYPAGE_PATHS.notifications,
+      },
+      { id: 'blocks', icon: 'ban', label: '차단 목록', value: `${blockCount}명`, to: MYPAGE_PATHS.blocks },
+      { id: 'account', icon: 'settings', label: '계정', value: '로그아웃 · 탈퇴', to: MYPAGE_PATHS.account },
+    ],
+    // 시안의 "정보" 카드. 이용약관·문의하기는 만들어진 화면이 없어 눌러도 토스트만 보여 준다. 버전은 mock 전용(명세에 없음).
+    infoItems: [
+      { id: 'terms', label: '이용약관 · 개인정보 처리방침' },
+      { id: 'contact', label: '문의하기' },
+    ],
+    versionLabel: '동글 v1.0.0',
+  }
 }
 
 // 차단한 사람의 프로필 원: 닉네임마다 정해진 그림이 없어서 목록 순서대로 돌려 쓴다. 시안 7-12(별빛 = 삐짐·연두, 바람 = 궁금·하늘)와 맞췄다. mock 전용.
