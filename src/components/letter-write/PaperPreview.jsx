@@ -1,15 +1,17 @@
 import Mascot from '../../shared/ui/Mascot.jsx'
 import nightSky from './assets/night-sky.svg'
+import GoldFoil from './GoldFoil.jsx'
 import './Paper.css'
 import './PaperPreview.css'
 
 // 줄 위치(미리보기 위쪽 px). 스펙(200×260 예시)의 줄을 세로 0.47배로 줄인 값이다.
-// 기본·줄노트·금박은 위에서 19px부터 15px 간격 7줄, 밤하늘은 56px부터 15px 간격 5줄이다.
-const lineTops = (first, count) => Array.from({ length: count }, (_, index) => first + index * 15)
+// 기본·줄노트는 위에서 19px부터 15px 간격 7줄, 밤하늘은 56px부터 15px 간격 5줄이다.
+// 금박은 시안(4-1)에서 40px부터 16px 간격 4줄이다.
+const lineTops = (first, count, gap = 15) => Array.from({ length: count }, (_, index) => first + index * gap)
 const LINES = {
   basic: lineTops(19, 7),
   ruled: lineTops(19, 7),
-  gold: lineTops(19, 7),
+  gold: lineTops(40, 4, 16),
   night: lineTops(56, 5),
 }
 
@@ -48,6 +50,7 @@ function PaperPreview({ paperId }) {
       {paperId === 'night' && (
         <img className="paper-preview__sky" src={nightSky} alt="" width="43" height="42" />
       )}
+      {paperId === 'gold' && <GoldFoil />}
     </div>
   )
 }

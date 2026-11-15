@@ -51,6 +51,17 @@
   transform: translateX(-50%);
 }
 
+/* 금박 엽서(시안 4-1): 색·테두리는 Paper.css, 광택·반짝이는 GoldFoil이 그린다.
+   반짝이가 테두리 밖으로 나오므로 overflow를 풀고, 줄은 좌우 10px 안쪽(16px 간격 4줄)이다. */
+.paper-preview.paper-preview--gold {
+  overflow: visible;
+}
+
+.paper-preview--gold .paper-preview__line {
+  right: 10px;
+  left: 10px;
+}
+
 /* 밤하늘: 줄 5개는 위에서 56px부터 15px 간격(스펙: 120px부터 32px 간격), 달과 별은 오른쪽 위 */
 .paper-preview__sky {
   position: absolute;

@@ -44,7 +44,7 @@ function PaperPage() {
             <li key={paper.id}>
               <button
                 type="button"
-                className={`paper-card${selected ? ' is-selected' : ''}${locked ? ' is-locked' : ''}`}
+                className={`paper-card paper-card--${paper.id}${selected ? ' is-selected' : ''}${locked ? ' is-locked' : ''}`}
                 aria-pressed={selected}
                 aria-disabled={locked}
                 onClick={() => !locked && updateDraft({ paperId: paper.id })}
