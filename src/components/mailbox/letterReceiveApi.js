@@ -6,14 +6,24 @@
 // 읽음·답장·넘김 상태는 mailboxMockStore.js(mock 전용)에 두고 우체통 목록(mailboxApi.js)이 같이 쓴다.
 // 반환값은 항상 letterReceiveMapper의 화면용 데이터이다.
 import { MOCK_LETTER_DETAILS, MOCK_MY_NICKNAME } from '../../shared/mocks/letterDetail.js'
+import { getMockMailboxResponse } from '../../shared/mocks/mailbox.js'
 import { toLetterArrival, toLetterView } from './letterReceiveMapper.js'
 import { readIds, repliedIds, passedAt } from './mailboxMockStore.js'
+
+// mock 전용: 편지 상세 mock에는 보낸 날짜가 없어(shared는 고치지 않는다) 우체통 목록 mock의 도착 시각에서
+// 배송 시간(travel_minutes)을 빼 보낸 시각(sent_at)을 만든다. 5-9 소인 날짜에 쓴다. 실제 API는 보낸 시각을 직접 준다.
+function sentAtOf(raw) {
+  const arrived = getMockMailboxResponse('new').results.find((letter) => letter.id === raw.id)?.arrived_at
+  const time = new Date(arrived).getTime()
+  if (!arrived || Number.isNaN(time) || !Number.isFinite(raw.travel_minutes)) return undefined
+  return new Date(time - raw.travel_minutes * 60000).toISOString()
+}
 
 /** 편지 상세. 없는 편지면 null. */
 export async function fetchLetterDetail(letterId) {
   const raw = MOCK_LETTER_DETAILS[letterId]
   if (!raw || passedAt.has(raw.id)) return null
-  const current = { ...raw, is_read: raw.is_read || readIds.has(raw.id) }
+  const current = { ...raw, sent_at: raw.sent_at ?? sentAtOf(raw), is_read: raw.is_read || readIds.has(raw.id) }
   return {
     arrival: toLetterArrival(current, MOCK_MY_NICKNAME),
     view: toLetterView(current),

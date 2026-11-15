@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import MailboxTabs from '../../components/mailbox/MailboxTabs.jsx'
 import LetterCard from '../../components/mailbox/LetterCard.jsx'
@@ -50,16 +50,22 @@ function renderCard(tab, item) {
  */
 function MailboxPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const forceEmpty = import.meta.env.DEV && searchParams.get('mock') === 'empty'
 
-  const [tab, setTab] = useState('new')
+  // 5-9 "넘기기"처럼 다른 화면에서 특정 탭으로 열 때만 location.state.tab을 쓴다. 쓰고 나면 지워서 새로고침하면 새 편지 탭으로 돌아간다.
+  const [tab, setTab] = useState(() => (location.state?.tab in TAB_VIEW ? location.state.tab : 'new'))
   const [sort, setSort] = useState('latest')
   const [region, setRegion] = useState(null)
   const [regionOptions, setRegionOptions] = useState([])
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasNewDot, setHasNewDot] = useState(false)
+
+  useEffect(() => {
+    if (location.state?.tab) navigate(location.pathname + location.search, { replace: true, state: null })
+  }, [location, navigate])
 
   useEffect(() => {
     let cancelled = false

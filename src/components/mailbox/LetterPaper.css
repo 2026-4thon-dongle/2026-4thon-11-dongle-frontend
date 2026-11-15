@@ -7,6 +7,9 @@
   background: var(--bg-surface);
   box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
   color: var(--text-brown);
+  /* 도장이 닿는 때: 도장 애니메이션 지연 250ms + 길이 700ms x 62% */
+  --hit: 684ms;
+  animation: letter-paper-press 260ms ease-out var(--hit);
 }
 
 /* "첫 편지" 배지: 카드 위쪽 가장자리에 걸친다 */
@@ -61,13 +64,73 @@
 }
 
 /* 소인 도장: 시안 72px 이미지. 우표(오른쪽 26, 위 13)보다 안쪽·아래(오른쪽 36, 위 36)에 겹쳐 찍힌다 */
-.letter-paper__postmark {
+.letter-paper__postmark-wrap {
   position: absolute;
   top: 36px;
   right: 36px;
   width: 72px;
   height: 72px;
   pointer-events: none;
+}
+
+.letter-paper__postmark {
+  display: block;
+  width: 72px;
+  height: 72px;
+  animation: letter-paper-mark-in 120ms ease-out var(--hit) backwards;
+}
+
+/* 소인 글자(시안 4-10): Jua 14px(96px 원 기준)를 72px 원에 맞춰 10.5px로, 베리색, 12도 기울임.
+   4-10에서 원 가운데보다 왼쪽 위 5.2px, 아래 9.5px 자리(원 96px 기준)라 0.75배 한 만큼 옮긴다 */
+.letter-paper__postmark-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: 72px;
+  color: var(--brand-berry);
+  font: 400 10.5px / 1.4 var(--font-jua);
+  text-align: center;
+  transform: translate(calc(-50% - 3.9px), calc(-50% + 7.1px)) rotate(12deg);
+  animation: letter-paper-mark-in 120ms ease-out var(--hit) backwards;
+}
+
+/* 닿는 순간 번지는 물결 */
+.letter-paper__ripple {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--brand-orange);
+  border-radius: 50%;
+  opacity: 0;
+  animation: letter-paper-ripple 420ms ease-out var(--hit) backwards;
+}
+
+/* 도장: 앞쪽에서 커진 채 내려와 소인 자리를 누르고 다시 빠진다. 끝난 뒤에는 보이지 않는다 */
+.letter-paper__tool {
+  position: absolute;
+  top: 36px;
+  right: 36px;
+  z-index: 2;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--brand-orange) 0 45%, var(--brand-orange-deep) 100%);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  animation: letter-paper-tool 700ms 250ms both;
+}
+
+.letter-paper__tool-knob {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6b5442 0 30%, var(--text-brown) 100%);
+  transform: translateX(-50%);
 }
 
 /* 줄 있는 본문: 줄 높이 30px, 줄마다 아래에 1.5px 선 */
@@ -92,4 +155,72 @@
   font: 400 24px / 1.5 var(--font-letter);
   text-align: right;
   transform: rotate(3deg);
+}
+
+@keyframes letter-paper-tool {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(2.2);
+    filter: drop-shadow(0 22px 16px rgba(75, 58, 44, 0.12));
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(8px) scale(1.7);
+    filter: drop-shadow(0 16px 12px rgba(75, 58, 44, 0.2));
+    animation-timing-function: cubic-bezier(0.9, 0, 1, 0.5);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(75, 58, 44, 0.4));
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    animation-timing-function: ease-in;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(24px) scale(2);
+  }
+}
+
+/* 소인은 같은 자리에 그대로 찍힌다 */
+@keyframes letter-paper-mark-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes letter-paper-ripple {
+  from {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+/* 찍히는 충격: 편지지가 살짝 눌렸다 올라온다 */
+@keyframes letter-paper-press {
+  35% {
+    transform: translateY(3px) scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-paper,
+  .letter-paper__postmark,
+  .letter-paper__postmark-text,
+  .letter-paper__ripple {
+    animation: none;
+  }
+
+  /* 도장은 이미 찍힌 뒤라 보이지 않는다 */
+  .letter-paper__tool {
+    display: none;
+  }
 }

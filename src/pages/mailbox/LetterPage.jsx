@@ -27,7 +27,7 @@ const SHOW_STAMP_MAKE_ENTRY = true
  *  - 읽지 않은 편지는 5-8, 읽은 편지는 5-9로 연다. 5-8에서 "봉투 열기"를 누르면 읽음 처리하고 5-9로 바꾼다.
  *  - "나중에 읽을래요"는 읽음 처리 없이 우체통(/mailbox)으로 돌아간다. 편지는 빨간 점이 유지된 채 새 편지 탭에 남는다.
  *  - 열어서 읽기만 한 편지는 새 편지 탭에 남되 빨간 점이 사라진다(읽음 상태는 mock 저장소에 있다).
- *  - "넘기기"는 보관 탭으로 옮기고 토스트를 보여 준 뒤 우체통으로 돌아간다. 토스트 문구는 시안에 없어서 정했다.
+ *  - "넘기기"는 보관으로 옮기고 토스트("보관함으로 옮겼어요")를 보여 준 뒤 우체통의 보관 탭으로 이동한다. 토스트 문구는 시안에 없어서 정했다.
  *  - "답장하기"는 편지를 대화 중 탭으로 옮기고(mock) /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다).
  *  - 오른쪽 위 "…"는 신고·차단 메뉴 시트를 열고, 항목은 토스트만 보여 준다(효령님 3-6~3-8과 연결 전).
  *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이다. SHOW_STAMP_MAKE_ENTRY로 켜고 끈다(눌러도 토스트만).
@@ -58,8 +58,9 @@ function LetterPage() {
 
   const handlePass = async () => {
     await passLetter(letterId)
-    showToast('보관함으로 넘겼어요')
-    navigate(MAILBOX_PATH, { replace: true })
+    showToast('보관함으로 옮겼어요')
+    // 우체통은 보관 탭으로 연다(탭은 주소가 아니라 화면 상태라 location.state로 넘긴다)
+    navigate(MAILBOX_PATH, { replace: true, state: { tab: 'stored' } })
   }
 
   // mock: 답장하기를 누르는 순간 대화 중 탭으로 옮긴다(실제 API에서는 서버가 답장 발송 후 옮긴다)
