@@ -5,9 +5,10 @@ import Mascot from '../../shared/ui/Mascot.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import { getMockMailboxResponse } from '../../shared/mocks/mailbox.js'
 import { MOCK_MAP_DELIVERY, MOCK_TOWNS } from '../../components/delivery/data.js'
-import { pickMapTheme } from '../../components/delivery/mapThemes.js'
+import { MAP_THEMES, pickMapTheme } from '../../components/delivery/mapThemes.js'
 import { ROUTE_POINTS, pointAt, toPolyline, traveledPoints } from '../../components/delivery/mapRoute.js'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
+import useDeliveryInfo from '../../components/delivery/useDeliveryInfo.js'
 import './MapPage.css'
 
 // 시안 지도의 크기(px). 위쪽 상태바 자리 44px는 잘라 낸다.
@@ -37,22 +38,46 @@ const atInside = (x, y, halfWidth, center) => ({
   top: `calc(${y - STATUS_BAR}px * var(--map-scale))`,
 })
 
+// 서버에서 받지 못했을 때(서버 없이 화면만 볼 때) 보여 주는 mock 배송 정보.
+// 우체통 배송 중 mock 편지(letterId)의 출발·도착 지역을 쓰고, 없는 편지는 기본 mock을 쓴다.
+function mockInfo(letterId) {
+  const shipping = getMockMailboxResponse('shipping').results.find((letter) => String(letter.id) === letterId)
+  const sentAt = Date.now() - MOCK_MAP_DELIVERY.elapsedMinutes * 60_000
+  return {
+    from: shipping?.from_region ?? MOCK_MAP_DELIVERY.from,
+    to: shipping?.to_region ?? MOCK_MAP_DELIVERY.to,
+    recipient: MOCK_MAP_DELIVERY.recipient,
+    sentAt: new Date(sentAt).toISOString(),
+    arrivesAt: new Date(sentAt + MOCK_MAP_DELIVERY.totalMinutes * 60_000).toISOString(),
+    direction: 'sent',
+    mapTheme: null,
+    towns: MOCK_TOWNS,
+    grantedStamps: [],
+  }
+}
+
 /**
- * 4-12 실시간 배송 지도: 지도 위에 편지가 지나온 길과 지금 위치를 보여주고, 아래 시트에 도착 시간과 동네 소식을 보여준다.
- * 시트는 손잡이를 위아래로 끌거나 눌러서 접고 펼 수 있다. 접으면 지도가 더 넓게 보인다.
+ * 4-12 실시간 배송 지도: 배송 경로 API(GET /api/letters/{id}/route/)로 받은 편지의 길을 보여 준다.
+ * 받는 중에는 아무것도 그리지 않는다.
  */
 function MapPage() {
-  const navigate = useNavigate()
   const { letterId } = useParams()
+  const { info } = useDeliveryInfo({ letterId, fallback: () => mockInfo(letterId) })
+  if (!info) return null
+  return <MapView info={info} letterId={letterId} />
+}
+
+/**
+ * 지도 위에 편지가 지나온 길과 지금 위치를 보여주고, 아래 시트에 도착 시간과 동네 소식을 보여준다.
+ * 시트는 손잡이를 위아래로 끌거나 눌러서 접고 펼 수 있다. 접으면 지도가 더 넓게 보인다.
+ */
+function MapView({ info, letterId }) {
+  const navigate = useNavigate()
   const { showToast } = useOverlay()
-  // mock: 우체통 배송 중 편지(letterId)의 출발·도착 지역을 쓴다. 없는 편지(발송 직후 등)는 기본 mock을 쓴다.
-  // 배송 API가 정해지면 편지 한 통의 응답에서 가져온다.
-  const shipping = getMockMailboxResponse('shipping').results.find((letter) => String(letter.id) === letterId)
-  const { recipient, totalMinutes, elapsedMinutes } = MOCK_MAP_DELIVERY
-  const from = shipping?.from_region ?? MOCK_MAP_DELIVERY.from
-  const to = shipping?.to_region ?? MOCK_MAP_DELIVERY.to
-  const { remainingMinutes, progress } = useArrivalCountdown({ totalMinutes, elapsedMinutes })
-  const theme = pickMapTheme(letterId)
+  const { from, to, recipient, towns, sentAt, arrivesAt } = info
+  const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
+  // 지도 배경은 서버가 편지마다 정해 준다. 없으면 편지 번호로 고른다.
+  const theme = MAP_THEMES.find((item) => item.id === info.mapTheme) ?? pickMapTheme(letterId)
 
   const [collapsed, setCollapsed] = useState(false)
   const dragStartY = useRef(null)
@@ -89,14 +114,13 @@ function MapPage() {
   const [startX, startY] = ROUTE_POINTS[0]
   const [endX, endY] = ROUTE_POINTS[ROUTE_POINTS.length - 1]
 
-  // 지금 위치에서 가장 가까운 동네가 "지나고 있는" 동네, 그 다음 동네가 "곧 지나요"
-  const currentIndex = MOCK_TOWNS.reduce(
-    (best, town, index) =>
-      Math.abs(town.at - progress) < Math.abs(MOCK_TOWNS[best].at - progress) ? index : best,
+  // 지금 위치에서 가장 가까운 동네가 "지나고 있는" 동네, 그 다음 동네가 "곧 지나요". 지나는 동네가 없으면(같은 지역끼리 등) 둘 다 없다.
+  const currentIndex = towns.reduce(
+    (best, town, index) => (Math.abs(town.at - progress) < Math.abs(towns[best].at - progress) ? index : best),
     0,
   )
-  const current = MOCK_TOWNS[currentIndex]
-  const next = MOCK_TOWNS[currentIndex + 1]
+  const current = towns[currentIndex]
+  const next = towns[currentIndex + 1]
 
   return (
     <main className="map-page" style={{ '--map-scale': map.scale, '--map-x': `${map.x}px` }}>
@@ -120,7 +144,7 @@ function MapPage() {
         </span>
         <span className="map-page__pin map-page__pin--to" style={at(endX, endY)} />
 
-        {MOCK_TOWNS.map((town, index) => {
+        {towns.map((town, index) => {
           const [x, y] = pointAt(town.at)
           return (
             <Fragment key={town.id}>
@@ -153,7 +177,9 @@ function MapPage() {
         <button type="button" className="map-page__back" aria-label="뒤로 가기" onClick={() => navigate(-1)}>
           <Icon name="back" size={24} />
         </button>
-        <p className="map-page__title">{recipient}님에게 가는 편지</p>
+        <p className="map-page__title">
+          {info.direction === 'incoming' ? `${recipient}님이 보낸 편지` : `${recipient}님에게 가는 편지`}
+        </p>
       </div>
 
       <section className={`map-page__sheet${collapsed ? ' is-collapsed' : ''}`} aria-label="배송 현황">
@@ -173,14 +199,17 @@ function MapPage() {
           <span className="map-page__handle" />
         </button>
         <h1 className="map-page__remaining">도착까지 {formatRemaining(remainingMinutes)}</h1>
-        <p className="map-page__now">
-          지금 {current.name}
-          {objectJosa(current.name)} 지나고 있어요
-        </p>
+        {current && (
+          <p className="map-page__now">
+            지금 {current.name}
+            {objectJosa(current.name)} 지나고 있어요
+          </p>
+        )}
         <div className="map-page__bar">
           <div className="map-page__bar-fill" style={{ width: `${progress * 100}%` }} />
         </div>
 
+        {current && (
         <div className="map-page__more" aria-hidden={collapsed}>
           <div className="map-page__more-inner">
             <h2 className="map-page__news-title">편지가 지나가는 동네 소식</h2>
@@ -195,13 +224,14 @@ function MapPage() {
                       {town.name}
                       {town.id === next?.id && ' · 곧 지나요'}
                     </span>
-                    <span className="map-page__news-desc">{town.news}</span>
+                    <span className="map-page__news-desc">{town.news || '아직 올라온 일기가 없어요'}</span>
                   </span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
+        )}
       </section>
     </main>
   )

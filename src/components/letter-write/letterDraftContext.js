@@ -6,7 +6,8 @@ export const LetterDraftContext = createContext(null)
 /**
  * 편지 작성 중 상태. 단계를 오가도 유지된다.
  * - reply: 이 편지가 답장하는 대상. 일기 상세·우체통에서 들어올 때 URL 파라미터로 전달받는다.
- *   { diaryId, nickname, region } — 쿼리 없이 들어오면 모두 null이다(정상 흐름은 아니고, 개발 중 확인용).
+ *   { diaryId, letterId, nickname, region } — 일기에 첫 편지를 쓰면 diaryId, 받은 편지에 답장하면 letterId(서버의 reply_to)가 있다.
+ *   쿼리 없이 들어오면 모두 null이다(정상 흐름은 아니고, 개발 중 확인용).
  * - paperId: 고른 편지지
  * - content: 본문
  * - fontId: 고른 글씨체 (shared/fonts의 편지 글씨체 id)
@@ -14,12 +15,14 @@ export const LetterDraftContext = createContext(null)
  *   - 선: { type: 'stroke', erase, color, points: [[x, y], ...] }  좌표는 그림판 크기에 대한 0~1 비율이다.
  *   - 스티커: { type: 'sticker', id, pose, x, y, size, rotate }  x, y는 스티커 중심의 0~1 비율, size는 px(없으면 64), rotate는 도(없으면 8)이다.
  * - stampId: 고른 우표
+ * - draftId: 이어 쓰는 서버 임시저장 id. 새로 쓰는 편지는 null이다. 보낼 때 서버가 이 임시저장을 지운다.
  */
 export const EMPTY_DRAFT = {
-  reply: { diaryId: null, nickname: null, region: null },
+  reply: { diaryId: null, letterId: null, nickname: null, region: null },
   paperId: 'basic',
   content: '',
   fontId: 'nanum-pen',
   signature: { ops: [] },
   stampId: null,
+  draftId: null,
 }
