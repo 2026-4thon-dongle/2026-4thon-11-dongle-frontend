@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
 import Button from '../../shared/ui/Button.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Input from '../../shared/ui/Input.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import HeaderSaveButton from '../../components/mypage/HeaderSaveButton.jsx'
+import LeaveEditDialog from '../../components/mypage/LeaveEditDialog.jsx'
 import LetterSignaturePreview from '../../components/mypage/LetterSignaturePreview.jsx'
 import { checkNickname, fetchNickname, updateNickname } from '../../components/mypage/mypageApi.js'
 import { MYPAGE_PATHS } from '../../components/mypage/mypagePaths.js'
@@ -22,10 +23,16 @@ const MAX_LENGTH = 10
  *  - 바뀐 게 없거나 사용할 수 없으면 저장 버튼(헤더, 아래)을 누를 수 없다.
  *  - 저장하면 토스트를 보여 주고 마이(/mypage)로 간다. 오류 문구(2~10자, 이미 사용 중)와 토스트 문구는 시안에 없어서 정했다.
  *  - 개발용 닉네임 중복 확인: 하늘빛, 갈매기, 귤껍질, 감자왕, 별빛, 바람은 이미 쓰는 닉네임으로 처리한다.
+ *  - 저장하지 않고 나가기(7-10-3 팝업을 같이 쓴다): 닉네임을 처음 값과 다르게 바꾼 채(앞뒤 공백을 뺀 값 기준) 헤더 뒤로 가기를 누르면
+ *    "저장하지 않고 나갈까요?"를 띄운다. "계속 수정할게요"는 팝업만 닫고, "저장 안 하고 나갈게요"는 바꾼 내용을 버리고 이전 화면으로 간다.
+ *    앱이 BrowserRouter라서 브라우저·기기 뒤로 가기, 주소 이동, 새로고침은 막지 못한다.
+ * 개발 중 확인용: 주소 뒤에 ?dialog=leave 를 붙이면 확인 팝업이 열린 채로 시작한다. 바꾼 값이 없어도 열린다.
  */
 function NicknamePage() {
   const navigate = useNavigate()
-  const { showToast } = useOverlay()
+  const { openDialog, showToast, close } = useOverlay()
+  const [searchParams] = useSearchParams()
+  const autoOpened = useRef(false)
   const [original, setOriginal] = useState(null)
   const [value, setValue] = useState('')
   const [status, setStatus] = useState(null)
@@ -68,9 +75,39 @@ function NicknamePage() {
     }
   }
 
+  const openLeaveDialog = () =>
+    openDialog({
+      label: '저장하지 않고 나가기 확인',
+      content: (
+        <LeaveEditDialog
+          onStay={close}
+          onLeave={() => {
+            close()
+            navigate(-1)
+          }}
+        />
+      ),
+    })
+
+  // 바꾼 값이 있을 때만 확인한다. 저장 중에는 저장이 끝나면 알아서 이동하므로 건드리지 않는다.
+  const handleBack = () => {
+    if (isChanged && !isSaving) openLeaveDialog()
+    else navigate(-1)
+  }
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || autoOpened.current) return
+    if (searchParams.get('dialog') === 'leave') {
+      autoOpened.current = true
+      openLeaveDialog()
+    }
+    // 처음 한 번만 연다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <main className="nickname-page">
-      <Header title="닉네임 변경" right={<HeaderSaveButton onClick={handleSave} disabled={!canSave} />} />
+      <Header title="닉네임 변경" onBack={handleBack} right={<HeaderSaveButton onClick={handleSave} disabled={!canSave} />} />
 
       <div className="nickname-page__body">
         <LetterSignaturePreview nickname={trimmed || original || ''} />

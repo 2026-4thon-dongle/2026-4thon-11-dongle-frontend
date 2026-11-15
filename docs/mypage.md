@@ -14,12 +14,12 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `93:1279`.
 | 7-4~7-7 우표첩 | `/mypage/stamps` | 업적·꾸미기 탭(화면 상태), 보유 우표를 누르면 상세 바텀시트, 0개면 7-6 |
 | 7-8 수집 보상 | `/mypage/stamps/rewards` | 보상 4개와 진행 |
 | 7-9 닉네임 | `/mypage/nickname` | 입력, 중복 확인, 저장 후 `/mypage` |
-| 7-10 지역 | `/mypage/regions` | 본가 1~3곳, 거주 1곳, 저장 후 `/mypage`. 시안처럼 두 카드와 안내만 둔다 |
+| 7-10 지역 | `/mypage/regions` | 본가 1~3곳, 거주 1곳, 저장 후 `/mypage`. 시안처럼 두 카드와 안내만 둔다. 바꾼 채 헤더 뒤로 가기를 누르면 확인 팝업(7-10-3) |
 | 7-11 알림 | `/mypage/notifications` | 스위치 6개, 누르면 바로 저장 |
 | 7-12 차단 | `/mypage/blocks` | "해제"는 확인 없이 바로 해제 + 토스트 |
 | 7-13 계정 | `/mypage/account` | 로그아웃은 바로 실행, 탈퇴는 확인 다이얼로그 |
 
-개발 모드에서만 동작하는 확인용 쿼리: `?mock=empty`(`/mypage/stamps`, `/mypage/stamps/rewards`, `/mypage/blocks`), `?dialog=withdraw`(`/mypage/account`).
+개발 모드에서만 동작하는 확인용 쿼리: `?mock=empty`(`/mypage/stamps`, `/mypage/stamps/rewards`, `/mypage/blocks`), `?dialog=withdraw`(`/mypage/account`), `?dialog=leave`(`/mypage/regions`, `/mypage/nickname`).
 변경(삭제·해제·닉네임·지역·설정)은 메모리 값만 바꾸며 새로고침하면 처음으로 돌아간다.
 
 ## 구현 구조
@@ -38,6 +38,8 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `93:1279`.
 - 7-9, 7-12, 7-13은 설정 화면(7-1-1)에서 들어간다. 7-10과 7-11은 7-1에서도 온다.
 - 설정(7-1-1) 연결: 닉네임 변경 → `/mypage/nickname`(오른쪽 값 = 닉네임), 지역 설정 → `/mypage/regions`("천안 외 2곳 · 성북구"), 알림 · 편지 설정 → `/mypage/notifications`("하루 한 번", 끄면 비움), 차단 목록 → `/mypage/blocks`("N명"), 계정 → `/mypage/account`. 값은 7-9~7-12에서 바꾼 메모리 값을 바로 따라간다.
 - 설정의 "이용약관 · 개인정보 처리방침", "문의하기"는 연결할 화면이 없어 토스트 "준비 중이에요"만 보여 준다. "동글 v1.0.0"은 시안 글자 그대로의 mock이다.
+- 지역 설정 저장 안 하고 나가기(7-10-3): 본가·거주를 실제로 바꿨을 때만(원래 값으로 되돌리면 제외, 시트만 열었다 닫는 것도 제외) 헤더 뒤로 가기에서 "저장하지 않고 나갈까요?"를 띄운다. "계속 수정할게요"는 팝업만 닫고, "저장 안 하고 나갈게요"는 이전 화면으로 간다. 딤·Esc는 계속 수정과 같다. 앱이 `BrowserRouter`라 `useBlocker`를 쓸 수 없어 브라우저·기기 뒤로 가기, 주소 이동, 새로고침은 막지 못한다. 개발 모드에서 `?dialog=leave`로 팝업을 바로 연다.
+- 닉네임 변경 저장 안 하고 나가기: 지역 설정과 같은 팝업(`LeaveEditDialog`)을 쓴다. 앞뒤 공백을 뺀 닉네임이 처음 값과 다르고 저장 중이 아닐 때만 헤더 뒤로 가기에서 띄운다(되돌렸거나 저장한 뒤에는 그냥 나간다). 브라우저 뒤로 가기는 막지 못한다. 개발 모드에서 `?dialog=leave`로 바로 연다.
 - 설정에는 켜고 끄는 항목이 없어 `Toggle`을 쓰지 않았다. 설정 데이터는 `mypageApi.fetchSettingsHome` → `mypageMapper.toSettingsHome`이고, 메뉴 줄은 7-1의 `MenuList`를 그대로 쓴다. "정보" 카드만 `SettingsInfoCard`를 새로 만들었다.
 - 우표는 `shared/mocks/stamps.js`의 이름·종류를 읽기만 하고, 보유 상태는 `stampCollection.js`에서 따로 정의했다.
 
