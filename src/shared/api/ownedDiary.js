@@ -2,6 +2,7 @@ import * as demo from './ownedDiaryDemo.js'
 import { isApiDemo, request, subscribeSession } from './client.js'
 import { getSignupProfile, loadProfile, saveSignupProfile, subscribeSignupProfile } from './profile.js'
 import { mapDiary } from './mappers.js'
+import appendUnique from './appendUnique.js'
 export const isOwnedDiaryDemo = isApiDemo
 const listeners = new Set()
 const empty = () => ({ profile: null, diaries: [], loading: false, error: null, next: null, count: 0 })
@@ -21,7 +22,7 @@ export async function loadOwnedDiaries(page = 1) {
     const profile = getSignupProfile() || await loadProfile()
     const data = await request('/api/diaries/me/', { query: { page } })
     if (current !== generation) return
-    update({ profile: profileView(profile), diaries: page === 1 ? data.results.map(mapDiary) : [...state.diaries, ...data.results.map(mapDiary)].filter((item, index, all) => all.findIndex((other) => other.id === item.id) === index), count: data.count, next: data.next ? page + 1 : null, loading: false })
+    update({ profile: profileView(profile), diaries: page === 1 ? data.results.map(mapDiary) : appendUnique(state.diaries, data.results.map(mapDiary)), count: data.count, next: data.next ? page + 1 : null, loading: false })
   } catch (error) {
     if (current !== generation) return
     // 다음 페이지가 실패하면 보던 목록은 그대로 두고 부른 쪽에 알린다(목록 전체를 오류 화면으로 바꾸지 않는다).
