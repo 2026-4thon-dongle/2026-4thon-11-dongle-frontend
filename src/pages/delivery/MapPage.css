@@ -9,7 +9,7 @@
   background: #fff0d2; /* 지도 바탕색 */
 }
 
-/* 지도 영역. 지도 그림과 길은 --map-scale(JS가 정한 배율)만큼 키워 이 영역을 채운다.
+/* 지도 영역. 배경 그림은 --bg-scale, 길은 --map-scale(JS가 정한 배율)만큼 키운다.
    지도 위의 글자와 표시(.map-page__place 등)는 위치만 지도에 맞고 크기는 그대로다. */
 .map-page__stage {
   position: relative;
@@ -23,11 +23,21 @@
 }
 
 .map-page__scaled {
-  top: calc(-44px * var(--map-scale, 1));
+  top: calc(var(--map-y, 0px) - 44px * var(--map-scale, 1));
   left: var(--map-x, 0px);
   width: 360px;
   height: 470px;
   transform: scale(var(--map-scale, 1));
+  transform-origin: 0 0;
+}
+
+/* 배경 그림: --bg-scale만큼 키워 영역을 빈틈없이 채운다. 길과 따로 키우므로 길보다 클 수 있다. */
+.map-page__bg {
+  top: calc(-44px * var(--bg-scale, 1));
+  left: var(--bg-x, 0px);
+  width: 360px;
+  height: 470px;
+  transform: scale(var(--bg-scale, 1));
   transform-origin: 0 0;
 }
 
