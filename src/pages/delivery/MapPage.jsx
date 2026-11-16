@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
-import { getMockMailboxResponse } from '../../shared/mocks/mailbox.js'
-import { MOCK_MAP_DELIVERY, MOCK_TOWNS } from '../../components/delivery/data.js'
+import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import { MAP_THEMES, pickMapTheme } from '../../components/delivery/mapThemes.js'
 import { ROUTE_POINTS, pointAt, toPolyline, traveledPoints } from '../../components/delivery/mapRoute.js'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
@@ -38,31 +37,14 @@ const atInside = (x, y, halfWidth, center) => ({
   top: `calc(${y - STATUS_BAR}px * var(--map-scale))`,
 })
 
-// 서버에서 받지 못했을 때(서버 없이 화면만 볼 때) 보여 주는 mock 배송 정보.
-// 우체통 배송 중 mock 편지(letterId)의 출발·도착 지역을 쓰고, 없는 편지는 기본 mock을 쓴다.
-function mockInfo(letterId) {
-  const shipping = getMockMailboxResponse('shipping').results.find((letter) => String(letter.id) === letterId)
-  const sentAt = Date.now() - MOCK_MAP_DELIVERY.elapsedMinutes * 60_000
-  return {
-    from: shipping?.from_region ?? MOCK_MAP_DELIVERY.from,
-    to: shipping?.to_region ?? MOCK_MAP_DELIVERY.to,
-    recipient: MOCK_MAP_DELIVERY.recipient,
-    sentAt: new Date(sentAt).toISOString(),
-    arrivesAt: new Date(sentAt + MOCK_MAP_DELIVERY.totalMinutes * 60_000).toISOString(),
-    direction: 'sent',
-    mapTheme: null,
-    towns: MOCK_TOWNS,
-    grantedStamps: [],
-  }
-}
-
 /**
  * 4-12 실시간 배송 지도: 배송 경로 API(GET /api/letters/{id}/route/)로 받은 편지의 길을 보여 준다.
  * 받는 중에는 아무것도 그리지 않는다.
  */
 function MapPage() {
   const { letterId } = useParams()
-  const { info } = useDeliveryInfo({ letterId, fallback: () => mockInfo(letterId) })
+  const { info, error, retry } = useDeliveryInfo({ letterId })
+  if (error) return <ErrorScreen title="배송 정보를 불러오지 못했어요" description={error.message} hint="" onRetry={retry} />
   if (!info) return null
   return <MapView info={info} letterId={letterId} />
 }

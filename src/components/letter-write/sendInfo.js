@@ -1,15 +1,7 @@
 // 우표 고르고 보내기(4-6, 4-7)에 필요한 값을 서버에서 모은다: 내가 가진 우표, 출발·도착 지역, 도착까지 걸리는 시간.
 import { fetchLetterEstimate, fetchStampList } from './letterApi.js'
 import { loadLetterMaterials } from './useLetterMaterials.js'
-import {
-  MOCK_ARRIVAL,
-  MOCK_MY_REGION,
-  MOCK_RECEIVER_REGION,
-  SEASONAL_STAMP_NUMBERS,
-  STAMP_LOCK_HINTS,
-  stampArtIdOf,
-} from './data.js'
-import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
+import { SEASONAL_STAMP_NUMBERS, STAMP_LOCK_HINTS, stampArtIdOf } from './data.js'
 
 /** 소요 시간(분)을 "약 6시간", "약 1분"처럼 보여 준다. */
 export function formatArrival(minutes) {
@@ -37,29 +29,29 @@ function findLockedStamp(stamps) {
   return { id: next.code, art: stampArtIdOf(next.code), name: next.name, hint: STAMP_LOCK_HINTS[next.number] }
 }
 
-// 서버에서 못 받았을 때(서버 없이 화면만 볼 때) 보여 주는 mock 잠금 우표
-const MOCK_LOCKED_STAMP = { id: 'first-roundtrip', art: 'first-roundtrip', name: '첫 왕복', hint: STAMP_LOCK_HINTS[4] }
-
 /**
- * 우표 고르고 보내기 시트에 넣을 값. 서버에서 못 받은 부분은 기존 mock으로 채우고 failed에 알린다
- * (서버 없이 화면만 볼 때도 열린다. 실제로 보낼 때는 서버가 막는다).
+ * 우표 고르고 보내기 시트에 넣을 값. 우표(materials)와 도착 정보(estimate)는 꼭 필요해서 못 받으면 에러를 던진다.
+ * 「다음에 받을 우표」(우표 목록)만 못 받아도 시트는 열리고, 잠금 칸만 보이지 않는다.
  * @param {{ diaryId: number|null, replyTo: number|null }} target 첫 편지면 diaryId, 답장이면 replyTo
- * @returns {Promise<{ stamps: object[], lockedStamp: object|null, from: string, to: string, arrival: string, failed: Error|null }>}
+ * @returns {Promise<{ stamps: object[], lockedStamp: object|null, from: string, to: string, arrival: string }>}
  *   lockedStamp: 다음에 받을 우표 { id, art, name, hint }. 없으면 null
+ * @throws {Error} 우표나 도착 정보를 받지 못했을 때(서버 에러 그대로)
  */
 export async function loadSendInfo({ diaryId, replyTo }) {
+  if (!diaryId && !replyTo) throw new Error('편지를 보낼 대상이 없어요.')
   const [materials, estimate, stampList] = await Promise.allSettled([
     loadLetterMaterials(),
-    diaryId || replyTo ? fetchLetterEstimate({ diaryId, replyTo }) : Promise.reject(new Error('편지를 보낼 대상이 없어요.')),
+    fetchLetterEstimate({ diaryId, replyTo }),
     fetchStampList('achievement'),
   ])
+  if (materials.status === 'rejected') throw materials.reason
+  if (estimate.status === 'rejected') throw estimate.reason
 
   return {
-    stamps: materials.status === 'fulfilled' ? materials.value.stamps.map(toStampItem) : MOCK_OWNED_STAMPS,
-    lockedStamp: stampList.status === 'fulfilled' ? findLockedStamp(stampList.value.stamps) : MOCK_LOCKED_STAMP,
-    from: estimate.status === 'fulfilled' ? estimate.value.from_region.full_name : MOCK_MY_REGION,
-    to: estimate.status === 'fulfilled' ? estimate.value.to_region.full_name : MOCK_RECEIVER_REGION,
-    arrival: estimate.status === 'fulfilled' ? formatArrival(estimate.value.duration_minutes) : MOCK_ARRIVAL,
-    failed: materials.status === 'rejected' ? materials.reason : estimate.status === 'rejected' ? estimate.reason : null,
+    stamps: materials.value.stamps.map(toStampItem),
+    lockedStamp: stampList.status === 'fulfilled' ? findLockedStamp(stampList.value.stamps) : null,
+    from: estimate.value.from_region.full_name,
+    to: estimate.value.to_region.full_name,
+    arrival: formatArrival(estimate.value.duration_minutes),
   }
 }

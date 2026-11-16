@@ -15,6 +15,7 @@ import { letterWriteTitle } from '../../components/letter-write/replyTitle.js'
 import { fontCodeOf, paperCodeOf } from '../../components/letter-write/data.js'
 import { getLetterFontFamily, loadLetterFont } from '../../shared/fonts/letterFonts.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
+import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import './StampPage.css'
 
 /**
@@ -35,6 +36,9 @@ function StampPage() {
   const recipient = reply.nickname ?? '고향 친구'
   // 서버에서 받은 우표·지역·도착 시간. 받기 전에는 null이다.
   const [info, setInfo] = useState(null)
+  // 우표·도착 시간을 받지 못했을 때의 서버 에러와, 다시 받기 위한 횟수.
+  const [loadError, setLoadError] = useState(null)
+  const [attempt, setAttempt] = useState(0)
   // 시트가 열려 있는지. 값을 받으면 처음에 열린다.
   const [sheetOpen, setSheetOpen] = useState(false)
   // 보내는 중에 보내기를 또 누르지 못하게 한다(보낸 편지는 취소할 수 없다).
@@ -76,20 +80,31 @@ function StampPage() {
   }
 
   // 들어오면 서버에서 우표와 도착 시간을 받고 시트를 연다. 시트를 내린 뒤에는 저절로 다시 열리지 않는다.
+  // 받지 못하면 보낼 수 없으므로 에러 화면을 보여 주고, 다시 시도하면 처음부터 받는다.
   useEffect(() => {
     let cancelled = false
-    loadSendInfo({ diaryId, replyTo }).then((loaded) => {
-      if (cancelled) return
-      setInfo(loaded)
-      if (loaded.failed) showToast(loaded.failed.message)
-      setSheetOpen(true)
-    })
+    loadSendInfo({ diaryId, replyTo })
+      .then((loaded) => {
+        if (cancelled) return
+        setInfo(loaded)
+        setSheetOpen(true)
+      })
+      .catch((error) => !cancelled && setLoadError(error))
     return () => {
       cancelled = true
     }
-    // 처음 한 번만 받는다.
+    // 대상이 바뀌지 않는 한 처음 한 번(또는 다시 시도할 때)만 받는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [attempt])
+
+  const retryLoad = () => {
+    setLoadError(null)
+    setAttempt((value) => value + 1)
+  }
+
+  if (loadError) {
+    return <ErrorScreen title="편지를 보낼 준비를 못 했어요" description={loadError.message} hint="" onRetry={retryLoad} />
+  }
 
   return (
     <StepLayout
