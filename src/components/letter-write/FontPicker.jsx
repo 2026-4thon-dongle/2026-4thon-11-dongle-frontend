@@ -23,7 +23,7 @@ function FontPicker({ fontId, onChange }) {
   const [open, setOpen] = useState(false)
   const current = getLetterFont(fontId)
 
-  // 잠금은 서버 값을 따른다. 서버에서 못 받았으면(서버 없이 화면만 볼 때) 기존 mock 목록을 쓴다.
+  // 잠금은 서버 값을 따른다. 서버 값을 아직 못 받았으면 잠긴 글씨체 목록(엄마의 손편지)은 정해 둔 목록(LOCKED_LETTER_FONTS)으로 보여 준다.
   const { materials } = useLetterMaterials()
   const isLocked = (font) => {
     const server = findMaterial(materials?.fonts, fontCodeOf(font.id))

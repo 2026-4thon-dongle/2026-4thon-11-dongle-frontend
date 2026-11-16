@@ -1,8 +1,6 @@
-// 편지 쓰기 화면에서 쓰는 목록과 임시(mock) 값
-import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
+// 편지 쓰기 화면에서 쓰는 목록과 값
 
-
-// 편지지. lockedStamps가 있으면 우표가 그만큼 모여야 열린다. badge는 이름 아래 작은 표시.
+// 편지지. lockedStamps가 있으면 우표가 그만큼 모여야 열린다.  NEW 표시는 서버(is_new)가 정한다.
 // dark는 바탕이 어두운 편지지다(서명 펜 기본 색을 흰색으로 바꾼다).
 // code는 서버 편지지 코드이다(api/letters.md). id는 화면의 CSS 클래스(paper--ruled)와 에셋 이름에 묶여 있어 그대로 두고,
 // 서버와 주고받을 때만 paperCodeOf / paperIdOf로 바꾼다.
@@ -11,7 +9,7 @@ export const PAPERS = [
   { id: 'ruled', code: 'lined', name: '줄노트' },
   { id: 'check', code: 'grid', name: '체크' },
   { id: 'mascot', code: 'cat-border', name: '고향이' },
-  { id: 'night', code: 'night-sky', name: '밤하늘', badge: 'NEW', dark: true },
+  { id: 'night', code: 'night-sky', name: '밤하늘', dark: true },
   { id: 'gold', code: 'gold-postcard', name: '금박', lockedStamps: 15 },
 ]
 
@@ -95,13 +93,3 @@ export const stampArtIdOf = (code) => STAMP_ART_ID_BY_CODE[code] ?? code
 export const STICKER_UNLOCK_STAMPS = 3
 
 export const MAX_CONTENT_LENGTH = 1000
-
-// ── 임시(mock) 값: 백엔드·우표 데이터가 정해지면 실제 값으로 바꾼다. ──
-// 내가 모은 우표 개수(shared/mocks의 우표 mock 기준). 잠긴 편지지를 열 수 있는지 판단할 때 쓴다.
-export const MOCK_STAMP_COUNT = MOCK_OWNED_STAMPS.length
-// 우표 단계(4-6)에서 쓰는 임시 값: 내 거주 지역, 받는 지역을 모를 때의 지역, 도착 시간, 받은 편지 번호.
-// 지역 데이터(shared/region)와 보내기 API가 정해지면 실제 값으로 바꾼다.
-export const MOCK_MY_REGION = '서울 성북'
-export const MOCK_RECEIVER_REGION = '충남 천안'
-export const MOCK_ARRIVAL = '약 6시간'
-export const MOCK_LETTER_ID = 'mock'

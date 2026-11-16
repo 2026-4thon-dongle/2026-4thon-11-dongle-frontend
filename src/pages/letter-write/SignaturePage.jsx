@@ -117,8 +117,7 @@ function SignaturePage() {
         </div>
       ) : (
         <div className="signature-page__panel">
-          {/* mock: 스티커를 얻은 조건은 우표 보상 데이터가 연결되면 실제 값으로 바꾼다. */}
-          <StickerDrawer onPick={addSticker} reward="우표 3개 보상" />
+          <StickerDrawer onPick={addSticker} />
           <p className="signature-page__sticker-hint">
             {hasSticker
               ? '붙인 스티커를 눌러 ✕로 지우고, 모서리를 끌어 크기·각도를 바꿔요'
