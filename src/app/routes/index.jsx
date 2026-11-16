@@ -3,8 +3,7 @@ import { authRoutes } from './authRoutes.jsx'
 import { letterRoutes } from './letterRoutes.jsx'
 import { mailboxRoutes } from './mailboxRoutes.jsx'
 import { mypageRoutes } from './mypageRoutes.jsx'
-import DevPreview from '../dev/DevPreview.jsx' // 개발 전용
-import { DevLoading, DevError, DevBoundary, DevStamping, DevStampSheet, DevDiaryReply } from '../dev/DevStates.jsx' // 개발 전용
+import { previewRoutes } from './previewRoutes.jsx'
 import RoutePlaceholder from '../../shared/ui/RoutePlaceholder.jsx'
 import TabBarLayout from '../layouts/TabBarLayout.jsx'
 
@@ -18,13 +17,7 @@ const routes = [
       ...letterRoutes,
       ...mailboxRoutes,
       ...mypageRoutes,
-      { path: '/preview', element: <DevPreview /> }, // 개발 전용
-      { path: '/preview/loading', element: <DevLoading /> }, // 개발 전용
-      { path: '/preview/error', element: <DevError /> }, // 개발 전용
-      { path: '/preview/boundary', element: <DevBoundary /> }, // 개발 전용
-      { path: '/preview/stamping', element: <DevStamping /> }, // 개발 전용
-      { path: '/preview/stamp-sheet', element: <DevStampSheet /> }, // 개발 전용
-      { path: '/preview/diary-reply', element: <DevDiaryReply /> }, // 개발 전용
+      ...previewRoutes, // 개발·QA용 확인 화면(VITE_ENABLE_PREVIEW)
       {
         path: '*',
         element: <RoutePlaceholder title="페이지를 찾을 수 없어요" />,
