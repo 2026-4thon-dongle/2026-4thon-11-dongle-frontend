@@ -1,10 +1,10 @@
 // 개발 전용 확인 화면 — 공통 상태(로딩·에러)를 눈으로 확인하는 용도
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Loading from '../../shared/feedback/Loading.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import Button from '../../shared/ui/Button.jsx'
 import StampSheet from '../../components/letter-write/StampSheet.jsx'
-import useStartLetter from '../../components/letter-write/useStartLetter.js'
 import { clearLetterDraft } from '../../components/letter-write/letterDraftStorage.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
@@ -80,12 +80,12 @@ export function DevStampSheet() {
   )
 }
 
-// /preview/diary-reply : 일기 상세의 "편지로 답장하기"를 흉내 낸 화면. useStartLetter로 편지 쓰기를 시작하면
+// /preview/diary-reply : 일기 상세의 "편지로 답장하기"를 흉내 낸 화면. 실제 일기 상세처럼 /letter-write로 들어가면
 // 임시저장한 편지가 있을 때 "이어 쓰기" 시트(4-9)가 뜨는지 확인한다.
 const MOCK_DIARY = { diaryId: '12', nickname: '하늘빛', region: '충남 천안' }
 
 export function DevDiaryReply() {
-  const startLetter = useStartLetter()
+  const navigate = useNavigate()
   const { showToast } = useOverlay()
   return (
     <main style={{ display: 'grid', gap: 12, padding: 24 }}>
@@ -93,7 +93,7 @@ export function DevDiaryReply() {
       <p className="text-body-13" style={{ margin: 0 }}>
         {MOCK_DIARY.nickname}님의 일기에 편지로 답장합니다. 편지를 쓰다 나가면서 임시저장한 뒤 다시 눌러 보세요.
       </p>
-      <Button onClick={() => startLetter(MOCK_DIARY)}>편지로 답장하기</Button>
+      <Button onClick={() => navigate(`/letter-write?${new URLSearchParams(MOCK_DIARY)}`)}>편지로 답장하기</Button>
       <Button
         variant="secondary"
         onClick={async () => {
