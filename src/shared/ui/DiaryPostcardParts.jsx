@@ -8,7 +8,7 @@ import './DiaryPostcardParts.css'
 
 /** @param {{stamp: {id: string, label: string, number: string}, size?: number}} props */
 export function PostcardStamp({ stamp, size = 46 }) {
-  return <div className="postcard-stamp" style={{ '--postcard-stamp-size': `${size}px` }}><Stamp id={stamp.id} size={size} alt={`${stamp.label} 우표`} /><span className="postcard-stamp-brand" aria-hidden="true">동글</span><span className="postcard-stamp-number" aria-hidden="true">No.{stamp.number}</span><span className="postcard-stamp-label" aria-hidden="true">{stamp.label}</span></div>
+  return <div className="postcard-stamp" style={{ '--postcard-stamp-size': `${size}px` }}><Stamp id={stamp.id} size={size} label={false} alt={`${stamp.label} 우표`} /><span className="postcard-stamp-brand" aria-hidden="true">동글</span><span className="postcard-stamp-number" aria-hidden="true">No.{stamp.number}</span><span className="postcard-stamp-label" aria-hidden="true">{stamp.label}</span></div>
 }
 
 /** @param {{province: string, date: string, small?: boolean, waves?: boolean}} props */

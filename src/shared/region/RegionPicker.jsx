@@ -1,21 +1,43 @@
-import { useState } from 'react'
+import { isApiDemo } from '../api/client.js'
+import { getRegions } from '../api/regions.js'
+import { useEffect, useState } from 'react'
 import { CITIES, DISTRICTS, METROPOLITAN, PROVINCES, regionLabel } from './regions.js'
 import Icon from '../ui/Icon.jsx'
 import route from '../assets/decorations/region-route.svg'
 import './RegionPicker.css'
 
 /** @param {{mode: 'hometown'|'residence', value: Array<{province: string, district: string}>, onChange: (regions: Array<{province: string, district: string}>) => void, hometowns?: Array<{province: string, district: string}>}} props */
-export default function RegionPicker({ mode, value, onChange, hometowns = [] }) {
+export default function RegionPicker({ mode, value, onChange, hometowns = [], server = false }) {
   const home = mode === 'hometown'
+  const shortName = (name) => name.replace(/([가-힣]{2,})[시군구]$/, '$1')
   const [province, setProvince] = useState(value[0]?.province || (home ? '충남' : '서울'))
   const [expanded, setExpanded] = useState(false)
   const [error, setError] = useState('')
-  const details = home ? CITIES[province] || [] : DISTRICTS[province] || []
+  const [tree, setTree] = useState(null)
+  const [loadError, setLoadError] = useState('')
+  const [retry, setRetry] = useState(0)
+  useEffect(() => {
+    if (!server || isApiDemo) return
+    let active = true
+    getRegions().then((data) => { if (active) { setTree(data); setLoadError('') } }).catch((err) => { if (active) setLoadError(err.message) })
+    return () => { active = false }
+  }, [server, retry])
+  const useServer = server && !isApiDemo
+  const parent = tree?.find((item) => item.short_name === province)
+  const provinces = useServer ? (tree || []).map((item) => item.short_name) : PROVINCES
+  const directHome = (name) => useServer ? Boolean(tree?.find((item) => item.short_name === name)?.can_be_hometown) : METROPOLITAN.includes(name)
+  const details = useServer ? (parent?.children || []).filter((item) => item[home ? 'can_be_hometown' : 'can_be_residence']).map((item) => shortName(item.name)) : home ? CITIES[province] || [] : DISTRICTS[province] || []
   const shown = home || expanded ? details : details.slice(0, 8)
   const full = home && value.length >= 3
   const hasProvince = (name) => value.some((item) => item.province === name)
   const hasRegion = (district) => value.some((item) => item.province === province && item.district === district)
   function choose(region) {
+    if (useServer) {
+      const selectedParent = tree?.find((item) => item.short_name === region.province)
+      const selected = region.district ? selectedParent?.children.find((item) => shortName(item.name) === region.district) : selectedParent
+      if (!selected?.[home ? 'can_be_hometown' : 'can_be_residence']) return
+      region = { ...region, id: selected.id }
+    }
     setError('')
     if (!home) { onChange([region]); return }
     const exists = value.some((item) => regionLabel(item) === regionLabel(region))
@@ -26,14 +48,15 @@ export default function RegionPicker({ mode, value, onChange, hometowns = [] }) 
   function chooseProvince(next) {
     if (full && !hasProvince(next)) return
     setProvince(next); setExpanded(false); setError('')
-    if (home && METROPOLITAN.includes(next)) choose({ province: next, district: '' })
+    if (home && directHome(next)) choose({ province: next, district: '' })
     if (!home && next !== province) onChange([])
-    if (!home && next === '세종') onChange([{ province: next, district: '세종 전체' }])
+    if (!home && next === '세종') { if (useServer) { const item = tree?.find((entry) => entry.short_name === next); if (item?.can_be_residence) onChange([{ province: next, district: '', id: item.id }]) } else onChange([{ province: next, district: '세종 전체' }]) }
   }
   return <div className={`region-picker ${home ? 'region-picker--home' : ''}`}>
+    {useServer && !tree && <p role="status">{loadError || '지역을 불러오고 있어요'}{loadError && <button type="button" onClick={() => setRetry((n) => n + 1)}>다시 시도</button>}</p>}
     {home && <><span className="region-count text-label-15" aria-live="polite">{value.length}/3</span><div className="region-selected" aria-label="선택한 본가 지역">{value.length ? value.map((item) => <button type="button" key={regionLabel(item)} onClick={() => onChange(value.filter((entry) => entry !== item))} aria-label={`${regionLabel(item)} 삭제`}>{regionLabel(item)}<Icon name="close" size={16} /></button>) : <span className="text-caption-11">본가 지역을 최대 3곳 골라주세요</span>}</div></>}
-    <div className="region-chips" aria-label="시·도 선택">{PROVINCES.map((item) => {
-      const direct = home && METROPOLITAN.includes(item)
+    <div className="region-chips" aria-label="시·도 선택">{provinces.map((item) => {
+      const direct = home && directHome(item)
       const selected = hasProvince(item)
       const active = !direct && province === item
       return <button type="button" key={item} disabled={full && !selected} aria-pressed={direct ? selected : undefined} aria-expanded={!direct ? province === item : undefined} className={`${active ? 'is-active' : ''} ${home && selected && !active ? 'is-picked' : ''}`} onClick={() => chooseProvince(item)}>{item}</button>

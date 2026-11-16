@@ -27,3 +27,5 @@
 .auth-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .auth-link-button { border: 0; padding: 0; background: transparent; color: var(--text-sub); cursor: pointer; font-family: var(--font-jua); }
 .auth-demo { padding: 10px 12px; margin: 16px 0 0; border: 1px dashed var(--line-soft); border-radius: 12px; color: var(--text-sub); font-size: 11px; }
+
+.auth-page .ui-button--ghost:not(:disabled):hover { background: var(--bg-butter); color: var(--text-brown); }

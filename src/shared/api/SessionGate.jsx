@@ -1,0 +1,27 @@
+import { useEffect, useState } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { hasSession, isApiDemo } from './client.js'
+import { getSignupProfile, loadProfile, subscribeSignupProfile } from './profile.js'
+import Loading from '../feedback/Loading.jsx'
+import ErrorScreen from '../feedback/ErrorScreen.jsx'
+export default function SessionGate({ children }) {
+  const { pathname } = useLocation()
+  const [profile, setProfile] = useState(getSignupProfile)
+  const [error, setError] = useState(null)
+  const [attempt, setAttempt] = useState(0)
+  const publicPage = /^\/(?:intro|start|signup|login|preview)(?:\/|$)/.test(pathname) || (pathname === '/' && !hasSession())
+  useEffect(() => subscribeSignupProfile(setProfile), [])
+  useEffect(() => {
+    if (isApiDemo || publicPage || !hasSession() || getSignupProfile()) return
+    let active = true
+    loadProfile().catch((reason) => { if (active) setError(reason) })
+    return () => { active = false }
+  }, [publicPage, attempt, pathname])
+  if (isApiDemo || publicPage) return children
+  if (!hasSession()) return <Navigate to="/login" replace />
+  if (error) return <ErrorScreen description={error.message} hint="" onRetry={() => { setError(null); setAttempt((n) => n + 1) }} />
+  if (!profile) return <Loading />
+  if (pathname === '/') return <Navigate to={profile.first_diary_completed ? '/home' : '/diary/first'} replace />
+  if (!profile.first_diary_completed && !pathname.startsWith('/diary/first')) return <Navigate to="/diary/first" replace />
+  return children
+}
