@@ -4,81 +4,12 @@
 //   POST /api/letters/                  편지 발송
 //   GET  /api/letters/{id}/route/       배송 경로
 //   GET·POST /api/letters/drafts/, GET·DELETE /api/letters/drafts/{id}/   임시저장
-// 아직 화면에 연결하지 않았다. 화면은 이 함수들의 반환값을 그대로 받는 쪽(서버 응답, snake_case)이다.
-// 공통 호출 기반(shared/api)이 정해지면 request()와 토큰 읽기만 그쪽으로 옮긴다.
+// 화면은 이 함수들의 반환값을 그대로 받는 쪽(서버 응답, snake_case)이다.
 
-// 서버 주소. 없으면 로컬 백엔드(runserver 기본 포트)를 쓴다.
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+import { ApiError, request } from '../../shared/api/client.js'
 
-/**
- * 요청에 붙일 access 토큰. 로그인이 실제 API로 붙기 전까지는 개발용 환경변수(.env, 커밋 금지)에서 읽는다.
- * 로그인 연동이 생기면 이 함수 안만 바꾼다.
- */
-function getAccessToken() {
-  return import.meta.env.VITE_DEV_ACCESS_TOKEN ?? null
-}
-
-/**
- * 서버가 준 에러. 명세의 에러 형식 {code, message, ...추가 필드}를 그대로 담는다.
- * code로 분기하고(예: 'ITEM_LOCKED'), message는 그대로 보여 줘도 된다.
- * 입력값 오류(VALIDATION_ERROR)는 errors에 필드별 메시지가 있다.
- */
-export class LetterApiError extends Error {
-  /**
-   * @param {number} status HTTP 상태 코드. 서버에 닿지 못하면 0
-   * @param {object} [body] 응답 본문 {code, message, errors, ...}
-   */
-  constructor(status, body = {}) {
-    super(body.message ?? '요청을 처리하지 못했어요.')
-    this.name = 'LetterApiError'
-    this.status = status
-    this.code = body.code ?? (status === 0 ? 'NETWORK_ERROR' : 'UNKNOWN_ERROR')
-    this.errors = body.errors ?? null
-    this.body = body
-  }
-}
-
-// 명세 경로는 모두 /로 끝난다. 값이 없는 query는 보내지 않는다.
-function buildUrl(path, query) {
-  const params = new URLSearchParams()
-  Object.entries(query ?? {}).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') params.append(key, String(value))
-  })
-  const queryString = params.toString()
-  return `${API_BASE_URL}${path}${queryString ? `?${queryString}` : ''}`
-}
-
-/**
- * @param {string} path '/api/letters/materials/'처럼 /로 끝나는 경로
- * @param {{ method?: string, query?: object, json?: object, formData?: FormData }} [options]
- *   formData를 주면 multipart로 보낸다(Content-Type은 브라우저가 경계값과 함께 정한다).
- * @returns {Promise<any>} 응답 JSON. 204면 null
- */
-async function request(path, { method = 'GET', query, json, formData } = {}) {
-  const headers = { Accept: 'application/json' }
-  const token = getAccessToken()
-  if (token) headers.Authorization = `Bearer ${token}`
-
-  let body
-  if (formData) {
-    body = formData
-  } else if (json !== undefined) {
-    headers['Content-Type'] = 'application/json'
-    body = JSON.stringify(json)
-  }
-
-  let response
-  try {
-    response = await fetch(buildUrl(path, query), { method, headers, body })
-  } catch {
-    throw new LetterApiError(0, { message: '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' })
-  }
-
-  if (response.status === 204) return null
-  const data = await response.json().catch(() => null)
-  if (!response.ok) throw new LetterApiError(response.status, data ?? {})
-  return data
-}
+// 서버 주소·토큰·요청·에러는 shared/api/client.js가 맡는다. 에러 이름은 기존 코드가 쓰던 LetterApiError를 그대로 둔다.
+export { ApiError as LetterApiError }
 
 // ── 편지 쓰기 재료 · 배송 시간 ──
 
