@@ -43,7 +43,11 @@
 
 - **받은 편지 답장(5-10~, 채원)**: 같은 4단계 흐름을 재사용한다. 우체통의 답장 화면은 별도 흐름을 만들지 않고
   `/letter-write`로 들어온다. 이 경우 일기 대신 받은 편지가 답장 대상이 되므로 쿼리가 더 필요하다.
-  쿼리 이름은 채원과 합의해 이 문서에 적는다(제안: `letterId`, `nickname`, `region`).
+  쿼리: `letterId`(답장하는 받은 편지, 서버의 `reply_to`), `nickname`, `region`, 선택으로 `preview`(받은 편지 첫 줄, 60자까지).
+  - 5-10: `letterId`만 있고 `diaryId`가 없으면 4-1 배너가 "Re. {닉네임}님의 편지" + `preview`(없으면 줄 생략)로 바뀌고, 헤더 제목이 "답장 쓰기"가 된다. 제목은 네 단계(4-1~4-6) 모두 `components/letter-write/replyTitle.js`의 `letterWriteTitle(reply)`가 정한다(받은 편지 답장만 "답장 쓰기", 일기 답장·일반은 "편지 쓰기").
+    `diaryId`가 있으면 기존 일기 배너 그대로이다. `preview`는 우체통이 쿼리로 넘긴다(편지 쓰기에서 우체통 코드를 import하지 않으려는 선택).
+  - 5-11: 4-2 글씨체 아래에 "{닉네임}님 편지 다시 보기 ›" 행이 보이고, 누르면 `/mailbox/:letterId`로 간다. 전화번호 오류 안내가 같이 뜨면 안내가 위, 이 행이 아래에 놓인다.
+    가기 전에 현재 history 기록에 작성 상태를 `state.resumeDraft`로 실어 두므로, 뒤로 돌아오면 쓰던 내용이 그대로 남는다(새로고침해도 history state는 남는다).
 - **쓰던 편지 이어 쓰기(4-9)**: 일기 상세(효령)의 "편지로 답장하기"는 `navigate`로 직접 가지 말고
   `useStartLetter()`(`components/letter-write`)를 쓴다. 임시저장한 편지가 있으면 "이 일기에 쓰던 편지가 있어요"
   바텀시트(새로 쓰기 / 이어 쓰기)가 먼저 뜨고, 없으면 바로 편지 쓰기로 간다.
@@ -80,7 +84,7 @@ updateDraft({ content: '안녕' })
 
 | 항목 | 설명 |
 |---|---|
-| `reply` | `{ diaryId, nickname, region }` 위 쿼리에서 읽은 값 |
+| `reply` | `{ diaryId, letterId, nickname, region, preview }` 위 쿼리에서 읽은 값 |
 | `paperId` | 고른 편지지 |
 | `content` | 본문 |
 | `fontId` | 고른 글씨체 |

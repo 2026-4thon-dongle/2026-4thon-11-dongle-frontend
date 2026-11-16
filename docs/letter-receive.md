@@ -47,7 +47,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5
 ## 임시 경로와 연결
 
 - 경로 `/mailbox/stamp-gained`, `/mailbox/reward-unlocked`, `/pen-pal/:friendId`는 가정이다. 답장 쿼리(`letterId`, `nickname`, `region`)는 `docs/letter-write.md`의 제안이다.
-- 채현님 `LetterDraftProvider`는 `diaryId`, `nickname`, `region`만 읽는다. `letterId`는 읽지 않아 5-10의 "Re. {닉네임}님의 편지"와 5-11의 "편지 다시 보기 ›"는 아직 동작하지 않는다.
+- 답장 쿼리에 `preview`(받은 편지 첫 줄, 60자까지)를 더 붙인다(`letterReceiveMapper.buildReplyPath`). 5-10 배너("Re. {닉네임}님의 편지" + 첫 줄)와 5-11 "{닉네임}님 편지 다시 보기 ›"(`/mailbox/:letterId`로 이동, 돌아오면 쓰던 내용 유지)는 편지 쓰기 쪽에서 `letterId`로 동작한다. 자세한 동작은 `docs/letter-write.md`. 5-15(펜팔)의 "답장 쓰기"도 `penPalMapper`가 받은 마지막 편지(`kind: received`)의 첫 줄을 60자까지 `preview`로 넘긴다(받은 편지가 없으면 생략). 네 단계 헤더 제목은 모두 "답장 쓰기"이다.
 - `/mypage/stamps`는 이 브랜치에서 `/mypage/*`의 `RoutePlaceholder`이다(마이는 `feature/22-mypage-ui`). 마이 7-1의 "펜팔 친구"는 `/pen-pal`로 연결되어 있다.
 
 ## mock과 명세
@@ -65,7 +65,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5
 
 ## 확인이 필요한 것
 
-- 답장 쿼리와 `letterId` 처리, 5-11 "편지 다시 보기 ›". 5-12·5-13이 4-10, 4-11 어디에 끼는지. 읽기 전용 편지지를 `shared`로 올릴지(중복 해소). 해금된 편지지·글씨체·스티커를 편지 쓰기에서 고르는 방법.
+- 답장 쿼리 `preview` 추가를 채현님과 확인. 5-15 mock의 `reply_letter_id`와 마지막 받은 편지(기록의 `id`)는 서로 다른 값이라 연동하면 맞춰야 한다. 5-12·5-13이 4-10, 4-11 어디에 끼는지. 읽기 전용 편지지를 `shared`로 올릴지(중복 해소). 해금된 편지지·글씨체·스티커를 편지 쓰기에서 고르는 방법.
 - 5-9 "…" → 신고·차단을 3-6~3-8과 어떻게 연결할지.
 - 5-8과 5-9의 구분 기준, 5-9 "…" 메뉴, 펜팔 친구가 없을 때·넘기기 후 화면, 5-14 "편지 2통" 예시, 5-13 진행 바.
 - 편지 상세·읽음·넘기기·답장, 펜팔 목록·상대별 기록, 우표 획득·보상 해금 API(`requests/`로 요청 필요). 펜팔 기준, 첫 왕복 우표 지급 대상·시점, 새로 받은 우표·보상을 응답에 담는 방식.

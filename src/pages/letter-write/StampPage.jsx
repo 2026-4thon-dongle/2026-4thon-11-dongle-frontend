@@ -11,6 +11,7 @@ import { buildSignatureParts } from '../../components/letter-write/letterPayload
 import { loadSendInfo } from '../../components/letter-write/sendInfo.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
+import { letterWriteTitle } from '../../components/letter-write/replyTitle.js'
 import { fontCodeOf, paperCodeOf } from '../../components/letter-write/data.js'
 import { getLetterFontFamily, loadLetterFont } from '../../shared/fonts/letterFonts.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
@@ -92,7 +93,7 @@ function StampPage() {
 
   return (
     <StepLayout
-      title="편지 쓰기"
+      title={letterWriteTitle(reply)}
       steps={LETTER_STEP_LABELS}
       current={4}
       onBack={goBack}

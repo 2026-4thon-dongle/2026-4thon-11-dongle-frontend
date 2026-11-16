@@ -6,7 +6,6 @@ const DAY = 24 * 60 * 60 * 1000
 const DATE_PARTS = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit' })
 
 // 가정: 답장은 편지 쓰기로 들어간다. docs/letter-write.md의 제안 쿼리(letterId, nickname, region)를 따른다.
-// 편지 쓰기 쪽이 letterId를 아직 읽지 않는다(채현님과 합의 전).
 const LETTER_WRITE_PATH = '/letter-write'
 
 // 친구 프로필 원: 닉네임마다 정해진 그림이 없어서 목록 순서대로 돌려 쓴다. 시안 5-14(하늘빛·갈매기·귤껍질)와 맞췄다. mock 전용.
@@ -37,9 +36,20 @@ export function formatAgo(isoString, now = new Date()) {
   return `${Math.floor(days / 30)}달 전`
 }
 
+const PREVIEW_MAX_LENGTH = 60
+
+/** 받은 마지막 편지(kind가 received)의 첫 줄을 60자까지. 받은 편지가 없으면 ''. */
+function lastReceivedPreview(entries) {
+  const last = [...entries].reverse().find((entry) => entry.kind === 'received')
+  const line = last?.preview?.split(/\r?\n/).find((text) => text.trim())?.trim() ?? ''
+  return line.slice(0, PREVIEW_MAX_LENGTH)
+}
+
 /** 답장하기 경로. 예: /letter-write?letterId=101&nickname=하늘빛&region=충남 천안 (한글·공백은 인코딩된다) */
-export function buildReplyPath({ letterId, nickname, region }) {
+export function buildReplyPath({ letterId, nickname, region, preview }) {
   const query = new URLSearchParams({ letterId: String(letterId), nickname, region })
+  // 편지 쓰기 4-1 배너("Re. 닉네임님의 편지")에 보여 줄 받은 편지 첫 줄. 없으면 붙이지 않는다.
+  if (preview) query.set('preview', preview)
   return `${LETTER_WRITE_PATH}?${query.toString()}`
 }
 
@@ -75,7 +85,12 @@ export function toPenPalLetters(friend, entries) {
   return {
     title: `${friend.nickname} · ${friend.region}`,
     countLabel: `주고받은 편지 ${friend.letter_count}통`,
-    replyPath: buildReplyPath({ letterId: friend.reply_letter_id, nickname: friend.nickname, region: friend.region }),
+    replyPath: buildReplyPath({
+      letterId: friend.reply_letter_id,
+      nickname: friend.nickname,
+      region: friend.region,
+      preview: lastReceivedPreview(entries),
+    }),
     // 끝난 대화(7일 동안 답장 없음)는 답장 쓰기를 숨긴다. is_ended는 mock 전용 필드이다.
     canReply: !friend.is_ended,
     items: entries.map((entry) => ({
