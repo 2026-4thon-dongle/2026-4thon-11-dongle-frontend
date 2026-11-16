@@ -14,6 +14,8 @@ import './MapPage.css'
 const MAP_WIDTH = 360
 const STATUS_BAR = 44
 const MAP_HEIGHT_VISIBLE = 470 - STATUS_BAR
+// 길(출발·도착 점과 지역 이름)이 좌우로 잘리지 않고 보이는 데 필요한 지도 폭(시안 좌표 px). 지도를 이보다 더 키우지 않는다.
+const ROUTE_FIT_WIDTH = 340
 
 // 위아래로 이만큼(px) 이상 끌면 시트가 접히거나 펼쳐진다. 이보다 적게 움직이면 누른 것으로 본다.
 const SWIPE_PX = 30
@@ -27,14 +29,14 @@ const objectJosa = (word) => {
 // 시안 좌표(x, y)를 지도 영역 안의 위치로. 지도는 화면에 맞게 커지지만(--map-scale) 글자와 표시는 커지지 않는다.
 const at = (x, y) => ({
   left: `calc(var(--map-x) + ${x}px * var(--map-scale))`,
-  top: `calc(${y - STATUS_BAR}px * var(--map-scale))`,
+  top: `calc(var(--map-y) + ${y - STATUS_BAR}px * var(--map-scale))`,
 })
 
 // 위와 같지만 화면 가장자리에서 8px 안쪽에 머물게 한다. 지도가 커져서 양옆이 잘릴 때도 글자가 잘리지 않는다.
 // halfWidth: 글자·이름표 폭의 절반(px). 가운데 기준(center)이면 그 폭만큼 안쪽으로 막는다.
 const atInside = (x, y, halfWidth, center) => ({
   left: `clamp(${8 + (center ? halfWidth : 0)}px, calc(var(--map-x) + ${x}px * var(--map-scale)), calc(100% - ${8 + halfWidth * (center ? 1 : 2)}px))`,
-  top: `calc(${y - STATUS_BAR}px * var(--map-scale))`,
+  top: `calc(var(--map-y) + ${y - STATUS_BAR}px * var(--map-scale))`,
 })
 
 /**
@@ -64,15 +66,24 @@ function MapView({ info, letterId }) {
   const [collapsed, setCollapsed] = useState(false)
   const dragStartY = useRef(null)
 
-  // 지도 영역 크기에 맞춘 지도 배율(--map-scale)과 왼쪽 여백(--map-x).
-  // 지도는 영역을 빈틈없이 채우도록 키우고(가로나 세로 중 더 많이 필요한 쪽 기준), 남는 쪽은 가운데를 맞춰 잘라 낸다.
+  // 지도 영역 크기에 맞춘 배율. 배경 그림과 길·표시를 따로 맞춘다.
+  //   배경(--bg-scale, --bg-x): 영역을 빈틈없이 채우도록 키운다(가로나 세로 중 더 많이 필요한 쪽 기준). 남는 쪽은 가운데를 맞춰 잘라 낸다.
+  //   길·표시(--map-scale, --map-x, --map-y): 길이 좌우로 잘리지 않을 만큼만 키운다. 시트를 접어 영역이 세로로 길어져도
+  //   배경만 더 커지고 길과 고향이는 그대로이며, 위아래 남는 곳은 가운데에 둔다.
   const stageRef = useRef(null)
-  const [map, setMap] = useState({ scale: 1, x: 0 })
+  const [map, setMap] = useState({ scale: 1, x: 0, y: 0, bgScale: 1, bgX: 0 })
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
-      const scale = Math.max(width / MAP_WIDTH, height / MAP_HEIGHT_VISIBLE)
-      setMap({ scale, x: (width - MAP_WIDTH * scale) / 2 })
+      const cover = Math.max(width / MAP_WIDTH, height / MAP_HEIGHT_VISIBLE)
+      const scale = Math.min(cover, Math.max(width / ROUTE_FIT_WIDTH, width / MAP_WIDTH))
+      setMap({
+        scale,
+        x: (width - MAP_WIDTH * scale) / 2,
+        y: Math.max((height - MAP_HEIGHT_VISIBLE * scale) / 2, 0),
+        bgScale: cover,
+        bgX: (width - MAP_WIDTH * cover) / 2,
+      })
     })
     observer.observe(stageRef.current)
     return () => observer.disconnect()
@@ -105,11 +116,16 @@ function MapView({ info, letterId }) {
   const next = towns[currentIndex + 1]
 
   return (
-    <main className="map-page" style={{ '--map-scale': map.scale, '--map-x': `${map.x}px` }}>
+    <main className="map-page" style={{
+        '--map-scale': map.scale, '--map-x': `${map.x}px`, '--map-y': `${map.y}px`,
+        '--bg-scale': map.bgScale, '--bg-x': `${map.bgX}px`,
+      }}>
       <div className="map-page__stage" ref={stageRef}>
-        {/* 지도 그림과 길만 화면에 맞게 키운다. 시안 좌표(360×470) 기준이다. */}
-        <div className="map-page__scaled">
+        {/* 배경 그림과 길은 따로 화면에 맞게 키운다. 시안 좌표(360×470) 기준이다. */}
+        <div className="map-page__bg">
           <img className="map-page__map" src={theme.src} alt="" width="360" height="470" />
+        </div>
+        <div className="map-page__scaled">
           <svg className="map-page__route" viewBox="0 0 360 470" aria-hidden="true">
             <polyline className="map-page__route-rest" points={toPolyline(ROUTE_POINTS)} />
             <polyline className="map-page__route-done" points={toPolyline(traveledPoints(progress))} />
@@ -191,11 +207,22 @@ function MapView({ info, letterId }) {
           <div className="map-page__bar-fill" style={{ width: `${progress * 100}%` }} />
         </div>
 
-        {current && (
+        {/* 지나는 동네가 없어도(같은 지역끼리 보낸 편지) 시트 모양은 그대로 두고 안내만 보여 준다. */}
         <div className="map-page__more" aria-hidden={collapsed}>
           <div className="map-page__more-inner">
             <h2 className="map-page__news-title">편지가 지나가는 동네 소식</h2>
             <ul className="map-page__news">
+              {!current && (
+                <li className="map-page__news-item">
+                  <span className="map-page__news-icon map-page__news-icon--sage">
+                    <Icon name="pin" size={24} />
+                  </span>
+                  <span className="map-page__news-text">
+                    <span className="map-page__news-name">{to}</span>
+                    <span className="map-page__news-desc">지나는 동네 없이 바로 도착해요</span>
+                  </span>
+                </li>
+              )}
               {[current, next].filter(Boolean).map((town) => (
                 <li key={town.id} className="map-page__news-item">
                   <span className={`map-page__news-icon map-page__news-icon--${town.tone}`}>
@@ -213,7 +240,6 @@ function MapView({ info, letterId }) {
             </ul>
           </div>
         </div>
-        )}
       </section>
     </main>
   )

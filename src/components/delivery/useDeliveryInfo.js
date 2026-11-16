@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { METROPOLITAN } from '../../shared/region/regions.js'
 import { fetchLetterRoute } from '../letter-write/letterApi.js'
 
 // 배송 화면(4-11 발송 완료, 4-12 배송 지도)이 쓰는 배송 정보를 서버에서 받는다.
@@ -6,7 +7,7 @@ import { fetchLetterRoute } from '../letter-write/letterApi.js'
 //
 // 정보 모양(화면용):
 //   { from, to, recipient, sentAt, arrivesAt, direction, mapTheme, towns, grantedStamps }
-//   - from, to: 출발·도착 지역 이름(예: '서울 성북구')
+//   - from, to: 출발·도착 지역 이름(시안처럼 줄여서 '서울 성북')
 //   - recipient: 상대 닉네임
 //   - sentAt, arrivesAt: 보낸·도착 시각(ISO 문자열). 남은 시간과 진행률은 이 값으로 화면이 계산한다
 //   - direction: 'sent'(내가 보냄) / 'incoming'(나에게 옴)
@@ -14,11 +15,21 @@ import { fetchLetterRoute } from '../letter-write/letterApi.js'
 //   - towns: 지나는 동네 [{ id, name, at(0~1 진행률), news, icon, tone }]. 발송 직후 응답에는 없어 빈 배열이다
 //   - grantedStamps: 이 편지로 새로 받은 우표 [{ code, number, name, description }]
 
+// 서버 지역({ name, full_name, sido })을 시안의 화면 이름으로 줄인다(서울 성북구 → 서울 성북, 충남 천안시 → 충남 천안).
+// 시·도 이름만 있는 지역(세종 등)은 full_name을 그대로 쓴다.
+// 광역시는 구만 뗀다(성북구 → 성북, 군·두 글자 구는 그대로). 도는 시·군을 뗀다(천안시 → 천안). 떼고 한 글자가 남으면 그대로 둔다.
+function regionName(region) {
+  if (!region.sido || region.name === region.sido || !region.full_name.includes(' ')) return region.full_name
+  const suffix = METROPOLITAN.includes(region.sido) ? /구$/ : /[시군]$/
+  const stripped = region.name.replace(suffix, '')
+  return `${region.sido} ${stripped.length >= 2 ? stripped : region.name}`
+}
+
 // 방금 보낸 편지(POST /api/letters/ 응답)를 배송 정보로 바꾼다. 경유지는 없다.
 function fromLetter(letter) {
   return {
-    from: letter.from_region.full_name,
-    to: letter.to_region.full_name,
+    from: regionName(letter.from_region),
+    to: regionName(letter.to_region),
     recipient: letter.recipient.nickname,
     sentAt: letter.sent_at,
     arrivesAt: letter.arrives_at,
@@ -32,8 +43,8 @@ function fromLetter(letter) {
 // 배송 경로 응답을 배송 정보로 바꾼다. 경유지의 일기 한 줄이 동네 소식이다.
 function fromRoute(route) {
   return {
-    from: route.from_region.full_name,
-    to: route.to_region.full_name,
+    from: regionName(route.from_region),
+    to: regionName(route.to_region),
     recipient: route.partner.nickname,
     sentAt: route.sent_at,
     arrivesAt: route.arrives_at,
@@ -41,7 +52,7 @@ function fromRoute(route) {
     mapTheme: route.map_theme,
     towns: route.waypoints.map((waypoint, index) => ({
       id: String(waypoint.region.id),
-      name: waypoint.region.full_name,
+      name: regionName(waypoint.region),
       at: waypoint.progress,
       news: waypoint.story?.body_preview ?? '',
       icon: index % 2 === 0 ? 'heart' : 'pin',
