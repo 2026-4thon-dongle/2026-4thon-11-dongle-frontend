@@ -8,6 +8,7 @@ import StampPage from '../../pages/letter-write/StampPage.jsx'
 import SendingPage from '../../pages/delivery/SendingPage.jsx'
 import DonePage from '../../pages/delivery/DonePage.jsx'
 import MapPage from '../../pages/delivery/MapPage.jsx'
+import DeliveryGamePage from '../../pages/delivery-game/DeliveryGamePage.jsx'
 
 // 편지 쓰기 단계 경로는 components/letter-write/steps.js의 LETTER_STEPS와 같아야 한다.
 export const letterRoutes = [
@@ -30,10 +31,8 @@ export const letterRoutes = [
     path: '/delivery/*',
     element: <RoutePlaceholder title="배송" />,
   },
-  {
-    path: '/delivery-game',
-    element: <RoutePlaceholder title="직접 배달하기" />,
-  },
+  // 직접 배달 게임 (9-1, 9-2). ?letterId=편지 id, 없으면 배송 중 편지에서 고르거나 연습한다.
+  { path: '/delivery-game', element: <DeliveryGamePage /> },
   {
     path: '/stamp-make',
     element: <RoutePlaceholder title="우표 만들기" />,
