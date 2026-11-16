@@ -1,5 +1,6 @@
 import Mascot from '../../shared/ui/Mascot.jsx'
-import { STICKERS } from './data.js'
+import Icon from '../../shared/ui/Icon.jsx'
+import { STICKERS, STICKER_UNLOCK_STAMPS, MOCK_STAMP_COUNT } from './data.js'
 import useLetterMaterials, { findMaterial } from './useLetterMaterials.js'
 import './StickerDrawer.css'
 
@@ -21,17 +22,20 @@ function StickerDrawer({ onPick, reward }) {
       <ul className="sticker-drawer__list">
         {STICKERS.map((sticker) => {
           const server = findMaterial(materials?.stickers, sticker.code)
-          const locked = server ? !server.unlocked : false
+          // 서버 값이 있으면 따르고, 없으면 모은 우표가 3개 미만일 때 잠근다.
+          const locked = server ? !server.unlocked : MOCK_STAMP_COUNT < STICKER_UNLOCK_STAMPS
+          const condition = server?.unlock_condition ?? `우표 ${STICKER_UNLOCK_STAMPS}개`
           return (
             <li key={sticker.id}>
               <button
                 type="button"
                 className={`sticker-drawer__item${locked ? ' is-locked' : ''}`}
-                aria-label={locked ? `${sticker.label} 스티커 (${server.unlock_condition}를 모으면 열려요)` : `${sticker.label} 스티커 붙이기`}
+                aria-label={locked ? `${sticker.label} 스티커 (${condition}를 모으면 열려요)` : `${sticker.label} 스티커 붙이기`}
                 aria-disabled={locked}
                 onClick={() => !locked && onPick(sticker)}
               >
                 <Mascot pose={sticker.pose} size={40} />
+                {locked && <span className="sticker-drawer__lock"><Icon name="lock" size={15} /></span>}
               </button>
             </li>
           )
