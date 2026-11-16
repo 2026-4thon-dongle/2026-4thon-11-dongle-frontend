@@ -22,6 +22,13 @@ export const hasSignatureStroke = (ops) => ops.some((op) => op.type === 'stroke'
  * @param {Array} ops letterDraftContext의 signature.ops
  * @returns {Promise<File|null>} 'signature.png'
  */
+/** 캔버스에 조금이라도 보이는(투명하지 않은) 점이 있는지. */
+function hasVisiblePixel(ctx, width, height) {
+  const { data } = ctx.getImageData(0, 0, width, height)
+  for (let index = 3; index < data.length; index += 4) if (data[index] !== 0) return true
+  return false
+}
+
 export async function signatureToFile(ops) {
   if (!hasSignatureStroke(ops)) return null
 
@@ -31,6 +38,8 @@ export async function signatureToFile(ops) {
   const ctx = canvas.getContext('2d')
   ctx.setTransform(SIGNATURE_SCALE, 0, 0, SIGNATURE_SCALE, 0, 0)
   drawStrokes(ctx, ops, SIGNATURE_WIDTH, SIGNATURE_HEIGHT) // 지우개는 destination-out이라 투명하게 지워진다.
+  // 선을 그렸다가 지우개로 모두 지웠으면 보이는 점이 없다. 빈 그림을 보내지 않는다(받는 쪽에 빈 서명 자리가 생긴다).
+  if (!hasVisiblePixel(ctx, canvas.width, canvas.height)) return null
 
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
   if (!blob) throw new Error('서명 이미지를 만들지 못했어요.')
