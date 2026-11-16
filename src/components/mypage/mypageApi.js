@@ -11,6 +11,8 @@
 // VITE_API_MOCK=true(개발 모드)일 때만 mypageDemo.js의 가짜 서버를 쓴다. 서버가 실패해도 mock으로 채우지 않는다.
 import { ApiError, clearTokens, getTokens, isApiDemo, request } from '../../shared/api/client.js'
 import { demoSource } from './mypageDemo.js'
+import { saveSignupProfile } from '../../shared/api/profile.js'
+import { mapProfile } from '../../shared/api/mappers.js'
 import {
   toMyPage,
   toDraftCard,
@@ -46,6 +48,12 @@ const serverSource = {
 const source = isApiDemo ? demoSource : serverSource
 
 const MAX_PAGES = 10
+
+// 닉네임·지역을 바꾸면 서버가 돌려준 내 정보(GET /api/users/me/와 같은 모양)로 앱 공용 프로필을 바꾼다.
+// 홈 피드의 본가 칩·인사 문구가 새로고침 전까지 옛 값을 쓰지 않게 한다. 개발 모드(mock)는 응답 모양이 달라 건너뛴다.
+function syncProfile(me) {
+  if (!isApiDemo && me?.id) saveSignupProfile(mapProfile(me))
+}
 
 // 페이지 목록({ results, next })을 끝까지 모은다. 임시저장·차단은 한 사람이 많이 갖지 않아 한 번에 보여 준다.
 async function collectPages(fetchPage) {
@@ -117,7 +125,7 @@ export async function fetchNickname() {
 
 /** 닉네임 변경(7-9). 실패하면 ApiError(INVALID_NICKNAME 400, NICKNAME_TAKEN 409 등)를 던진다. */
 export async function updateNickname(nickname) {
-  await source.patchNickname(nickname.trim())
+  syncProfile(await source.patchNickname(nickname.trim()))
 }
 
 /** 지역 설정(7-10)의 처음 값. GET /api/users/me/의 hometowns[]·residence를 지역 선택기 값(id 포함)으로 바꾼다. */
@@ -143,7 +151,7 @@ export async function saveRegions({ hometowns, residence }) {
     error.code = 'VALIDATION_ERROR'
     throw error
   }
-  await source.putRegions({ hometown_region_ids: hometowns.map((region) => region.id), residence_region_id: residence.id }, { hometowns, residence })
+  syncProfile(await source.putRegions({ hometown_region_ids: hometowns.map((region) => region.id), residence_region_id: residence.id }, { hometowns, residence }))
 }
 
 /** 알림·편지 설정(7-11). */
