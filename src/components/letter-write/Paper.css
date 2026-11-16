@@ -5,12 +5,14 @@
    --paper-bg      바탕 (색 또는 그라데이션)
    --paper-line    줄·격자 색
    --paper-border  테두리 (border 한 줄 값), --paper-border-width 그 두께(줄 위치를 맞출 때 쓴다)
+   --paper-shadow  바깥 그림자 (box-shadow 값)
    --paper-text    글씨 색, --paper-sub 보조 글씨(글자 수), --paper-hint 안내 문구 */
 .paper {
   --paper-bg: #fffdf8;
   --paper-line: #f0e2ca;
   --paper-border: 1.5px solid #f0e2ca;
   --paper-border-width: 1.5px;
+  --paper-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
   --paper-text: var(--text-brown);
   --paper-sub: var(--text-sub);
   --paper-hint: var(--text-hint);
@@ -18,20 +20,23 @@
 
 /* 1. 기본: 흰 바탕 + 연한 줄 + 연한 테두리 1.5px (위 기본값) */
 
-/* 2. 줄노트: 하늘색 바탕 + 하늘색 줄 */
+/* 2. 줄노트: 하늘색 바탕 + 하늘색 줄(바탕보다 또렷하게 한 단계 진하게) */
 .paper--ruled {
   --paper-bg: #dfeef3;
-  --paper-line: #bfdce6;
+  --paper-line: #a6cbd9;
   --paper-border: 0 solid transparent;
   --paper-border-width: 0px;
   --paper-hint: #8f9ca3; /* 안내 문구: 하늘색 바탕에서 베이지가 떠 보여 회색으로 */
 }
 
-/* 3. 체크: 크림 바탕 + 정사각형 격자 */
+/* 3. 체크: 크림 바탕 + 정사각형 격자.
+   바탕이 화면 배경(크림)과 비슷해 묻히므로 연한 테두리 1.5px와 조금 더 진한 그림자를 두고, 격자 줄도 진하게 한다. */
 .paper--check {
   --paper-bg: #fff5e1;
-  --paper-border: 0 solid transparent;
-  --paper-border-width: 0px;
+  --paper-line: #e6d0a8;
+  --paper-border: 1.5px solid #ecdcc0;
+  --paper-border-width: 1.5px;
+  --paper-shadow: 0 6px 18px rgba(140, 97, 51, 0.2);
 }
 
 /* 4. 고향이 테두리: 복숭아색 바탕, 줄 없음, 고향이 장식 */
