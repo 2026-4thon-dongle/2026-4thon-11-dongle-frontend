@@ -5,7 +5,8 @@ export const MYPAGE_PATHS = {
   home: '/mypage', // 7-1
   drafts: '/mypage/drafts', // 7-3
   stamps: '/mypage/stamps', // 7-4~7-6, 7-7(같은 경로의 바텀시트)
-  stampRewards: '/mypage/stamps/rewards', // 7-8 수집 보상 (가정, 묶음 3에서 구현)
+  stampRewards: '/mypage/stamps/rewards', // 7-8 수집 보상
+  rewardUnlocked: '/mailbox/reward-unlocked', // 5-13 보상 해금(내 우체통 담당 화면). 7-8에서 이미 열린 보상을 누르면 ?code=보상code 로 간다.
   nickname: '/mypage/nickname', // 7-9 (설정 화면 7-1-1에서 온다)
   regions: '/mypage/regions', // 7-10 (설정 화면 7-1-1과 7-1의 "지역 수정 ›"에서 온다)
   notifications: '/mypage/notifications', // 7-11 (설정 화면 7-1-1과 7-1의 "알림 · 편지 쉬기"에서 온다)

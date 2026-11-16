@@ -36,3 +36,16 @@
   padding: 0;
   list-style: none;
 }
+
+/* 이미 열린 보상 카드: 누르면 5-13. 버튼 기본 모양만 지운다. */
+.stamp-rewards__open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}

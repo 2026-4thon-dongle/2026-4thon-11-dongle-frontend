@@ -3,12 +3,9 @@
 // 입력은 항상 서버 응답 모양이다. mock 모드(VITE_API_MOCK=true)도 penPalDemo.js가 서버 모양으로 바꿔 넘긴다.
 // 펜팔·기록의 id는 친구 id가 아니라 대화 id(conversation_id)이다. 경로도 /pen-pal/:conversationId 이다.
 
-// 아래 네 가지(우표 그림 id, 고향이 표정, 첫 줄 미리보기, 답장 경로)는 components/mailbox와 같은 규칙이다.
-// 다른 기능 폴더(components/mailbox)를 import하지 않는 규칙을 지키려고 이전처럼 여기에도 따로 둔다.
+import { toStampArtId } from '../mailbox/stampArt.js' // 서버 우표 code → 그림 id 표는 한 곳(mailbox/stampArt.js)에 있다.
 
-// 서버 우표 코드와 우표 그림 이름이 다른 우표: 서버 코드 → 그림 id (letter-write/data.js의 stampArtIdOf와 같은 표)
-const STAMP_ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hometown-birthday' }
-const toStampArtId = (code) => (code ? (STAMP_ART_ID_BY_CODE[code] ?? code) : null)
+// 아래 세 가지(고향이 표정, 첫 줄 미리보기, 답장 경로)는 components/mailbox와 같은 규칙이다. 이전처럼 여기에도 따로 둔다.
 
 // 서버 avatar 코드 → 고향이(Mascot) 표정. 모르는 값은 기본 얼굴이다.
 const AVATAR_POSE = { 'cat-basic': 'face', 'cat-wink': 'wink', 'cat-sparkle': 'sparkle', 'cat-shy': 'shy', 'cat-smile': 'smile' }

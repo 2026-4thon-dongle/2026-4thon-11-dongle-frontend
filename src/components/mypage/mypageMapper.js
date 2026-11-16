@@ -2,6 +2,7 @@
 // 화면과 컴포넌트는 서버 필드 이름을 직접 쓰지 않고 이 파일의 결과만 쓴다.
 // 명세(문서 레포 api/users.md)가 바뀌면 이 파일과 mypageApi.js만 고친다.
 import { MYPAGE_PATHS } from './mypagePaths.js'
+import { toStampArtId } from '../mailbox/stampArt.js'
 
 const DATE_FORMAT = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -97,9 +98,8 @@ export function toDraftCard(raw) {
   }
 }
 
-// 서버 우표 code → 우표 그림 id(shared/assets/stamp 파일 이름). 두 개만 이름이 다르다(api/stamps.md 코드 표 ↔ 그림 파일).
-const STAMP_ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hometown-birthday' }
-const artIdOf = (code) => STAMP_ART_ID_BY_CODE[code] ?? code
+// 서버 우표 code → 우표 그림 id. 표는 한 곳(mailbox/stampArt.js)에 있다.
+const artIdOf = toStampArtId
 
 const GRADE_LABELS = { common: '일반', rare: '희귀', legendary: '전설' }
 

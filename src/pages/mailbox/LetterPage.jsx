@@ -15,6 +15,7 @@ import {
   markLetterReplied,
   passLetter,
 } from '../../components/mailbox/letterReceiveApi.js'
+import { findRoundTripGain } from '../../components/mailbox/stampRewardApi.js'
 import './LetterPage.css'
 
 const MAILBOX_PATH = '/mailbox'
@@ -28,6 +29,7 @@ const SHOW_STAMP_MAKE_ENTRY = true
  * 그 밖의 실패(네트워크 등)는 "다시 시도"가 있는 에러 화면이다.
  * 가정:
  *  - 내가 받은 편지이고 아직 열지 않았으면(direction이 received, is_read가 false) 5-8, 그 밖에는 5-9로 연다. 5-8에서 "봉투 열기"를 누르면 서버가 읽음 처리하고(POST open) 5-9로 바꾼다.
+ *  - 5-8에서 열기에 성공한 직후, 안 읽은 받은 답장(is_first가 false)이면 「첫 왕복」 우표(GET /api/stamps/first-roundtrip/)를 확인해 이 답장이 완성한 왕복이면 5-12로 간다(보상은 GET /api/stamps/rewards/의 unlocked && !seen). 서버가 받는 쪽에 "새로 받음"을 알려 주지 않아 granted_with·granted_at으로 추론한다(허용 오차 stampRewardMapper.ROUND_TRIP_TOLERANCE_MS). 시안의 "열기 → 5-12" 순서는 이 위치로 가정했다. 확인이 실패하면 조용히 5-9로 연다. 5-12의 "확인"은 이 편지로 돌아온다.
  *  - "나중에 읽을래요"는 읽음 처리 없이 한 칸 뒤로 돌아가 보던 탭에 머문다(주소로 바로 들어왔으면 /mailbox). 편지는 빨간 점이 유지된 채 새 편지 탭에 남는다.
  *  - 열어서 읽기만 한 편지는 새 편지 탭에 남되 빨간 점이 사라진다(서버가 읽음을 반영한 목록을 준다).
  *  - "넘기기"(POST pass)는 보관으로 옮기고 토스트("보관함으로 옮겼어요")를 보여 준 뒤 우체통의 보관 탭으로 이동한다. 토스트 문구는 시안에 없어서 정했다. 실패하면 서버 메시지를 토스트로 보여 준다.
@@ -73,6 +75,13 @@ function LetterPage() {
   const handleOpen = async () => {
     try {
       const opened = await openLetter(letterId)
+      // 안 읽은 받은 답장이면 이 답장이 「첫 왕복」을 완성했는지 확인하고, 맞으면 5-12로 간다. 확인이 실패해도 편지 읽기는 막지 않는다(findRoundTripGain은 던지지 않는다).
+      const gain = await findRoundTripGain(loaded?.detail?.roundTripProbe)
+      if (gain) {
+        // replace: 5-8 자리를 5-12로 바꾼다. 5-12의 "확인"이 returnTo(이 편지)로 replace 해서 돌아오면 이 편지는 읽힌 상태(5-9)로 다시 열린다.
+        navigate('/mailbox/stamp-gained', { replace: true, state: { ...gain, returnTo: location.pathname } })
+        return
+      }
       if (opened) setResult((prev) => (prev?.key === requestKey ? { ...prev, detail: opened } : prev))
     } catch (error) {
       showToast(error.message)

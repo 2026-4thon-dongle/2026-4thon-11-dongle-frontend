@@ -44,7 +44,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `93:1279`.
 ## 임시 경로와 연결
 
 - 7-1 "내 일기" → `/diary/mine`(효령), "펜팔 친구" → `/pen-pal`(`RoutePlaceholder`, 5-14).
-- 7-3 "이어 쓰기" → 첫 편지는 `/letter-write?diaryId&nickname`, 답장은 `/letter-write?letterId(=reply_to)&nickname`(서버가 지역을 주지 않아 `region`은 없다), 7-7 "이 우표 붙여서 편지 쓰기" → `/letter-write?stampId=…`. `stampId`는 서버 우표 code이다. 편지 쓰기가 `stampId`를 읽는지, 서버 임시저장(`GET /api/letters/drafts/{id}/`)에서 본문을 복원하는지는 합의가 필요하다(현재 쿼리에는 임시저장 id가 없다).
+- 7-3 "이어 쓰기" → 첫 편지는 `/letter-write?diaryId&nickname`, 답장은 `/letter-write?letterId(=reply_to)&nickname`(서버가 지역을 주지 않아 `region`은 없다), 7-7 "이 우표 붙여서 편지 쓰기" → `/letter-write?stampId=…`. `stampId`는 서버 우표 code이다. 이어 쓰기는 편지 쓰기 쪽 `EntryRedirect`가 `diaryId`/`letterId`로 서버 임시저장을 찾아 본문·편지지·글씨체를 복원한다(#86). 임시저장 id는 쿼리에 없다. `stampId`는 편지 쓰기가 아직 읽지 않는다(우표 선택 없이 1단계로 간다).
 - 7-6 "첫 일기 쓰러 가기" → `/diary/write`, 7-13 로그아웃·탈퇴 뒤 → `/start`(가정).
 - 7-9, 7-12, 7-13은 설정 화면(7-1-1)에서 들어간다. 7-10과 7-11은 7-1에서도 온다.
 - 설정(7-1-1) 연결: 닉네임 변경 → `/mypage/nickname`(오른쪽 값 = 닉네임), 지역 설정 → `/mypage/regions`("천안 외 2곳 · 성북구"), 알림 · 편지 설정 → `/mypage/notifications`("하루 한 번", 끄면 비움), 차단 목록 → `/mypage/blocks`("N명"), 계정 → `/mypage/account`. 값은 화면에 들어올 때마다 서버에서 새로 읽는다(7-10에서 저장한 지역도 바로 보인다).
@@ -52,7 +52,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `93:1279`.
 - 지역 설정 저장 안 하고 나가기(7-10-3): 본가·거주를 실제로 바꿨을 때만(원래 값으로 되돌리면 제외, 시트만 열었다 닫는 것도 제외) 헤더 뒤로 가기에서 "저장하지 않고 나갈까요?"를 띄운다. "계속 수정할게요"는 팝업만 닫고, "저장 안 하고 나갈게요"는 이전 화면으로 간다. 딤·Esc는 계속 수정과 같다. 앱이 `BrowserRouter`라 `useBlocker`를 쓸 수 없어 브라우저·기기 뒤로 가기, 주소 이동, 새로고침은 막지 못한다. 개발 모드에서 `?dialog=leave`로 팝업을 바로 연다.
 - 닉네임 변경 저장 안 하고 나가기: 지역 설정과 같은 팝업(`LeaveEditDialog`)을 쓴다. 앞뒤 공백을 뺀 닉네임이 처음 값과 다르고 저장 중이 아닐 때만 헤더 뒤로 가기에서 띄운다(되돌렸거나 저장한 뒤에는 그냥 나간다). 브라우저 뒤로 가기는 막지 못한다. 개발 모드에서 `?dialog=leave`로 바로 연다.
 - 설정에는 켜고 끄는 항목이 없어 `Toggle`을 쓰지 않았다. 설정 데이터는 `mypageApi.fetchSettingsHome` → `mypageMapper.toSettingsHome`이고, 메뉴 줄은 7-1의 `MenuList`를 그대로 쓴다. "정보" 카드만 `SettingsInfoCard`를 새로 만들었다.
-- 우표 그림은 `shared/ui/Stamp`(파일 이름 id)로 그린다. 서버 code와 그림 id는 `long-delivery`→`long-way`, `cat-birthday`→`hometown-birthday` 두 개만 달라 `mypageMapper.js`의 `STAMP_ART_ID_BY_CODE`로 바꾼다. 이름 띠·번호는 `Stamp`가 `shared/mocks/stamps.js`로 그린다(서버 값과 같은지는 확인 전).
+- 우표 그림은 `shared/ui/Stamp`(파일 이름 id)로 그린다. 서버 code와 그림 id는 `long-delivery`→`long-way`, `cat-birthday`→`hometown-birthday` 두 개만 달라 `components/mailbox/stampArt.js`의 표(05 우체통·펜팔·마이가 함께 쓴다)로 바꾼다. 이름 띠·번호는 `Stamp`가 `shared/mocks/stamps.js`로 그린다(서버 값과 같은지는 확인 전).
 
 ## 서버 명세와 화면의 대응
 
@@ -91,6 +91,5 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `93:1279`.
 - 우표 이름·번호는 서버가 주지만 `Stamp` 컴포넌트는 `shared/mocks/stamps.js`로 그려 서버 값과 어긋날 수 있다(`shared` 변경 필요).
 - 이미 무효인 refresh로 로그아웃하면 400 `INVALID_REFRESH_TOKEN`인지, 탈퇴 직후 토큰 상태는 백엔드 확인 전이다(그래서 실패해도 로컬 토큰은 지운다).
 - `/diary/mine`, `/diary/write`, `/start`.
-- `letterId`·`stampId` 쿼리, 임시저장 본문 복원 방식.
 
 관련 지침: `CLAUDE.md`, `docs/ownership.md`.

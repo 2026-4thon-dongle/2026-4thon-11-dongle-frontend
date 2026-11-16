@@ -9,14 +9,10 @@ const DATE_FORMAT = new Intl.DateTimeFormat('ko-KR', {
   day: 'numeric',
 })
 
-// 서버 우표 코드와 우표 그림(shared/assets/stamp) 이름이 다른 우표: 서버 코드 → 그림 id.
-// letter-write/data.js의 stampArtIdOf와 같은 표이다(다른 기능 폴더는 import하지 않는 규칙이라 따로 둔다).
-const STAMP_ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hometown-birthday' }
+import { toStampArtId } from './stampArt.js'
 
-/** 서버 우표 코드 → 우표 그림 id(Stamp 컴포넌트의 id). 없으면 null */
-export function toStampArtId(code) {
-  return code ? (STAMP_ART_ID_BY_CODE[code] ?? code) : null
-}
+// 서버 우표 code → 그림 id 변환은 stampArt.js 한 곳에 있다. letterReceiveMapper 등이 여기서 가져다 쓰던 이름을 그대로 내보낸다.
+export { toStampArtId }
 
 // 서버 avatar 코드 → 고향이(Mascot) 표정. 알려진 코드는 편지 스티커 5종뿐이라 모르는 값은 기본 얼굴이다.
 const AVATAR_POSE = {
