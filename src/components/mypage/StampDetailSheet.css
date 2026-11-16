@@ -96,3 +96,15 @@
 .stamp-detail__action {
   margin: 20px -4px 0;
 }
+
+/* 불러오기에 실패했을 때 */
+.stamp-detail--error {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  min-height: 200px;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-sub);
+}

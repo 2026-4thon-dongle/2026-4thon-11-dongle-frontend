@@ -1,4 +1,4 @@
-// 마이 화면용 변환 함수. 서버(지금은 mock) 응답 → 화면용 데이터.
+// 마이 화면용 변환 함수. 서버 응답(mock 모드도 같은 모양) → 화면용 데이터.
 // 화면과 컴포넌트는 서버 필드 이름을 직접 쓰지 않고 이 파일의 결과만 쓴다.
 // 명세(문서 레포 api/users.md)가 바뀌면 이 파일과 mypageApi.js만 고친다.
 import { MYPAGE_PATHS } from './mypagePaths.js'
@@ -24,17 +24,17 @@ export function provinceOf(fullName = '') {
 
 /**
  * 마이(7-1) 화면용 데이터.
- * @param {object} me      GET /api/users/me/ 응답 (+ mock 전용 school_name, stamp_total)
+ * @param {object} me      GET /api/users/me/ 응답
  * @param {object} settings GET /api/users/me/settings/ 응답
+ * @param {{owned_count: number, total_count: number}} stamps GET /api/stamps/ 응답. 우표첩 줄의 "n / 전체"에 서버 값을 그대로 쓴다.
  */
-export function toMyPage(me, settings) {
+export function toMyPage(me, settings, stamps) {
   const { stats } = me
-  const stampTotal = me.stamp_total
   const hometowns = me.hometowns ?? []
 
   return {
     nickname: me.nickname,
-    // 명세에는 school_verified만 있다. 학교 이름(school_name)은 mock 전용이라 없으면 이름 없이 보여 준다.
+    // school_name은 4호선톤 참가 대학이 아니면 null이다. 이때는 "인증 완료"만 보여 준다.
     schoolLabel: me.school_verified ? `${me.school_name ? `${me.school_name} ` : ''}인증 완료` : '',
     letterSignature: `From. ${me.nickname} 으로 편지를 보내요`,
     hometownProvince: provinceOf(hometowns[0]?.full_name),
@@ -52,7 +52,7 @@ export function toMyPage(me, settings) {
         id: 'stamps',
         icon: 'stamp',
         label: '우표첩',
-        value: stampTotal ? `${stats.stamp_count} / ${stampTotal}` : `${stats.stamp_count}`,
+        value: `${stamps.owned_count} / ${stamps.total_count}`,
         to: MYPAGE_PATHS.stamps,
       },
       { id: 'penpals', icon: 'heart', label: '펜팔 친구', value: `${stats.penpal_count}명`, to: MYPAGE_PATHS.penPal },
@@ -70,19 +70,19 @@ export function toMyPage(me, settings) {
 }
 
 /**
- * 임시저장 카드(7-3) 하나. 화면용 필드:
- * id, kindLabel, title, preview, metaLabel("11월 6일 저장 · 86자"), resumePath
+ * 임시저장 카드(7-3) 하나. 서버 항목: id, kind(first/reply), diary_id, reply_to, recipient{id,nickname}, body_preview, body_length, saved_at.
+ * 화면용 필드: id, kindLabel, title, preview, metaLabel("11월 6일 저장 · 86자"), resumePath
  * 이어 쓰기 경로는 docs/letter-write.md의 쿼리 규칙을 따른다.
- *   일기에 보내는 첫 편지: diaryId, nickname, region
- *   받은 편지에 대한 답장: letterId, nickname, region (문서의 제안 이름이며 채현님과 합의 전이다)
+ *   일기에 보내는 첫 편지: diaryId, nickname / 받은 편지에 대한 답장: letterId(= reply_to), nickname
+ * 서버는 지역을 주지 않아 region은 넘기지 않는다(편지 쓰기가 estimate로 알아낸다).
  */
 export function toDraftCard(raw) {
-  const isFirstLetter = raw.kind === 'first_letter'
+  const isFirstLetter = raw.kind === 'first'
+  const nickname = raw.recipient?.nickname ?? ''
   const query = new URLSearchParams()
-  if (isFirstLetter) query.set('diaryId', raw.reply.diary_id)
-  else query.set('letterId', raw.reply.letter_id)
-  query.set('nickname', raw.reply.nickname)
-  query.set('region', raw.reply.region)
+  if (isFirstLetter) query.set('diaryId', raw.diary_id)
+  else query.set('letterId', raw.reply_to)
+  if (nickname) query.set('nickname', nickname)
 
   const savedAt = new Date(raw.saved_at)
   const savedLabel = Number.isNaN(savedAt.getTime()) ? '' : `${DATE_FORMAT.format(savedAt)} 저장`
@@ -90,57 +90,56 @@ export function toDraftCard(raw) {
   return {
     id: raw.id,
     kindLabel: isFirstLetter ? '첫 편지' : '답장',
-    title: raw.title,
-    preview: raw.content_preview,
-    metaLabel: [savedLabel, `${raw.char_count}자`].filter(Boolean).join(' · '),
+    title: isFirstLetter ? `Re. ${nickname}님의 고향 일기` : `Re. ${nickname}님의 편지`,
+    preview: raw.body_preview,
+    metaLabel: [savedLabel, `${raw.body_length}자`].filter(Boolean).join(' · '),
     resumePath: `${MYPAGE_PATHS.letterWrite}?${query.toString()}`,
   }
 }
 
+// 서버 우표 code → 우표 그림 id(shared/assets/stamp 파일 이름). 두 개만 이름이 다르다(api/stamps.md 코드 표 ↔ 그림 파일).
+const STAMP_ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hometown-birthday' }
+const artIdOf = (code) => STAMP_ART_ID_BY_CODE[code] ?? code
+
+const GRADE_LABELS = { common: '일반', rare: '희귀', legendary: '전설' }
+
 /**
- * 우표첩(7-4~7-6) 화면용 데이터.
- * @param {Array<{id: string, name: string, kind: 'basic'|'decoration'}>} stamps 우표 목록 (shared/mocks/stamps.js, 읽기만 한다)
- * @param {string[]} ownedCodes 보유한 우표 id 목록
- * @param {Array<{id: string, threshold: number, name: string, next_text?: string}>} rewards 수집 보상 (mock 전용)
- *
- * 우표는 "보유한 것을 앞에, 나머지는 원래 순서"로 늘어놓는다. 시안 7-4, 7-5, 7-6의 순서와 맞춘 가정이다.
- * 다음 보상과 받은 보상의 진행은 업적(기본) 우표 개수로 센다. 시안 7-5는 "꾸미기 우표도 수집 보상 개수에 포함돼요"라고
- * 적었지만 7-4의 "5 / 10"은 기본 우표 5개만 센 값이라 서로 맞지 않는다. 디자이너 확인이 필요하다.
+ * 우표첩(7-4~7-6) 화면용 데이터. 서버 GET /api/stamps/ 응답(kind 없이 전부) 하나로 만든다.
+ * 개수는 서버 값을 그대로 쓴다: owned_count는 업적+꾸미기를 합한 수집 보상 기준 개수이다(api/stamps.md).
+ *   - 업적 탭의 "모은 우표 N개"와 다음 보상 진행은 owned_count 기준이다. (시안 7-4는 업적만 센 값처럼 보여 어긋날 수 있다. 백엔드·디자이너 확인 필요)
+ *   - 꾸미기 탭의 "꾸미기 우표 N개"는 stamps[]에서 꾸미기이면서 owned인 개수를 센다.
+ * 우표는 "보유한 것을 앞에, 나머지는 서버 순서"로 늘어놓는다. 시안 7-4, 7-5, 7-6의 순서와 맞춘 가정이다.
+ * 우표 하나: { id(서버 code), artId(그림 id), name, owned }
  */
-export function toStampCollection(stamps, ownedCodes, rewards) {
-  const owned = new Set(ownedCodes)
+export function toStampCollection(data) {
   const byKind = (kind) => {
-    const list = stamps
+    const list = (data.stamps ?? [])
       .filter((stamp) => stamp.kind === kind)
-      .map((stamp) => ({ id: stamp.id, name: stamp.name, owned: owned.has(stamp.id) }))
+      .map((stamp) => ({ id: stamp.code, artId: artIdOf(stamp.code), name: stamp.name, owned: Boolean(stamp.owned) }))
     return [...list.filter((stamp) => stamp.owned), ...list.filter((stamp) => !stamp.owned)]
   }
 
-  const achievementStamps = byKind('basic')
   const decorationStamps = byKind('decoration')
-  const achievementCount = achievementStamps.filter((stamp) => stamp.owned).length
   const decorationCount = decorationStamps.filter((stamp) => stamp.owned).length
-
-  const sortedRewards = [...rewards].sort((a, b) => a.threshold - b.threshold)
-  const next = sortedRewards.find((reward) => reward.threshold > achievementCount)
-  const received = sortedRewards.filter((reward) => reward.threshold <= achievementCount)
+  const next = data.next_reward
+  const received = data.received_rewards ?? []
 
   return {
     achievement: {
-      count: achievementCount,
-      title: `모은 우표 ${achievementCount}개`,
+      count: data.owned_count,
+      title: `모은 우표 ${data.owned_count}개`,
       subtitle: '성과를 낼 때마다 특별한 우표가 생겨요',
-      stamps: achievementStamps,
+      stamps: byKind('achievement'),
       nextReward: next
         ? {
-            text: `다음 보상 · ${next.next_text ?? `${next.threshold}개: ${next.name}`}`,
-            current: achievementCount,
+            text: `다음 보상 · ${next.threshold}개: ${next.name}`,
+            current: data.owned_count,
             target: next.threshold,
-            ratio: Math.min(achievementCount / next.threshold, 1),
+            ratio: Math.min(data.owned_count / next.threshold, 1),
           }
         : null,
       receivedLabel: received.length > 0 ? `받은 보상: ${received.map((reward) => reward.name).join(' · ')}` : '',
-      isEmpty: achievementCount === 0,
+      isEmpty: data.owned_count === 0,
     },
     decoration: {
       count: decorationCount,
@@ -154,52 +153,54 @@ export function toStampCollection(stamps, ownedCodes, rewards) {
 const OBTAINED_DATE = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric' })
 
 /**
- * 우표 상세(7-7) 화면용 데이터.
- * @param {{id: string, name: string}} stamp 우표 (이름은 shared/mocks/stamps.js)
- * @param {object} detail mock 전용 상세 정보 (stampCollection.MOCK_STAMP_DETAILS)
- * @param {{current: number, target: number} | null} progress 수집 보상 진행. 없으면 "(n / m)" 문구를 뺀다.
+ * 우표 상세(7-7) 화면용 데이터. 서버 GET /api/stamps/{code}/ 응답: 우표 객체 + owned, granted_at, granted_with{id,nickname}|null, owned_count, next_reward.
+ * 받은 날짜·계기 문구는 서버 값(granted_at, granted_with)으로 만든다. 꾸미기 우표는 등급 자리에 "꾸미기"를 보이고 번호는 숨긴다(시안).
  */
-export function toStampDetail(stamp, detail = {}, progress = null) {
-  const obtainedAt = detail.obtained?.at ? new Date(detail.obtained.at) : null
-  const obtainedLabel =
-    obtainedAt && !Number.isNaN(obtainedAt.getTime())
-      ? [OBTAINED_DATE.format(obtainedAt), detail.obtained.from].filter(Boolean).join(' · ')
-      : ''
+export function toStampDetail(stamp) {
+  const grantedAt = stamp.granted_at ? new Date(stamp.granted_at) : null
+  const dateLabel = grantedAt && !Number.isNaN(grantedAt.getTime()) ? OBTAINED_DATE.format(grantedAt) : ''
+  const isAchievement = stamp.kind === 'achievement'
+  const progress = stamp.next_reward ? ` (${stamp.owned_count} / ${stamp.next_reward.threshold})` : ''
 
   return {
-    id: stamp.id,
+    id: stamp.code,
+    artId: artIdOf(stamp.code),
     name: stamp.name,
-    gradeLabel: detail.grade ?? '',
-    numberLabel: detail.number ? `No.${String(detail.number).padStart(2, '0')}` : '',
-    description: detail.description ?? '',
-    obtainedLabel,
-    abilities: [
-      '편지 봉투에 붙여서 보내기',
-      `우표첩 보상 개수에 포함돼요${progress ? ` (${progress.current} / ${progress.target})` : ''}`,
-    ],
-    // 편지 쓰기로 넘기는 값. stampId 쿼리는 docs/letter-write.md에 없는 제안이라 채현님과 합의가 필요하다.
-    letterWritePath: `${MYPAGE_PATHS.letterWrite}?${new URLSearchParams({ stampId: stamp.id }).toString()}`,
+    gradeLabel: isAchievement ? (GRADE_LABELS[stamp.grade] ?? '') : '꾸미기',
+    numberLabel: isAchievement ? `No.${String(stamp.number).padStart(2, '0')}` : '',
+    description: stamp.description ?? '',
+    obtainedLabel: [dateLabel, stamp.granted_with ? `${stamp.granted_with.nickname}님과의 편지로 받음` : ''].filter(Boolean).join(' · '),
+    abilities: ['편지 봉투에 붙여서 보내기', `우표첩 보상 개수에 포함돼요${progress}`],
+    // 편지 쓰기로 넘기는 값(서버 우표 code). stampId 쿼리는 docs/letter-write.md에 없는 제안이라 채현님과 합의가 필요하다.
+    letterWritePath: `${MYPAGE_PATHS.letterWrite}?${new URLSearchParams({ stampId: stamp.code }).toString()}`,
   }
 }
 
+// 서버 보상 code → 7-8 카드 미리보기 그림 종류. 서버는 그림 종류를 주지 않아 code로 정한다.
+const REWARD_KIND_BY_CODE = {
+  'stickers-cat': 'sticker',
+  'stationery-night-sky': 'paper',
+  'collector-and-font': 'collector',
+  'stationery-gold-postcard': 'postcard',
+}
+
 /**
- * 수집 보상(7-8) 화면용 데이터. 우표를 모은 개수는 업적(기본) 우표 개수이다(7-4와 같은 기준).
- * @param {number} count 모은 우표 개수
- * @param {Array<{id: string, threshold: number, name: string, kind: string}>} rewards 수집 보상 (mock 전용)
+ * 수집 보상(7-8) 화면용 데이터. 서버 GET /api/stamps/rewards/ 응답: { owned_count, rewards[{code, threshold, name, unlocked, ...}] }.
+ * 모은 우표 수는 서버 owned_count이다(7-4와 같은 기준).
  */
-export function toStampRewards(count, rewards) {
-  const sorted = [...rewards].sort((a, b) => a.threshold - b.threshold)
-  const next = sorted.find((reward) => reward.threshold > count)
+export function toStampRewards(data) {
+  const sorted = [...(data.rewards ?? [])].sort((a, b) => a.threshold - b.threshold)
+  const next = sorted.find((reward) => !reward.unlocked)
   return {
-    title: `모은 우표 ${count}개`,
-    nextLabel: next ? `다음 보상까지 ${next.threshold - count}개` : '',
+    title: `모은 우표 ${data.owned_count}개`,
+    nextLabel: next ? `다음 보상까지 ${Math.max(next.threshold - data.owned_count, 0)}개` : '',
     rewards: sorted.map((reward) => ({
-      id: reward.id,
-      kind: reward.kind,
+      id: reward.code,
+      kind: REWARD_KIND_BY_CODE[reward.code] ?? 'sticker',
       name: reward.name,
       thresholdLabel: `우표 ${reward.threshold}개`,
-      received: reward.threshold <= count,
-      progressLabel: `${count} / ${reward.threshold} 모음`,
+      received: Boolean(reward.unlocked),
+      progressLabel: `${data.owned_count} / ${reward.threshold} 모음`,
     })),
   }
 }
@@ -238,6 +239,9 @@ const NICKNAME_MESSAGES = {
   NICKNAME_TAKEN: '이미 사용 중인 닉네임이에요',
 }
 
+/** 닉네임 저장(PATCH) 실패 코드 → 안내 문구. 모르는 코드면 undefined이다. */
+export const nicknameErrorMessage = (code) => NICKNAME_MESSAGES[code]
+
 /**
  * 닉네임 확인(7-9) 결과 → 화면 상태. 서버 응답(GET /api/auth/nickname/check/)은 { available, code }.
  * @param {{available: boolean, code: string | null}} result
@@ -247,12 +251,12 @@ export function toNicknameStatus(result) {
   return { available: false, tone: 'error', message: NICKNAME_MESSAGES[result.code] ?? NICKNAME_MESSAGES.INVALID_NICKNAME }
 }
 
-// 알림·편지 설정(7-11)의 줄 정의. field는 GET/PATCH /api/users/me/settings/의 필드 이름이다. (mockOnly: 명세에 없는 필드)
+// 알림·편지 설정(7-11)의 줄 정의. field는 GET/PATCH /api/users/me/settings/의 필드 이름이다(6개 모두 명세에 있다).
 const SETTING_ROWS = [
   { id: 'push', field: 'push_enabled', label: '푸시 알림 받기' },
   { id: 'digest', field: 'daily_digest_enabled', label: '하루 한 번 모아서 받기', hint: '매일 저녁 8시' },
-  { id: 'arrival', field: 'letter_arrival_enabled', mockOnly: true, label: '편지 도착' },
-  { id: 'departure', field: 'letter_departure_enabled', mockOnly: true, label: '편지가 출발했을 때' },
+  { id: 'arrival', field: 'letter_arrival_push_enabled', label: '편지 도착' },
+  { id: 'departure', field: 'letter_departure_push_enabled', label: '편지가 출발했을 때' },
   { id: 'paused', field: 'letter_paused', label: '편지 잠시 쉬기', hint: '켜면 새 첫 편지를 받지 않아요 (답장은 그대로)' },
   { id: 'weekly', field: 'weekly_prompt_enabled', label: '매주 월요일 글감 알림', hint: '한 주 동안 써볼 동네 이야기 글감을 보내드려요' },
 ]
@@ -299,7 +303,7 @@ export function toSettingsHome(me, settings, blockCount) {
       { id: 'blocks', icon: 'ban', label: '차단 목록', value: `${blockCount}명`, to: MYPAGE_PATHS.blocks },
       { id: 'account', icon: 'settings', label: '계정', value: '로그아웃 · 탈퇴', to: MYPAGE_PATHS.account },
     ],
-    // 시안의 "정보" 카드. 이용약관·문의하기는 만들어진 화면이 없어 눌러도 토스트만 보여 준다. 버전은 mock 전용(명세에 없음).
+    // 시안의 "정보" 카드. 이용약관·문의하기는 만들어진 화면이 없어 눌러도 토스트만 보여 준다. 버전 문구는 시안 그대로이다(서버와 무관).
     infoItems: [
       { id: 'terms', label: '이용약관 · 개인정보 처리방침' },
       { id: 'contact', label: '문의하기' },
@@ -308,15 +312,15 @@ export function toSettingsHome(me, settings, blockCount) {
   }
 }
 
-// 차단한 사람의 프로필 원: 닉네임마다 정해진 그림이 없어서 목록 순서대로 돌려 쓴다. 시안 7-12(별빛 = 삐짐·연두, 바람 = 궁금·하늘)와 맞췄다. mock 전용.
+// 차단한 사람의 프로필 원: 서버가 아바타를 주지 않아 목록 순서대로 돌려 쓴다. 시안 7-12(별빛 = 삐짐·연두, 바람 = 궁금·하늘)와 맞췄다.
 const BLOCK_AVATARS = [
   { pose: 'pouty', tone: 'sage' },
   { pose: 'curious', tone: 'sky' },
 ]
 
 /**
- * 차단 목록(7-12) 화면용 데이터. 서버 응답은 GET /api/blocks/의 { count, next, previous, results[] }.
- * 카드마다 { userId, nickname, infoLabel("경북 경주 · 11월 1일 차단"), avatarPose, avatarTone }.
+ * 차단 목록(7-12) 화면용 데이터. 서버 항목: { user{id, nickname, residence{id,name,full_name}|null}, created_at }.
+ * 카드마다 { userId, nickname, infoLabel("경북 경주시 · 11월 1일 차단"), avatarPose, avatarTone }.
  */
 export function toBlockedUsers(response) {
   return (response.results ?? []).map((item, index) => {
@@ -326,7 +330,7 @@ export function toBlockedUsers(response) {
     return {
       userId: item.user.id,
       nickname: item.user.nickname,
-      infoLabel: [item.region, dateLabel].filter(Boolean).join(' · '),
+      infoLabel: [item.user.residence?.full_name, dateLabel].filter(Boolean).join(' · '),
       avatarPose: avatar.pose,
       avatarTone: avatar.tone,
     }

@@ -1,35 +1,33 @@
-import { useEffect, useState } from 'react'
 import Header from '../../shared/ui/Header.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import DraftCard from '../../components/mypage/DraftCard.jsx'
+import LoadError from '../../components/mypage/LoadError.jsx'
+import useLoad from '../../components/mypage/useLoad.js'
 import { fetchDrafts, deleteDraft } from '../../components/mypage/mypageApi.js'
 import './DraftsPage.css'
 
 /**
- * 7-3 임시저장한 편지. 목록은 mock이다(임시저장 저장 방식이 미정이고 문서 레포 API도 없다).
+ * 7-3 임시저장한 편지. 목록은 서버(GET /api/letters/drafts/)에서 오고 삭제는 DELETE /api/letters/drafts/{id}/이다. 삭제가 실패하면 목록은 그대로 두고 토스트로 알린다.
  * 가정: 시안에 삭제 확인과 빈 목록 화면이 없어서, 휴지통을 누르면 바로 지우고 토스트만 보여 준다. 비면 안내 박스만 남는다.
  */
 function DraftsPage() {
   const { showToast } = useOverlay()
-  const [drafts, setDrafts] = useState(null)
-
-  useEffect(() => {
-    let cancelled = false
-    fetchDrafts().then((result) => {
-      if (!cancelled) setDrafts(result)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const { data: drafts, error, reload, setData: setDrafts } = useLoad(fetchDrafts)
 
   const handleDelete = async (id) => {
-    await deleteDraft(id)
+    try {
+      await deleteDraft(id)
+    } catch (deleteError) {
+      showToast(deleteError.message)
+      return
+    }
     setDrafts((current) => current.filter((draft) => draft.id !== id))
     showToast('임시저장한 편지를 삭제했어요')
   }
+
+  if (error) return <LoadError error={error} onRetry={reload} />
 
   return (
     <main className="drafts-page">

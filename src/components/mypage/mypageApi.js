@@ -1,28 +1,17 @@
-// 마이 요청. mock, 문서 레포 API 확정 전(프론트 연동 전).
-// 지금은 shared/mocks/mypage.js를 돌려준다. 실제 API가 연결되면 이 함수 안에서 서버를 호출한다.
-//   GET /api/users/me/            → fetchMyPage
-//   GET /api/users/me/settings/   → fetchMyPage
-//   임시저장 목록·삭제              → fetchDrafts, deleteDraft (mock 전용. 명세 없음, 저장 방식 미정)
-//   우표첩(보유·보상)               → fetchStampCollection (mock 전용. 명세에 우표 목록 API가 없다)
-//   GET /api/auth/nickname/check/ → checkNickname
-//   PATCH /api/users/me/          → updateNickname (실제로 호출하지 않는다. 이 파일의 메모리 값만 바꾼다)
-//   PUT /api/users/me/regions/    → fetchRegionSettings, saveRegions (실제로 호출하지 않는다. 메모리 값만 바꾼다)
-//   GET·PATCH /api/users/me/settings/ → fetchSettings, updateSettings (실제로 호출하지 않는다)
-//   GET /api/blocks/, DELETE /api/blocks/{user_id}/ → fetchBlocks, unblock (실제로 호출하지 않는다)
-//   GET /api/users/me/, /settings/, GET /api/blocks/ → fetchSettingsHome (설정 7-1-1)
-//   POST /api/auth/logout/, DELETE /api/users/me/ → logout, withdraw (실제로 호출하지 않는다. withdraw는 아무것도 지우지 않는다)
-// 반환값은 항상 mypageMapper의 화면용 데이터이다.
-import {
-  MOCK_ME,
-  MOCK_ME_EXTRA,
-  MOCK_SETTINGS,
-  MOCK_DRAFTS,
-  MOCK_TAKEN_NICKNAMES,
-  MOCK_BLOCKS,
-} from '../../shared/mocks/mypage.js'
+// 마이 요청. 서버를 부르고 mypageMapper로 화면용 데이터를 만든다. 오류는 shared/api/client.js의 ApiError 그대로 던진다.
+//   GET /api/users/me/, /settings/, GET /api/stamps/  → fetchMyPage (7-1)
+//   GET /api/users/me/, /settings/, GET /api/blocks/  → fetchSettingsHome (7-1-1)
+//   GET·DELETE /api/letters/drafts/                   → fetchDrafts, deleteDraft (7-3)
+//   GET /api/stamps/, /{code}/, /rewards/             → fetchStampCollection, fetchStampDetail, fetchStampRewards (7-4~7-8)
+//   GET /api/auth/nickname/check/, PATCH /api/users/me/ → checkNickname, fetchNickname, updateNickname (7-9)
+//   GET·PATCH /api/users/me/settings/                 → fetchSettings, updateSettings (7-11)
+//   GET /api/blocks/, DELETE /api/blocks/{user_id}/   → fetchBlocks, unblock (7-12)
+// 연결하지 않은 것(이번 범위 밖): 지역 설정 fetchRegionSettings·saveRegions(7-10, shared/region #59 이후), logout·withdraw(7-13).
+// VITE_API_MOCK=true(개발 모드)일 때만 mypageDemo.js의 가짜 서버를 쓴다. 서버가 실패해도 mock으로 채우지 않는다.
+import { isApiDemo, request } from '../../shared/api/client.js'
+import { MOCK_ME } from '../../shared/mocks/mypage.js'
 import { PROVINCES, CITIES, DISTRICTS, METROPOLITAN, regionLabel } from '../../shared/region/regions.js'
-import { MOCK_STAMPS } from '../../shared/mocks/stamps.js'
-import { MOCK_OWNED_STAMP_CODES, MOCK_STAMP_REWARDS, MOCK_STAMP_DETAILS } from '../../shared/mocks/stampCollection.js'
+import { demoSource } from './mypageDemo.js'
 import {
   toMyPage,
   toDraftCard,
@@ -36,101 +25,106 @@ import {
   toSettingsHome,
 } from './mypageMapper.js'
 
-// 삭제가 7-1의 "N통"에도 반영되도록 메모리에 복사해 둔다(새로고침하면 처음 mock으로 돌아간다). mock 전용.
-let drafts = [...MOCK_DRAFTS]
+const serverSource = {
+  me: () => request('/api/users/me/'),
+  settings: () => request('/api/users/me/settings/'),
+  patchSettings: (patch) => request('/api/users/me/settings/', { method: 'PATCH', json: patch }),
+  drafts: (page) => request('/api/letters/drafts/', { query: { page } }),
+  deleteDraft: (id) => request(`/api/letters/drafts/${encodeURIComponent(id)}/`, { method: 'DELETE' }),
+  stamps: () => request('/api/stamps/'),
+  stamp: (code) => request(`/api/stamps/${encodeURIComponent(code)}/`),
+  rewards: () => request('/api/stamps/rewards/'),
+  checkNickname: (nickname) => request('/api/auth/nickname/check/', { query: { nickname }, auth: false }),
+  patchNickname: (nickname) => request('/api/users/me/', { method: 'PATCH', json: { nickname } }),
+  blocks: (page) => request('/api/blocks/', { query: { page } }),
+  unblock: (userId) => request(`/api/blocks/${encodeURIComponent(userId)}/`, { method: 'DELETE' }),
+}
 
-// 내 정보. 닉네임·지역을 바꾸면 7-1에도 보이도록 메모리에 복사해 둔다(새로고침하면 처음 mock으로 돌아간다). mock 전용.
-let me = { ...MOCK_ME, ...MOCK_ME_EXTRA }
+const source = isApiDemo ? demoSource : serverSource
 
-// 알림·편지 설정. 7-11에서 바꾸면 7-1의 "알림 · 편지 쉬기" 줄에도 보이도록 메모리에 둔다. mock 전용.
-let settings = { ...MOCK_SETTINGS }
+const MAX_PAGES = 10
 
+// 페이지 목록({ results, next })을 끝까지 모은다. 임시저장·차단은 한 사람이 많이 갖지 않아 한 번에 보여 준다.
+async function collectPages(fetchPage) {
+  const results = []
+  let count = 0
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    const data = await fetchPage(page)
+    results.push(...data.results)
+    count = data.count ?? results.length
+    if (!data.next) break
+  }
+  return { count, results }
+}
+
+/** 마이(7-1). 우표 "n / 전체"는 GET /api/stamps/의 owned_count·total_count를 그대로 쓴다. */
 export async function fetchMyPage() {
-  return toMyPage({ ...me, stats: { ...me.stats, draft_count: drafts.length } }, settings)
+  const [me, settings, stamps] = await Promise.all([source.me(), source.settings(), source.stamps()])
+  return toMyPage(me, settings, stamps)
 }
 
-/** 설정(7-1-1). 닉네임·지역·알림·차단 수를 한 번에 모아 메뉴 줄로 만든다. 7-9~7-13에서 바꾼 값이 곧바로 보인다. */
+/** 설정(7-1-1). 닉네임·지역·알림·차단 수를 한 번에 모아 메뉴 줄로 만든다. */
 export async function fetchSettingsHome() {
-  return toSettingsHome(me, settings, blocks.length)
+  const [me, settings, blocks] = await Promise.all([source.me(), source.settings(), source.blocks(1)])
+  return toSettingsHome(me, settings, blocks.count ?? 0)
 }
 
+/** 임시저장 목록(7-3). */
 export async function fetchDrafts() {
-  return drafts.map(toDraftCard)
+  const { results } = await collectPages((page) => source.drafts(page))
+  return results.map(toDraftCard)
 }
 
 export async function deleteDraft(id) {
-  drafts = drafts.filter((draft) => draft.id !== id)
+  await source.deleteDraft(id)
 }
 
 /**
- * 우표첩. 우표 이름·종류는 shared/mocks/stamps.js를 읽기만 하고, 보유 상태와 보상은 stampCollection.js의 mock이다.
- * @param {{ empty?: boolean }} [options] empty: true면 보유한 우표가 0개인 상태(7-6)를 보여 준다. 개발 확인용.
+ * 우표첩(7-4~7-6).
+ * @param {{ empty?: boolean }} [options] empty: 개발 모드(mock)에서만 우표 0개 상태를 보여 준다.
  */
 export async function fetchStampCollection({ empty = false } = {}) {
-  return toStampCollection(MOCK_STAMPS, empty ? [] : MOCK_OWNED_STAMP_CODES, MOCK_STAMP_REWARDS)
+  return toStampCollection(await source.stamps({ empty }))
 }
 
-/**
- * 우표 상세(7-7). mock 전용(명세에 없음).
- * @param {string} stampId 우표 id
- * @param {{current: number, target: number} | null} progress 수집 보상 진행("(5 / 10)" 문구용)
- */
-export async function fetchStampDetail(stampId, progress = null) {
-  const stamp = MOCK_STAMPS.find((item) => item.id === stampId)
-  if (!stamp) return null
-  return toStampDetail(stamp, MOCK_STAMP_DETAILS[stampId], progress)
+/** 우표 상세(7-7). @param {string} code 서버 우표 code */
+export async function fetchStampDetail(code) {
+  return toStampDetail(await source.stamp(code))
 }
 
-/**
- * 수집 보상(7-8). mock 전용(명세에 없음).
- * @param {{ empty?: boolean }} [options] empty: true면 우표 0개 상태
- */
+/** 수집 보상(7-8). @param {{ empty?: boolean }} [options] empty: 개발 모드(mock)에서만 */
 export async function fetchStampRewards({ empty = false } = {}) {
-  const { achievement } = toStampCollection(MOCK_STAMPS, empty ? [] : MOCK_OWNED_STAMP_CODES, MOCK_STAMP_REWARDS)
-  return toStampRewards(achievement.count, MOCK_STAMP_REWARDS)
+  return toStampRewards(await source.rewards({ empty }))
 }
 
 /**
- * 닉네임 확인(7-9). 서버의 GET /api/auth/nickname/check/ 응답({ available, code })을 흉내 낸다.
- * 2~10자가 아니면 INVALID_NICKNAME, 이미 쓰는 닉네임이면 NICKNAME_TAKEN. 내 지금 닉네임은 그대로 쓸 수 있다.
+ * 닉네임 확인(7-9). GET /api/auth/nickname/check/ 응답({ available, code })을 화면 상태로 바꾼다.
+ * 2~10자가 아니면 서버를 부르지 않고 INVALID_NICKNAME으로 본다.
  */
 export async function checkNickname(nickname) {
   const value = nickname.trim()
-  if (value.length < 2 || value.length > 10) return { current: me.nickname, ...toNicknameStatus({ available: false, code: 'INVALID_NICKNAME' }) }
-  if (value !== me.nickname && MOCK_TAKEN_NICKNAMES.includes(value)) {
-    return { current: me.nickname, ...toNicknameStatus({ available: false, code: 'NICKNAME_TAKEN' }) }
-  }
-  return { current: me.nickname, ...toNicknameStatus({ available: true, code: null }) }
+  if (value.length < 2 || value.length > 10) return toNicknameStatus({ available: false, code: 'INVALID_NICKNAME' })
+  return toNicknameStatus(await source.checkNickname(value))
 }
 
 /** 현재 닉네임(7-9 입력창의 처음 값). */
 export async function fetchNickname() {
-  return me.nickname
+  return (await source.me()).nickname
 }
 
-/**
- * 닉네임 변경(7-9). PATCH /api/users/me/ { nickname }을 흉내 낸다. 실제 서버는 호출하지 않는다.
- * 실패하면 서버와 같은 code(INVALID_NICKNAME 400, NICKNAME_TAKEN 409)를 가진 에러를 던진다.
- */
+/** 닉네임 변경(7-9). 실패하면 ApiError(INVALID_NICKNAME 400, NICKNAME_TAKEN 409 등)를 던진다. */
 export async function updateNickname(nickname) {
-  const value = nickname.trim()
-  const check = await checkNickname(value)
-  if (!check.available) {
-    const error = new Error(check.message)
-    error.code = value.length < 2 || value.length > 10 ? 'INVALID_NICKNAME' : 'NICKNAME_TAKEN'
-    throw error
-  }
-  me = { ...me, nickname: value }
+  await source.patchNickname(nickname.trim())
 }
 
-/**
- * 지역 설정(7-10). GET /api/users/me/의 hometowns·residence를 화면용으로 바꿔 준다.
- */
+// ── 7-10 지역 설정: 이번 연동 범위가 아니다(shared/region #59 이후). 서버를 부르지 않고 이 파일의 메모리 값만 바꾼다. ──
+let regionMe = structuredClone(MOCK_ME)
+
 export async function fetchRegionSettings() {
-  return toRegionSettings(me)
+  return toRegionSettings(regionMe)
 }
 
-// 지역 선택기({province, district})의 지역에 임시 id를 붙인다. 실제 id는 GET /api/regions/에 있고 아직 연결 전이다. mock 전용.
+// 지역 선택기({province, district})의 지역에 임시 id를 붙인다. 실제 id는 GET /api/regions/에 있다. 7-10 mock 전용.
 function toMockRegion(region) {
   const list = METROPOLITAN.includes(region.province) ? DISTRICTS[region.province] : CITIES[region.province]
   const index = Math.max(list ? list.indexOf(region.district) : 0, 0)
@@ -138,58 +132,46 @@ function toMockRegion(region) {
   return { id, name: region.district || region.province, full_name: regionLabel(region) }
 }
 
-/**
- * 지역 저장(7-10). PUT /api/users/me/regions/ { hometown_region_ids[1~3], residence_region_id }를 흉내 낸다.
- * 실제 서버는 호출하지 않고 이 파일의 메모리 값만 바꾼다. 바꾼 지역은 이미 쓴 일기에는 적용되지 않는다(명세).
- * @param {{ hometowns: Array<{province: string, district: string}>, residence: {province: string, district: string} }} regions
- */
+/** 지역 저장(7-10). 서버를 부르지 않는다(메모리 값만 바꾼다). */
 export async function saveRegions({ hometowns, residence }) {
   if (hometowns.length < 1 || hometowns.length > 3 || !residence) {
     const error = new Error('본가 지역은 1~3곳, 거주 지역은 1곳이에요')
     error.code = 'VALIDATION_ERROR'
     throw error
   }
-  const body = {
-    hometown_region_ids: hometowns.map((region) => toMockRegion(region).id),
-    residence_region_id: toMockRegion(residence).id,
-  }
-  me = { ...me, hometowns: hometowns.map(toMockRegion), residence: toMockRegion(residence) }
-  return body
+  regionMe = { ...regionMe, hometowns: hometowns.map(toMockRegion), residence: toMockRegion(residence) }
+  return { hometown_region_ids: regionMe.hometowns.map((region) => region.id), residence_region_id: regionMe.residence.id }
 }
 
-/** 알림·편지 설정(7-11). GET /api/users/me/settings/를 흉내 낸다. */
+/** 알림·편지 설정(7-11). */
 export async function fetchSettings() {
-  return toNotificationSettings(settings)
+  return toNotificationSettings(await source.settings())
 }
 
 /**
- * 설정 바꾸기(7-11). PATCH /api/users/me/settings/ — 바꾼 항목만 보낸다. 실제 서버는 호출하지 않는다.
- * @param {Partial<typeof MOCK_SETTINGS>} patch 예: { push_enabled: false }
+ * 설정 바꾸기(7-11). 바꾼 항목만 보낸다.
+ * @param {Partial<Record<'letter_paused'|'push_enabled'|'daily_digest_enabled'|'weekly_prompt_enabled'|'letter_arrival_push_enabled'|'letter_departure_push_enabled', boolean>>} patch
  */
 export async function updateSettings(patch) {
-  settings = { ...settings, ...patch }
-  return toNotificationSettings(settings)
+  return toNotificationSettings(await source.patchSettings(patch))
 }
-
-// 차단 목록. 해제하면 이 목록에서 빠진다(새로고침하면 처음 mock으로 돌아간다). mock 전용.
-let blocks = [...MOCK_BLOCKS.results]
 
 /**
- * 차단 목록(7-12). GET /api/blocks/를 흉내 낸다.
- * @param {{ empty?: boolean }} [options] empty: true면 차단한 사람이 없는 상태(개발 확인용)
+ * 차단 목록(7-12).
+ * @param {{ empty?: boolean }} [options] empty: 개발 모드(mock)에서만 차단한 사람이 없는 상태를 보여 준다.
  */
 export async function fetchBlocks({ empty = false } = {}) {
-  const results = empty ? [] : blocks
-  return toBlockedUsers({ ...MOCK_BLOCKS, count: results.length, results })
+  const { results } = await collectPages((page) => source.blocks(page, { empty }))
+  return toBlockedUsers({ results })
 }
 
-/** 차단 해제(7-12). DELETE /api/blocks/{user_id}/를 흉내 낸다. */
+/** 차단 해제(7-12). */
 export async function unblock(userId) {
-  blocks = blocks.filter((item) => item.user.id !== userId)
+  await source.unblock(userId)
 }
 
-/** 로그아웃(7-13). POST /api/auth/logout/을 흉내 낸다. 실제 서버도, 토큰도 건드리지 않는다. */
+/** 로그아웃(7-13). 이번 범위 밖이라 아무것도 하지 않는다(refresh 토큰을 꺼내는 shared 변경이 필요하다). */
 export async function logout() {}
 
-/** 회원 탈퇴(7-13). DELETE /api/users/me/를 흉내 낸다. 실제로는 아무것도 지우지 않는다. mock 동작 전용. */
+/** 회원 탈퇴(7-13). 이번 범위 밖이라 아무것도 지우지 않는다. */
 export async function withdraw() {}

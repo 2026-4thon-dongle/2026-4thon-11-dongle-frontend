@@ -8,7 +8,9 @@ import useOverlay from '../../shared/hooks/useOverlay.js'
 import HeaderSaveButton from '../../components/mypage/HeaderSaveButton.jsx'
 import LeaveEditDialog from '../../components/mypage/LeaveEditDialog.jsx'
 import LetterSignaturePreview from '../../components/mypage/LetterSignaturePreview.jsx'
+import LoadError from '../../components/mypage/LoadError.jsx'
 import { checkNickname, fetchNickname, updateNickname } from '../../components/mypage/mypageApi.js'
+import { nicknameErrorMessage } from '../../components/mypage/mypageMapper.js'
 import { MYPAGE_PATHS } from '../../components/mypage/mypagePaths.js'
 import './NicknamePage.css'
 
@@ -16,13 +18,15 @@ const MAX_LENGTH = 10
 
 /**
  * 7-9 닉네임 변경. 입력하면 편지 서명 미리보기가 바뀌고, 사용할 수 있는지 확인한다.
- * 데이터는 mock이다. 문서 레포 명세(api/auth.md 닉네임 확인, api/users.md 닉네임 변경)의 필드·코드를 따르지만 실제 API는 부르지 않는다.
+ * 데이터는 서버에서 온다. 현재 닉네임은 GET /api/users/me/, 확인은 GET /api/auth/nickname/check/, 저장은 PATCH /api/users/me/이다.
  *  - 확인: { available, code }  code는 INVALID_NICKNAME(2~10자 아님) / NICKNAME_TAKEN(이미 있음)
+ *  - 입력을 멈추고 0.4초 뒤에 확인한다(글자마다 서버를 부르지 않는다). 확인하지 못하면 안내 문구로 알리고 저장할 수 없다.
+ *  - 현재 닉네임을 불러오지 못하면 오류 화면과 다시 시도를 보여 준다.
  * 가정:
  *  - 설정 화면으로 들어오는 길이 시안에 없어서 /mypage/nickname 주소로 직접 연다.
  *  - 바뀐 게 없거나 사용할 수 없으면 저장 버튼(헤더, 아래)을 누를 수 없다.
  *  - 저장하면 토스트를 보여 주고 마이(/mypage)로 간다. 오류 문구(2~10자, 이미 사용 중)와 토스트 문구는 시안에 없어서 정했다.
- *  - 개발용 닉네임 중복 확인: 하늘빛, 갈매기, 귤껍질, 감자왕, 별빛, 바람은 이미 쓰는 닉네임으로 처리한다.
+ *  - 개발용(VITE_API_MOCK=true) 닉네임 중복 확인: 하늘빛, 갈매기, 귤껍질, 감자왕, 별빛, 바람은 이미 쓰는 닉네임으로 처리한다.
  *  - 저장하지 않고 나가기(7-10-3 팝업을 같이 쓴다): 닉네임을 처음 값과 다르게 바꾼 채(앞뒤 공백을 뺀 값 기준) 헤더 뒤로 가기를 누르면
  *    "저장하지 않고 나갈까요?"를 띄운다. "계속 수정할게요"는 팝업만 닫고, "저장 안 하고 나갈게요"는 바꾼 내용을 버리고 이전 화면으로 간다.
  *    앱이 BrowserRouter라서 브라우저·기기 뒤로 가기, 주소 이동, 새로고침은 막지 못한다.
@@ -37,26 +41,52 @@ function NicknamePage() {
   const [value, setValue] = useState('')
   const [status, setStatus] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
-  const latestValue = useRef('')
+  const [loadError, setLoadError] = useState(null)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
-    fetchNickname().then((nickname) => {
-      setOriginal(nickname)
-      setValue(nickname)
-      latestValue.current = nickname
-    })
-  }, [])
-
-  const handleChange = async (event) => {
-    const next = event.target.value.slice(0, MAX_LENGTH)
-    setValue(next)
-    latestValue.current = next
-    const result = await checkNickname(next)
-    // 입력이 그 사이에 또 바뀌었다면 이전 확인 결과는 버린다
-    if (latestValue.current === next) setStatus(result)
-  }
+    let cancelled = false
+    setLoadError(null)
+    fetchNickname()
+      .then((nickname) => {
+        if (cancelled) return
+        setOriginal(nickname)
+        setValue(nickname)
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(error)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [attempt])
 
   const trimmed = value.trim()
+
+  // 입력을 멈추면 사용할 수 있는지 확인한다. 그 사이 입력이 또 바뀌면 이전 확인 결과는 버린다.
+  useEffect(() => {
+    setStatus(null)
+    if (original === null || trimmed === original || trimmed === '') return undefined
+    let cancelled = false
+    const timer = setTimeout(() => {
+      checkNickname(trimmed)
+        .then((result) => {
+          if (!cancelled) setStatus(result)
+        })
+        .catch(() => {
+          if (!cancelled) setStatus({ available: false, tone: 'error', message: '닉네임을 확인하지 못했어요. 잠시 후 다시 입력해주세요' })
+        })
+    }, 400)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [trimmed, original])
+
+  const handleChange = (event) => {
+    setValue(event.target.value.slice(0, MAX_LENGTH))
+  }
+
   const isChanged = original !== null && trimmed !== original
   const canSave = isChanged && status?.available === true && !isSaving
   // 처음 값 그대로이면 안내 문구를 숨긴다
@@ -70,7 +100,7 @@ function NicknamePage() {
       showToast('닉네임을 바꿨어요')
       navigate(MYPAGE_PATHS.home)
     } catch (error) {
-      setStatus({ available: false, tone: 'error', message: error.message })
+      setStatus({ available: false, tone: 'error', message: nicknameErrorMessage(error.code) ?? error.message })
       setIsSaving(false)
     }
   }
@@ -104,6 +134,8 @@ function NicknamePage() {
     // 처음 한 번만 연다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  if (loadError) return <LoadError error={loadError} onRetry={() => setAttempt((n) => n + 1)} />
 
   return (
     <main className="nickname-page">
