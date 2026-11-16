@@ -91,6 +91,9 @@ const STAMP_ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hom
 /** 서버 우표 코드 → 우표 그림 id(Stamp 컴포넌트의 id) */
 export const stampArtIdOf = (code) => STAMP_ART_ID_BY_CODE[code] ?? code
 
+// 고향이 표정 스티커는 우표를 이 개수 이상 모으면 열린다(수집 보상 3개).
+export const STICKER_UNLOCK_STAMPS = 3
+
 export const MAX_CONTENT_LENGTH = 1000
 
 // ── 임시(mock) 값: 백엔드·우표 데이터가 정해지면 실제 값으로 바꾼다. ──

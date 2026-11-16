@@ -48,7 +48,32 @@
 }
 
 /* 아직 열리지 않은 스티커(우표를 더 모아야 한다) */
+.sticker-drawer__item {
+  position: relative;
+}
+
 .sticker-drawer__item.is-locked {
-  opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* 잠긴 고향이는 흐리게(자물쇠 원은 그대로 또렷하다) */
+.sticker-drawer__item.is-locked > :first-child {
+  opacity: 0.4;
+}
+
+/* 잠금(시안 4-5-1): 고향이 그대로, 가운데에 24px 원을 얹고 그 안에 15px 자물쇠(#c4b39f)를 둔다 */
+.sticker-drawer__lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--text-hint);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 }
