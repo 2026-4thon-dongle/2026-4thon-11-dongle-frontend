@@ -1,0 +1,71 @@
+.stamp-goals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stamp-goals__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: var(--bg-surface);
+}
+
+.stamp-goals__item:not(.is-owned) .ui-stamp {
+  filter: grayscale(0.85);
+  opacity: 0.6;
+}
+
+.stamp-goals__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.stamp-goals__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--text-brown);
+  font: 400 var(--label-15-size) / 1.4 var(--font-jua);
+}
+
+.stamp-goals__badge {
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--brand-sage);
+  color: var(--white);
+  font: 400 var(--caption-11-size) / 1.6 var(--font-jua);
+}
+
+.stamp-goals__condition {
+  margin: 2px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.stamp-goals__bar {
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.stamp-goals__bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--brand-orange);
+}
+
+.stamp-goals__count {
+  flex: none;
+  color: var(--brand-orange-deep);
+  font: 400 var(--body-13-size) / 1 var(--font-jua);
+}
