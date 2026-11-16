@@ -10,14 +10,17 @@ const ALL_REGIONS = '전체'
  * 앱의 기존 토큰(배경, 선, 둥근 정도, 폰트)으로 간단한 목록을 만들었다. 시안이 나오면 이 목록 모양을 바꾼다.
  * 바깥을 누르거나 Esc를 누르면 닫히고, 위·아래 방향키로 항목을 옮길 수 있다.
  * 목록이 칩 줄의 가로 스크롤에 잘리지 않도록 스크롤 영역(__row)과 목록을 나란히 둔다.
- * @param {string[]} regions 고를 수 있는 지역(시·도). "전체"는 이 컴포넌트가 붙인다.
- * @param {string|null} region 선택한 지역. null이면 전체
- * @param {(region: string|null) => void} onRegionChange
+ * @param {Array<{id: number|string, label: string}>} regions 고를 수 있는 지역(시·도). id는 서버 sido 파라미터 값이다. "전체"는 이 컴포넌트가 붙인다.
+ * @param {{id: number|string, label: string}|null} region 선택한 지역. null이면 전체
+ * @param {(region: {id: number|string, label: string}|null) => void} onRegionChange
+ * @param {boolean} [regionsLoading] 시·도 목록을 받는 중이면 목록에 안내만 보여 준다.
+ * @param {{message: string}|null} [regionsError] 시·도 목록을 못 받았으면 목록에 오류와 "다시 시도"를 보여 준다. 이때도 "전체"는 고를 수 있다.
+ * @param {() => void} [onRegionsRetry]
  * @param {Array<{id: string, label: string}>} sortOptions
  * @param {string} sort 선택한 정렬 id
  * @param {(id: string) => void} onSortChange
  */
-function NewLetterFilters({ regions, region, onRegionChange, sortOptions, sort, onSortChange }) {
+function NewLetterFilters({ regions, region, onRegionChange, regionsLoading = false, regionsError = null, onRegionsRetry, sortOptions, sort, onSortChange }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
   const triggerRef = useRef(null)
@@ -72,7 +75,7 @@ function NewLetterFilters({ regions, region, onRegionChange, sortOptions, sort, 
     choose(next)
   }
 
-  const items = [{ value: null, label: ALL_REGIONS }, ...regions.map((name) => ({ value: name, label: name }))]
+  const items = [{ value: null, label: ALL_REGIONS }, ...regions.map((item) => ({ value: item, label: item.label }))]
 
   return (
     <div className="mailbox-page__chips" ref={rootRef}>
@@ -86,7 +89,7 @@ function NewLetterFilters({ regions, region, onRegionChange, sortOptions, sort, 
           aria-expanded={open}
           aria-controls={open ? listId : undefined}
         >
-          {region ?? '지역별'} ▾
+          {region?.label ?? '지역별'} ▾
         </Chip>
         {sortOptions.map((option) => (
           <Chip
@@ -109,7 +112,7 @@ function NewLetterFilters({ regions, region, onRegionChange, sortOptions, sort, 
           onKeyDown={onListKeyDown}
         >
           {items.map((item) => {
-            const selected = item.value === region
+            const selected = (item.value?.id ?? null) === (region?.id ?? null)
             return (
               <li
                 key={item.label}
@@ -125,6 +128,19 @@ function NewLetterFilters({ regions, region, onRegionChange, sortOptions, sort, 
               </li>
             )
           })}
+          {regionsLoading && (
+            <li role="presentation" className="new-letter-filters__note" aria-busy="true">
+              지역을 불러오는 중이에요
+            </li>
+          )}
+          {regionsError && (
+            <li role="presentation" className="new-letter-filters__note">
+              <span role="alert">{regionsError.message}</span>
+              <button type="button" className="new-letter-filters__retry" onClick={onRegionsRetry}>
+                다시 시도
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>

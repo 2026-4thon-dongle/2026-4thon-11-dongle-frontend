@@ -134,7 +134,7 @@ function passedStored() {
     }))
 }
 
-function buildServerResponse(tab, { sort, empty }, now) {
+function buildServerResponse(tab, { sort, sido = null, empty }, now) {
   const base = getMockMailboxResponse(tab, { sort, empty })
   let results = base.results
 
@@ -162,13 +162,16 @@ function buildServerResponse(tab, { sort, empty }, now) {
   }
 
   const convert = { new: newLetterToServer, chatting: (chat) => chatToServer(chat, now), shipping: (item) => shippingToServer(item, now), stored: storedToServer }[tab]
-  return { count: results.length, next: null, previous: null, results: results.map(convert) }
+  const converted = results.map(convert)
+  // mock의 sido는 시·도 짧은 이름이다(서버는 시·도 id). 새 편지 탭만 거른다.
+  const filtered = tab === 'new' && sido ? converted.filter((letter) => letter.from_region?.sido === sido) : converted
+  return { count: filtered.length, next: null, previous: null, results: filtered }
 }
 
 /** mock 목록. 한 번에 다 주므로 다음 페이지는 없다. 반환은 mailboxApi.fetchMailboxLetters와 같다. */
-export async function fetchDemoMailboxLetters(tab, { sort = 'latest', empty = false } = {}) {
+export async function fetchDemoMailboxLetters(tab, { sort = 'latest', sido = null, empty = false } = {}) {
   const now = Date.now()
-  return toMailboxPage(tab, buildServerResponse(tab, { sort, empty }, now), now)
+  return toMailboxPage(tab, buildServerResponse(tab, { sort, sido, empty }, now), now)
 }
 
 /** mock 탭 점: 읽지 않은 새 편지가 있는지 */

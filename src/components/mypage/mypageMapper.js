@@ -206,13 +206,14 @@ export function toStampRewards(data) {
 }
 
 /**
- * 서버 지역({id, name, full_name}) → 지역 선택기(shared/region RegionPicker)가 쓰는 {province, district}.
- * "충남 천안시" → { province: '충남', district: '천안' }, "대전광역시" → { province: '대전', district: '' }
+ * 서버 지역({id, name, full_name}) → 지역 선택기(shared/region RegionPicker)가 쓰는 {province, district, id}.
+ * "충남 천안시" → { province: '충남', district: '천안', id }, "대전광역시" → { province: '대전', district: '', id }
+ * id는 GET /api/regions/의 지역 id와 같다. 정수가 아니면 id를 넣지 않는다(저장 때 다시 고르게 한다).
  */
 export function toPickerRegion(region) {
   const [first, ...rest] = (region.full_name ?? region.name ?? '').split(' ')
-  if (rest.length === 0) return { province: shortRegionName(first), district: '' }
-  return { province: first, district: shortRegionName(rest.join(' ')) }
+  const picked = rest.length === 0 ? { province: shortRegionName(first), district: '' } : { province: first, district: shortRegionName(rest.join(' ')) }
+  return Number.isInteger(region.id) ? { ...picked, id: region.id } : picked
 }
 
 /**

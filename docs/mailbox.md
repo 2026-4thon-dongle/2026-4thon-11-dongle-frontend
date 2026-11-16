@@ -4,7 +4,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 대상: 5-1~5-7-1 (`92:1001`, `92:1441`, `128:1601`, `171:2173`, `92:1129`, `171:2276`, `128:1746`, `340:5612`).
 5-8 이후(편지 열기·답장 등)와 5-14, 5-15(`pen-pal`)는 `docs/letter-receive.md`를 본다.
 
-**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 지역 필터의 서버 연결(5-1)과 5-12·5-13은 이번 범위가 아니다.
+**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 5-1 지역 필터는 서버 `sido` 파라미터로 연결했다(#79). 5-12·5-13은 이번 범위가 아니다.
 
 | 화면 | Figma | 경로·동작 |
 | --- | --- | --- |
@@ -20,10 +20,10 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 - **탭은 주소 쿼리**에 둔다: `/mailbox?tab=new|chatting|shipping|stored`. 상세(5-8, 5-9, 5-15 등)에 갔다가 뒤로 나와도 보던 탭이 남는다.
   - 시작 탭 우선순위는 `navigate`의 `state.tab`(5-9 넘기기, 5-12, 5-13이 씀) > 쿼리 `?tab` > 새 편지. 잘못된 값은 새 편지로 본다. state로 열렸을 때도 쿼리를 그 탭으로 맞추고 state는 지운다.
   - 탭을 바꿀 때와 쿼리를 맞출 때는 `replace`라 히스토리가 쌓이지 않는다(뒤로 가기가 탭을 하나씩 거슬러 오르지 않는다). `mock=empty` 같은 다른 쿼리는 그대로 둔다.
-  - 정렬 칩과 지역 필터는 아직 화면 상태이다. 상세에 다녀오면 처음(최신순·전체)으로 돌아간다.
+  - 정렬 칩과 지역 필터는 화면 상태이다(URL·서버에 저장하지 않는다). 상세에 다녀오면 처음(최신순·전체)으로 돌아간다.
 - 이미 선택된 탭이나 정렬 칩, 지역을 다시 누르면 아무 일도 일어나지 않는다(로딩을 켜지 않는다).
-- **지역 필터("지역별 ▾")**: 칩을 누르면 아래에 목록("전체" + 목록에 있는 시·도)이 열린다. **시안 없음, 임시 UI**이다(Figma 5-1에는 칩만 있고 선택 화면이 없다). 고르면 그 지역 편지만 보이고 칩에 지역 이름이 표시되며 "전체"를 고르면 풀린다. 바깥을 누르거나 Esc로 닫는다.
-  **아직 서버 필터와 연결하지 않았다.** 지금까지 받아 온 편지(`from_region.sido`, 시·도 짧은 이름) 안에서만 걸러 보여 주고, 목록의 시·도는 받아 온 편지에서 계산한다. 그래서 20개를 넘는 편지는 "더 보기"로 받아 와야 필터에 잡힌다. `shared/region`이 서버 시·도 id를 주면(#59) 서버 `sido` 파라미터와 `GET /api/regions/`의 시·도 목록으로 바꾼다. 필터 결과가 비면 5-2가 아니라 칩 아래 한 줄 안내가 나온다.
+- **지역 필터("지역별 ▾")**: 칩을 누르면 아래에 목록("전체" + 서버 지역 목록의 시·도 17개)이 열린다. **시안 없음, 임시 UI**이다(Figma 5-1에는 칩만 있고 선택 화면이 없다). 고르면 그 지역 편지만 보이고 칩에 지역 이름이 표시되며 "전체"를 고르면 풀린다. 바깥을 누르거나 Esc로 닫는다.
+  **서버 필터이다.** 고른 시·도의 id(`GET /api/regions/` 최상위 지역 id, `shared/region`의 `useRegions`)를 `GET /api/mailbox/new/`의 `sido` 파라미터로 보낸다. 받아 온 편지를 화면에서 거르지 않으므로 20개를 넘어도 필터가 맞고, 필터·정렬을 바꾸면 처음 페이지부터 다시 받는다("더 보기"도 같은 `sido`로 받는다). 시·도 목록(`components/mailbox/useSidoOptions.js`)을 받는 중이면 드롭다운에 안내가, 실패하면 오류와 "다시 시도"가 나온다("전체"는 고를 수 있다). 필터를 건 채 목록 요청이 실패해도 칩은 남아 필터를 풀 수 있다. 필터 결과가 비면 5-2가 아니라 칩 아래 한 줄 안내가 나온다. `sido`가 최상위 시·도 id라는 근거는 Swagger(`sido`: integer, "시·도 id")와 `api/mailbox.md`("시·도 id"), 홈 피드 `sido`의 같은 쓰임이다. 응답의 `from_region.sido`는 짧은 이름("충남")이라 둘은 값이 다르다. mock(`VITE_API_MOCK=true`)에서는 `sido`가 시·도 짧은 이름이고 `mailboxDemo.js`가 같은 값으로 거른다.
 - 정렬 칩은 새 편지 탭(비었을 때 제외)에만 있고 서버 `ordering`(`latest`·`oldest`·`unread`)으로 보낸다. 오른쪽 위 필터 아이콘은 모든 탭에서 없앴다. 배송 중 탭은 서버가 도착 임박순으로 주고, 대화 중·보관 탭도 서버 정렬 그대로 보여 준다.
 - **로딩·에러·더 보기**: 처음과 탭·정렬을 바꿀 때는 스켈레톤이다. 목록 요청이 실패하면 목록 자리에 서버 메시지(`ApiError.message`, 네트워크 오류면 "서버에 연결하지 못했어요…")와 "다시 시도" 버튼이 나온다(탭은 그대로 남아 다른 탭으로 옮길 수 있다). mock으로 채우지 않는다. 페이지당 20개이고 `next`가 있으면 목록 아래에 "더 보기" 버튼이 나온다(시안에 없는 임시 UI). 더 보기가 실패하면 토스트로 알린다.
 - **새 편지 탭 점**: `GET /api/mailbox/summary/`의 `new_unread_count`가 0보다 크면 보인다(목록과 따로 요청하며, 점 요청만 실패하면 점 없이 목록을 보여 준다).
@@ -64,7 +64,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 
 - 화면·상태: `pages/mailbox/MailboxPage` (탭, 정렬, 로딩, 비었을 때 판단).
 - 기능 전용 UI: `components/mailbox/`
-  - 탭·카드: `MailboxTabs`, `NewLetterFilters`(지역 드롭다운 + 정렬 칩), `LetterCard`(5-1), `ChatCard`(5-3), `ShippingCard`(5-5), `StoredCard`(5-7)
+  - 탭·카드: `MailboxTabs`, `NewLetterFilters`(지역 드롭다운 + 정렬 칩), `useSidoOptions`(시·도 목록), `LetterCard`(5-1), `ChatCard`(5-3), `ShippingCard`(5-5), `StoredCard`(5-7)
   - 안내: `MailboxEmpty`(비었을 때 4종 공용), `StoredNotice`(5-7), `GameBanner`(5-5)
   - 정의: `mailboxFilters.js`(탭·정렬 칩)
 - 데이터 흐름: `MailboxPage` → `mailboxApi.js`(`fetchMailboxLetters`, `fetchMailboxSummary`) → `shared/api/client.js`의 `request()` → 서버 → `mailboxMapper.js`(`toMailboxPage`)
@@ -93,7 +93,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 ## 추후 연동·PR 참고
 
 - 관련 명세: 문서 레포 `api/mailbox.md`(`GET /api/mailbox/summary/`, `/new/`, `/conversations/`, `/in-transit/`, `/archive/`), `api/common.md`.
-- 아직 연결하지 않은 것: 5-1 지역 필터의 서버 `sido` 파라미터(`shared/region` 서버 연동 대기), 5-12·5-13(우표·보상, 서버 질문 답 대기).
+- 아직 연결하지 않은 것: 5-12·5-13(우표·보상, 서버 질문 답 대기).
 - 명세와 어긋나거나 확인이 필요한 점은 PR 설명서에 적는다(보관 `passed_letter`의 상세에서 `can_reply`·`can_pass`, 새 편지 `diary`가 null일 수 있음 등).
 
 관련 지침: `CLAUDE.md`, `docs/ownership.md`, `docs/letter-write.md`.

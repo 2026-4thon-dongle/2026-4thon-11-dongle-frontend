@@ -1,6 +1,7 @@
 // 마이 개발용 가짜 서버. VITE_API_MOCK=true(개발 모드)일 때만 mypageApi.js가 쓴다. 운영·기본 설정에서는 쓰지 않는다.
 // 서버와 같은 모양의 "원본 응답"을 돌려주므로 mypageMapper는 mock과 서버를 구분하지 않는다.
 import { MOCK_ME, MOCK_SETTINGS, MOCK_DRAFTS, MOCK_TAKEN_NICKNAMES, MOCK_BLOCKS } from '../../shared/mocks/mypage.js'
+import { regionLabel } from '../../shared/region/regions.js'
 import { MOCK_STAMP_CATALOG, MOCK_OWNED_STAMPS, MOCK_STAMP_REWARDS } from '../../shared/mocks/stampCollection.js'
 
 let me = structuredClone(MOCK_ME)
@@ -41,6 +42,12 @@ export const demoSource = {
   async patchSettings(patch) {
     settings = { ...settings, ...patch }
     return { ...settings }
+  },
+  // 7-10 mock: 서버처럼 id만 받지만 화면 이름은 고른 지역 원본에서 만든다.
+  async putRegions(_body, { hometowns, residence }) {
+    const toRegion = (region) => ({ id: region.id, name: region.district || region.province, full_name: regionLabel(region) })
+    me = { ...me, hometowns: hometowns.map(toRegion), residence: toRegion(residence) }
+    return { ...me }
   },
   async drafts() {
     return page(drafts)

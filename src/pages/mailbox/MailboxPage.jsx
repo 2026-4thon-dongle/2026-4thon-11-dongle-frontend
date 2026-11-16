@@ -15,7 +15,7 @@ import MailboxEmpty from '../../components/mailbox/MailboxEmpty.jsx'
 import NewLetterFilters from '../../components/mailbox/NewLetterFilters.jsx'
 import { MAILBOX_TAB_OPTIONS, MAILBOX_SORT_OPTIONS } from '../../components/mailbox/mailboxFilters.js'
 import { fetchMailboxLetters, fetchMailboxSummary } from '../../components/mailbox/mailboxApi.js'
-import { listProvinces } from '../../components/mailbox/mailboxMapper.js'
+import useSidoOptions from '../../components/mailbox/useSidoOptions.js'
 import './MailboxPage.css'
 
 // 가정: 다른 담당 화면으로 가는 경로. 모두 지금은 RoutePlaceholder(임시 화면)이거나 다른 담당이 만든 화면이다.
@@ -62,8 +62,8 @@ function renderCard(tab, item) {
  *   탭을 바꿀 때와 state로 열렸을 때는 replace로 쿼리를 맞춰 히스토리를 쌓지 않는다(뒤로 가기가 탭을 거슬러 오르지 않는다).
  * 가정: 정렬·지역 필터는 화면 상태로만 두고 URL에는 넣지 않았다(상세에 다녀오면 처음으로 돌아간다).
  * 지역 필터("지역별 ▾")는 새 편지 탭에만 있다. 선택 UI는 시안이 없어 임시로 만들었다(NewLetterFilters).
- *   아직 서버 필터(sido)와 연결하지 않았다: 지금까지 받아 온 편지 안에서 시·도(from_region.sido)로만 걸러 보여 준다.
- *   shared/region이 서버 id를 주게 되면(#59) 그때 sido 파라미터로 바꾼다.
+ *   시·도 목록은 서버 지역 목록(GET /api/regions/, shared/region)의 17개 시·도이고, 고른 시·도의 id를 서버 sido 파라미터로 보내 서버가 거른다(받아 온 편지를 화면에서 거르지 않는다).
+ *   지역 목록을 못 받으면 드롭다운 안에 오류와 "다시 시도"가 나온다(목록은 그대로 보인다). 필터를 건 채 목록 요청이 실패해도 칩은 남아 필터를 풀 수 있다.
  * 새 편지 탭 옆 빨간 점은 GET /api/mailbox/summary/의 new_unread_count 기준이다(필터·페이지와 상관없다). 점만 실패하면 점 없이 목록은 보여 준다.
  * 개발 중 확인용: VITE_API_MOCK=true일 때만 주소 뒤에 ?mock=empty 를 붙이면 mock 데이터가 비어 비었을 때 화면이 나온다.
  */
@@ -77,13 +77,16 @@ function MailboxPage() {
   const tab = pickTab(location.state?.tab) ?? pickTab(searchParams.get('tab')) ?? DEFAULT_TAB
   const [sort, setSort] = useState('latest')
   const [region, setRegion] = useState(null)
+  const sidoOptions = useSidoOptions()
   const [reloadKey, setReloadKey] = useState(0)
   // 불러온 결과. 어떤 조건(key)으로 받았는지 같이 둔다: 지금 조건과 key가 다르면 아직 불러오는 중이다.
   const [result, setResult] = useState(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasNewDot, setHasNewDot] = useState(false)
 
-  const requestKey = `${tab}|${sort}|${forceEmpty}|${reloadKey}`
+  // 지역 필터는 새 편지 탭에서만 서버로 보낸다.
+  const sido = tab === 'new' ? (region?.id ?? null) : null
+  const requestKey = `${tab}|${sort}|${sido}|${forceEmpty}|${reloadKey}`
   const isLoading = result?.key !== requestKey
 
   // 주소 쿼리를 지금 탭에 맞춘다(없거나 잘못된 값, state로 열린 경우). 쓴 state는 지워서 새로고침해도 쿼리를 따른다.
@@ -99,7 +102,7 @@ function MailboxPage() {
     let cancelled = false
     // 탭 점은 목록과 따로 받는다. 점만 실패해도 목록은 보여 준다(점이 없을 뿐이다).
     Promise.all([
-      fetchMailboxLetters(tab, { sort, empty: forceEmpty }),
+      fetchMailboxLetters(tab, { sort, sido, empty: forceEmpty }),
       fetchMailboxSummary({ empty: forceEmpty }).catch(() => null),
     ])
       .then(([page, summary]) => {
@@ -113,7 +116,7 @@ function MailboxPage() {
     return () => {
       cancelled = true
     }
-  }, [tab, sort, forceEmpty, requestKey])
+  }, [tab, sort, sido, forceEmpty, requestKey])
 
   const retry = useCallback(() => setReloadKey((value) => value + 1), [])
 
@@ -122,7 +125,7 @@ function MailboxPage() {
     const key = requestKey
     setIsLoadingMore(true)
     try {
-      const next = await fetchMailboxLetters(tab, { sort, page: result.page + 1, empty: forceEmpty })
+      const next = await fetchMailboxLetters(tab, { sort, sido, page: result.page + 1, empty: forceEmpty })
       setResult((prev) => {
         // 더 보는 사이에 탭·정렬이 바뀌었으면 버린다
         if (!prev || prev.key !== key) return prev
@@ -152,21 +155,19 @@ function MailboxPage() {
     if (next !== sort) setSort(next)
   }
   const changeRegion = (next) => {
-    if (next !== region) setRegion(next)
+    if ((next?.id ?? null) !== (region?.id ?? null)) setRegion(next)
   }
 
   const error = isLoading ? null : result.error
-  const loadedItems = isLoading || error ? [] : result.items
-  // 지역 필터는 새 편지 탭에서만, 지금까지 받아 온 편지 안에서 시·도로 거른다.
+  const items = isLoading || error ? [] : result.items
   const regionFilter = tab === 'new' ? region : null
-  const regionOptions = tab === 'new' ? listProvinces(loadedItems) : []
-  const items = regionFilter ? loadedItems.filter((item) => item.province === regionFilter) : loadedItems
 
   const isEmpty = !isLoading && !error && items.length === 0
   const hasItems = !isLoading && !error && items.length > 0
   // 정렬 칩은 새 편지 탭에만 있고, 비었을 때(5-2)는 없다.
   // 지역 필터를 걸어서 빈 경우는 5-2가 아니므로 칩을 남겨 필터를 풀 수 있게 한다.
-  const showChips = tab === 'new' && !error && (!isEmpty || regionFilter !== null)
+  // 필터를 건 채 목록 요청이 실패하면 칩을 남겨 필터를 풀 수 있게 한다.
+  const showChips = tab === 'new' && (!error || regionFilter !== null) && (!isEmpty || regionFilter !== null)
   const view = TAB_VIEW[tab]
 
   return (
@@ -184,9 +185,12 @@ function MailboxPage() {
 
       {showChips && (
         <NewLetterFilters
-          regions={regionOptions}
+          regions={sidoOptions.options}
           region={regionFilter}
           onRegionChange={changeRegion}
+          regionsLoading={sidoOptions.loading}
+          regionsError={sidoOptions.error}
+          onRegionsRetry={sidoOptions.retry}
           sortOptions={MAILBOX_SORT_OPTIONS}
           sort={sort}
           onSortChange={changeSort}
@@ -243,7 +247,7 @@ function MailboxPage() {
       )}
 
       {isEmpty && tab === 'new' && regionFilter !== null && (
-        <p className="mailbox-page__filtered-empty">{regionFilter}에서 온 새 편지가 없어요</p>
+        <p className="mailbox-page__filtered-empty">{regionFilter.label}에서 온 새 편지가 없어요</p>
       )}
 
       {isEmpty && tab === 'new' && regionFilter === null && (

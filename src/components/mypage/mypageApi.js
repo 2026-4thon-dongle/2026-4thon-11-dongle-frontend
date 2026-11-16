@@ -6,11 +6,10 @@
 //   GET /api/auth/nickname/check/, PATCH /api/users/me/ → checkNickname, fetchNickname, updateNickname (7-9)
 //   GET·PATCH /api/users/me/settings/                 → fetchSettings, updateSettings (7-11)
 //   GET /api/blocks/, DELETE /api/blocks/{user_id}/   → fetchBlocks, unblock (7-12)
-// 연결하지 않은 것(이번 범위 밖): 지역 설정 fetchRegionSettings·saveRegions(7-10, shared/region #59 이후), logout·withdraw(7-13).
+//   GET /api/users/me/, PUT /api/users/me/regions/    → fetchRegionSettings, saveRegions (7-10)
+// 연결하지 않은 것(이번 범위 밖): logout·withdraw(7-13).
 // VITE_API_MOCK=true(개발 모드)일 때만 mypageDemo.js의 가짜 서버를 쓴다. 서버가 실패해도 mock으로 채우지 않는다.
 import { isApiDemo, request } from '../../shared/api/client.js'
-import { MOCK_ME } from '../../shared/mocks/mypage.js'
-import { PROVINCES, CITIES, DISTRICTS, METROPOLITAN, regionLabel } from '../../shared/region/regions.js'
 import { demoSource } from './mypageDemo.js'
 import {
   toMyPage,
@@ -37,6 +36,8 @@ const serverSource = {
   checkNickname: (nickname) => request('/api/auth/nickname/check/', { query: { nickname }, auth: false }),
   patchNickname: (nickname) => request('/api/users/me/', { method: 'PATCH', json: { nickname } }),
   blocks: (page) => request('/api/blocks/', { query: { page } }),
+  // 7-10. 두 번째 인자(고른 지역 원본)는 mock이 화면용 이름을 만들 때만 쓴다. 서버는 id만 받는다.
+  putRegions: (body) => request('/api/users/me/regions/', { method: 'PUT', json: body }),
   unblock: (userId) => request(`/api/blocks/${encodeURIComponent(userId)}/`, { method: 'DELETE' }),
 }
 
@@ -117,30 +118,30 @@ export async function updateNickname(nickname) {
   await source.patchNickname(nickname.trim())
 }
 
-// ── 7-10 지역 설정: 이번 연동 범위가 아니다(shared/region #59 이후). 서버를 부르지 않고 이 파일의 메모리 값만 바꾼다. ──
-let regionMe = structuredClone(MOCK_ME)
-
+/** 지역 설정(7-10)의 처음 값. GET /api/users/me/의 hometowns[]·residence를 지역 선택기 값(id 포함)으로 바꾼다. */
 export async function fetchRegionSettings() {
-  return toRegionSettings(regionMe)
+  return toRegionSettings(await source.me())
 }
 
-// 지역 선택기({province, district})의 지역에 임시 id를 붙인다. 실제 id는 GET /api/regions/에 있다. 7-10 mock 전용.
-function toMockRegion(region) {
-  const list = METROPOLITAN.includes(region.province) ? DISTRICTS[region.province] : CITIES[region.province]
-  const index = Math.max(list ? list.indexOf(region.district) : 0, 0)
-  const id = (PROVINCES.indexOf(region.province) + 1) * 1000 + index + 1
-  return { id, name: region.district || region.province, full_name: regionLabel(region) }
-}
-
-/** 지역 저장(7-10). 서버를 부르지 않는다(메모리 값만 바꾼다). */
+/**
+ * 지역 저장(7-10). PUT /api/users/me/regions/ { hometown_region_ids[1~3], residence_region_id }.
+ * 지역 선택기가 준 id(서버 지역 id)를 그대로 보낸다. id가 없는 값(저장된 프로필에서 id 없이 온 값)이 있으면
+ * 서버를 부르지 않고 "다시 골라 주세요"로 안내한다. 지역을 다시 고르면 id가 채워진다.
+ * 서버가 거절하면 ApiError(VALIDATION_ERROR 등)를 그대로 던진다.
+ * @param {{ hometowns: Array<{province: string, district: string, id?: number}>, residence: {province: string, district: string, id?: number} }} regions
+ */
 export async function saveRegions({ hometowns, residence }) {
   if (hometowns.length < 1 || hometowns.length > 3 || !residence) {
     const error = new Error('본가 지역은 1~3곳, 거주 지역은 1곳이에요')
     error.code = 'VALIDATION_ERROR'
     throw error
   }
-  regionMe = { ...regionMe, hometowns: hometowns.map(toMockRegion), residence: toMockRegion(residence) }
-  return { hometown_region_ids: regionMe.hometowns.map((region) => region.id), residence_region_id: regionMe.residence.id }
+  if (![...hometowns, residence].every((region) => Number.isInteger(region.id))) {
+    const error = new Error('지역 정보를 다시 확인해야 해요. 지역을 다시 골라 주세요')
+    error.code = 'VALIDATION_ERROR'
+    throw error
+  }
+  await source.putRegions({ hometown_region_ids: hometowns.map((region) => region.id), residence_region_id: residence.id }, { hometowns, residence })
 }
 
 /** 알림·편지 설정(7-11). */

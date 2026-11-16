@@ -3,8 +3,6 @@
 // 입력은 항상 서버 응답 모양이다. mock 모드(VITE_API_MOCK=true)도 mailboxDemo.js가 서버 모양으로 바꿔 넘긴다.
 // 시각 필드(sent_at, arrives_at 등)로 남은 시간·진행률을 계산하는 함수는 now(ms)를 받는다(기본 지금).
 
-import { PROVINCES } from '../../shared/region/regions.js'
-
 const DATE_FORMAT = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
   month: 'long',
@@ -75,25 +73,18 @@ export function minutesUntil(isoString, now = Date.now()) {
   return Math.max(Math.ceil((time - now) / 60000), 0)
 }
 
-/** 카드 목록에 있는 시·도를 shared/region 순서로 모은다. 지역 드롭다운 목록용. */
-export function listProvinces(cards) {
-  const found = new Set(cards.map((card) => card.province))
-  return PROVINCES.filter((province) => found.has(province))
-}
-
 // 새 편지 탭은 모두 "내 일기에 온 첫 편지"이다(api/mailbox.md). 서버에 부제 필드가 없어 고정 문구를 쓴다.
 const NEW_LETTER_SUBTITLE = '첫 편지 · 일기 답장'
 
 /**
  * 새 편지 카드 하나(5-1). 화면용 필드:
- * id, nickname, region, province(시·도 짧은 이름, 지역 필터용), stampId, stampName, stampImageUrl, subtitle, travelLabel, arrivedLabel, isRead
+ * id, nickname, region, stampId, stampName, stampImageUrl, subtitle, travelLabel, arrivedLabel, isRead
  */
 export function toLetterCard(raw) {
   return {
     id: raw.id,
     nickname: raw.sender?.nickname ?? '',
     region: raw.from_region?.full_name ?? null,
-    province: raw.from_region?.sido ?? null,
     stampId: toStampArtId(raw.stamp?.code),
     stampName: raw.stamp?.name ?? '',
     stampImageUrl: null,
