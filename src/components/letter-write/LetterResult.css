@@ -11,7 +11,7 @@
   border: var(--paper-border);
   border-radius: 24px;
   background: var(--paper-bg);
-  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+  box-shadow: var(--paper-shadow);
   color: var(--paper-text);
 }
 

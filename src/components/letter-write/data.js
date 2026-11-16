@@ -10,9 +10,9 @@ export const PAPERS = [
   { id: 'basic', code: 'basic', name: '기본' },
   { id: 'ruled', code: 'lined', name: '줄노트' },
   { id: 'check', code: 'grid', name: '체크' },
-  { id: 'mascot', code: 'cat-border', name: '고향이 테두리' },
+  { id: 'mascot', code: 'cat-border', name: '고향이' },
   { id: 'night', code: 'night-sky', name: '밤하늘', badge: 'NEW', dark: true },
-  { id: 'gold', code: 'gold-postcard', name: '금박 엽서', lockedStamps: 15 },
+  { id: 'gold', code: 'gold-postcard', name: '금박', lockedStamps: 15 },
 ]
 
 /** 편지지 id → 서버 코드. 모르는 id는 기본 편지지('basic')로 본다. */
