@@ -48,7 +48,7 @@ export default function HomePage() {
     event.currentTarget.querySelectorAll('[role="tab"]')[next ? 1 : 0]?.focus()
   }
   if (!isReadingDemo && state.error) return <ErrorScreen description={state.error.message} hint="" onRetry={() => loadReadingFeed({ away, region: requested })} />
-  if (!isReadingDemo && !state.profile) return <Loading />
+  if (!isReadingDemo && (!state.profile || (state.loading && !items.length))) return <Loading />
   return <main className="reading-home">
     <header className="reading-home-header"><h1>동글</h1><div><Link className="reading-game" to="/delivery-game"><Icon name="game" size={24} /><span>배달 게임</span></Link><Link className="reading-bell" to="/notification" aria-label={unread ? '새 알림 보기' : '알림 보기'}><Icon name="bell" />{unread && <img src={unreadDot} alt="" />}</Link></div></header>
     <div className="reading-tabs" role="tablist" aria-label="일기 피드" onKeyDown={tabKey}><button type="button" role="tab" id="hometown-feed-tab" aria-selected={!away} tabIndex={away ? -1 : 0} aria-controls="reading-feed" onClick={() => changeTab(false)}>고향 ↔ 타지</button><button type="button" role="tab" id="away-feed-tab" aria-selected={away} tabIndex={away ? 0 : -1} aria-controls="reading-feed" onClick={() => changeTab(true)}>전체 타지</button></div>
