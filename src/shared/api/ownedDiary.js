@@ -22,7 +22,12 @@ export async function loadOwnedDiaries(page = 1) {
     const data = await request('/api/diaries/me/', { query: { page } })
     if (current !== generation) return
     update({ profile: profileView(profile), diaries: page === 1 ? data.results.map(mapDiary) : [...state.diaries, ...data.results.map(mapDiary)].filter((item, index, all) => all.findIndex((other) => other.id === item.id) === index), count: data.count, next: data.next ? page + 1 : null, loading: false })
-  } catch (error) { if (current === generation) update({ loading: false, error }) }
+  } catch (error) {
+    if (current !== generation) return
+    // 다음 페이지가 실패하면 보던 목록은 그대로 두고 부른 쪽에 알린다(목록 전체를 오류 화면으로 바꾸지 않는다).
+    if (page > 1) { update({ loading: false }); throw error }
+    update({ loading: false, error })
+  }
 }
 export async function loadOwnedDiary(id) {
   if (isApiDemo) return
