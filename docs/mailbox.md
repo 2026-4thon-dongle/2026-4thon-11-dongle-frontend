@@ -4,7 +4,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 대상: 5-1~5-7-1 (`92:1001`, `92:1441`, `128:1601`, `171:2173`, `92:1129`, `171:2276`, `128:1746`, `340:5612`).
 5-8 이후(편지 열기·답장 등)와 5-14, 5-15(`pen-pal`)는 `docs/letter-receive.md`를 본다.
 
-**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 5-1 지역 필터는 서버 `sido` 파라미터로 연결했다(#79). 5-13은 서버와 연결했고(`docs/letter-receive.md`), 5-12는 이번 범위가 아니다.
+**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 5-1 지역 필터는 서버 `sido` 파라미터로 연결했다(#79). 5-13은 서버와 연결했고(`docs/letter-receive.md`), 5-12는 발송 응답을 router state로 받아 그린다(`docs/letter-receive.md`). 5-12를 여는 쪽(`DonePage`)은 채현님 영역이라 아직 연결되지 않았다.
 
 | 화면 | Figma | 경로·동작 |
 | --- | --- | --- |
@@ -94,7 +94,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 ## 추후 연동·PR 참고
 
 - 관련 명세: 문서 레포 `api/mailbox.md`(`GET /api/mailbox/summary/`, `/new/`, `/conversations/`, `/in-transit/`, `/archive/`), `api/common.md`.
-- 아직 연결하지 않은 것: 5-12(우표 획득, 발송 응답과의 연결은 채현님과 협의 뒤). 5-13은 `GET /api/stamps/rewards/`·`POST /api/stamps/rewards/{code}/seen/`로 연결했다.
+- 아직 연결하지 않은 것: 5-12를 여는 쪽(`DonePage`, 채현님 영역). 5-12 화면은 발송 응답(`granted_stamps`·`unlocked_rewards`)을 router state로 받고 `GET /api/stamps/`로 모은 개수를 받는다. 5-13은 `GET /api/stamps/rewards/`·`POST /api/stamps/rewards/{code}/seen/`로 연결했고 앱 진입 때 자동 조회는 하지 않는다.
 - 명세와 어긋나거나 확인이 필요한 점은 PR 설명서에 적는다(보관 `passed_letter`의 상세에서 `can_reply`·`can_pass`, 새 편지 `diary`가 null일 수 있음 등).
 
 관련 지침: `CLAUDE.md`, `docs/ownership.md`, `docs/letter-write.md`.

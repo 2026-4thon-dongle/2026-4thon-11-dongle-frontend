@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
@@ -8,7 +8,7 @@ import CelebrationFrame from '../../components/mailbox/CelebrationFrame.jsx'
 import RewardPreview from '../../components/mailbox/RewardPreview.jsx'
 import useRewardUnlock from '../../components/mailbox/useRewardUnlock.js'
 import { markRewardSeen, resolveTryTarget } from '../../components/mailbox/stampRewardApi.js'
-import { CHATTING_TARGET } from '../../components/mailbox/stampRewardMapper.js'
+import { CHATTING_TARGET, safeReturnTo } from '../../components/mailbox/stampRewardMapper.js'
 import './RewardUnlockedPage.css'
 
 // "스티커 써보기"를 눌렀을 때 토스트. 시안에 없어서 정한 문구이다.
@@ -31,7 +31,7 @@ const DOTS = [
  *  - `?threshold=3` 기준 개수(3, 5, 10, 15). 5-12의 "확인"이 이 값으로 넘긴다.
  *  - 둘 다 없으면 서버에서 열렸고 아직 확인하지 않은(unlocked && !seen) 첫 보상을 보여 준다. 없으면 "새로 열린 보상이 없어요"를 보여 준다.
  * 가정:
- *  - 언제 이 화면으로 오는지는 아직 정해지지 않았다(5-12 다음 흐름, 앱 진입 때 unlocked && !seen 확인). 이 화면은 주소를 받으면 그릴 뿐이다.
+ *  - 이 화면으로 오는 길은 둘이다: 5-12의 "확인"(발송 응답에 unlocked_rewards가 있을 때, ?code=)과 마이 수집 보상(7-8)에서 이미 열린 보상을 누를 때(?code=). 앱을 열 때 자동으로 조회하지는 않는다.
  *  - "확인"과 보조 버튼("스티커 써보기")은 둘 다 화면을 떠나므로 아직 확인 전이면 seen을 먼저 보낸다. seen이 실패하면 이동하지 않고 토스트를 보여 준다.
  *  - 보조 버튼은 토스트("답장할 때 서명 단계에서 붙여보세요")를 보여 주고 5-1 새 편지 탭으로 간다. 받은 새 편지가 없으면 3-1 홈(/home)으로 간다. 새 편지가 있는지는 GET /api/mailbox/summary/의 new_count로 본다.
  *  - "확인"은 5-3 대화 중 탭(/mailbox, state.tab = 'chatting')으로 간다.
@@ -39,6 +39,9 @@ const DOTS = [
  */
 function RewardUnlockedPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  // 5-12에서 returnTo를 받았으면 "확인"은 읽던 편지로 돌아간다(5-9 봉투 열기에서 온 경우). 없으면 5-3.
+  const returnTo = safeReturnTo(location.state?.returnTo)
   const { showToast } = useOverlay()
   const [searchParams] = useSearchParams()
   const code = searchParams.get('code')
@@ -54,7 +57,7 @@ function RewardUnlockedPage() {
       if (reward.needsSeen) await markRewardSeen(reward.code)
       const target = await resolveTarget()
       if (toast) showToast(toast)
-      navigate(target.path, { state: target.state })
+      navigate(target.path, { state: target.state, replace: target.replace })
     } catch (reason) {
       showToast(reason?.message ?? '잠시 후 다시 시도해 주세요')
       setBusy(false)
@@ -62,7 +65,7 @@ function RewardUnlockedPage() {
   }
 
   const handleTry = () => leave(resolveTryTarget, TRY_TOAST)
-  const handleConfirm = () => leave(async () => reward.confirmTarget)
+  const handleConfirm = () => leave(async () => (returnTo ? { path: returnTo, replace: true } : reward.confirmTarget))
 
   if (error) {
     return <ErrorScreen description={error.message} hint="" onRetry={reload} />
