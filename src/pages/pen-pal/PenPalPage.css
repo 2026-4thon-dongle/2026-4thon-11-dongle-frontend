@@ -40,3 +40,8 @@
   font: 400 var(--body-15-size) / var(--body-15-lh) var(--font-body);
   text-align: center;
 }
+
+/* 다음 페이지가 있을 때 목록 아래 "더 보기" 버튼(시안에 없는 임시 UI) */
+.pen-pal-page__more {
+  margin-top: 16px;
+}

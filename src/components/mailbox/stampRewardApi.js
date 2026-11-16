@@ -3,7 +3,7 @@
 // 그래서 이 두 화면이 어디서 데이터를 받는지는 정해지지 않았다. 지금은 shared/mocks/stampReward.js를 돌려준다.
 // 반환값은 항상 stampRewardMapper의 화면용 데이터이다.
 import { MOCK_STAMP_GAIN, MOCK_COLLECT_REWARDS } from '../../shared/mocks/stampReward.js'
-import { fetchMailboxLetters } from './mailboxApi.js'
+import { fetchDemoMailboxLetters } from './mailboxDemo.js'
 import { toStampGain, toRewardUnlock, HOME_PATH, NEW_LETTERS_TARGET } from './stampRewardMapper.js'
 
 /**
@@ -21,10 +21,10 @@ export async function fetchRewardUnlock(threshold) {
 /**
  * 5-13 "스티커 써보기"가 갈 곳. 받은 새 편지가 있으면 5-1 새 편지 탭(답장하러), 없으면 3-1 홈.
  * 반환: { path, state, hasNewLetter }
- * mock 전용 판단: 우체통 목록(fetchMailboxLetters)의 새 편지 탭이 비었는지 본다.
- * 실제 API: 새 편지 개수를 따로 주는 응답(또는 편지 목록의 total)이 생기면 이 판단만 그 값으로 바꾼다.
+ * mock 전용 판단: 5-12·5-13은 아직 서버와 연결하지 않아(우표·보상 질문 답 대기) 이 판단도 우체통 mock 목록(fetchDemoMailboxLetters)의 새 편지 탭을 본다.
+ * 서버와 연결할 때는 GET /api/mailbox/summary/의 new_count(mailboxApi.fetchMailboxSummary)로 바꾼다.
  */
 export async function resolveTryTarget() {
-  const { items } = await fetchMailboxLetters('new')
+  const { items } = await fetchDemoMailboxLetters('new')
   return items.length > 0 ? { ...NEW_LETTERS_TARGET, hasNewLetter: true } : { path: HOME_PATH, hasNewLetter: false }
 }

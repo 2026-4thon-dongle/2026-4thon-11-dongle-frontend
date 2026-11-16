@@ -1,41 +1,29 @@
-// 펜팔 요청(5-14, 5-15). mock, 문서 레포 API 확정 전. 문서 레포 `api/`에 편지·펜팔 API가 없어 요청 주소를 정하지 않았다.
-// 지금은 shared/mocks/penPal.js를 돌려주고, API가 정해지면 이 함수 안에서 서버를 호출한다.
-//   MAIL-08 펜팔 친구 목록 → fetchPenPals
-//   MAIL-09 상대별 주고받은 편지 → fetchPenPalLetters
+// 펜팔 요청(5-14, 5-15, api/mailbox.md). 기본은 서버 호출이고, VITE_API_MOCK=true(개발 전용)일 때만 penPalDemo.js의 mock을 쓴다.
+// 실패하면 mock으로 채우지 않고 ApiError(shared/api/client.js)를 그대로 던진다. 화면이 에러 UI로 보여 준다.
+//   GET /api/penpals/                       펜팔 친구 목록(5-14). 페이지당 20개
+//   GET /api/mailbox/conversations/{id}/    대화의 주고받은 편지(5-15). id는 대화 id(conversation_id)
 // 반환값은 항상 penPalMapper의 화면용 데이터이다.
-import { MOCK_PEN_PALS, MOCK_PEN_PAL_LETTERS } from '../../shared/mocks/penPal.js'
+import { ApiError, isApiDemo, request } from '../../shared/api/client.js'
+import { fetchDemoPenPalLetters, fetchDemoPenPals } from './penPalDemo.js'
 import { toPenPalList, toPenPalLetters } from './penPalMapper.js'
 
 /**
- * @param {{ empty?: boolean }} [options] empty: true면 펜팔 친구가 없는 상태(개발 확인용)
+ * 펜팔 친구 목록 한 페이지.
+ * @param {{ page?: number, empty?: boolean }} [options] empty: mock 모드에서만 쓴다(펜팔 친구가 없는 상태 확인용)
+ * @returns {Promise<{ items: object[], hasNext: boolean }>}
  */
-export async function fetchPenPals({ empty = false } = {}) {
-  return toPenPalList(empty ? { results: [] } : MOCK_PEN_PALS)
+export async function fetchPenPals({ page = 1, empty = false } = {}) {
+  if (isApiDemo) return fetchDemoPenPals({ empty })
+  return toPenPalList(await request('/api/penpals/', { query: { page } }))
 }
 
-// mock 전용: 우체통 대화 중 탭의 "마무리된 대화"(5-3, 감자왕)와 이어지는 상대. 7일 동안 답장이 없어 끝난 대화라 답장 버튼이 없다.
-//   is_ended  대화가 끝났는지. 실제 API는 상대별 편지 기록(MAIL-09) 응답에 대화 상태를 담아 줘야 한다. (요청 필요)
-// 펜팔 친구 목록(5-14)에는 넣지 않고 5-15 주소(/pen-pal/4)로만 열린다.
-const MOCK_ENDED_FRIEND = {
-  id: 4,
-  nickname: '감자왕',
-  region: '강원 춘천',
-  letter_count: 3,
-  last_letter_at: '2026-10-25T21:10:00+09:00',
-  reply_letter_id: 104,
-  is_ended: true,
-}
-const MOCK_ENDED_LETTERS = [
-  { id: 'e1', kind: 'diary', at: '2026-10-20T09:00:00+09:00', preview: '소양강 노을을 보며 쓴 일기예요', stamp_code: 'first-diary' },
-  { id: 'e2', kind: 'received', at: '2026-10-22T10:00:00+09:00', preview: '춘천 하늘이 정말 예뻤어요', stamp_code: 'first-letter' },
-  { id: 'e3', kind: 'sent', at: '2026-10-23T20:30:00+09:00', preview: '노을 사진 잘 봤어요! 닭갈비 맛집이 궁금해요', stamp_code: 'first-roundtrip' },
-  { id: 'e4', kind: 'received', at: '2026-10-25T21:10:00+09:00', preview: '답장 고마워요! 닭갈비 맛집은 다음 편지에 알려 줄게요', stamp_code: 'first-roundtrip' },
-]
-
-/** 없는 친구면 null. */
-export async function fetchPenPalLetters(friendId) {
-  const friend = [...MOCK_PEN_PALS.results, MOCK_ENDED_FRIEND].find((item) => String(item.id) === String(friendId))
-  if (!friend) return null
-  const entries = friend === MOCK_ENDED_FRIEND ? MOCK_ENDED_LETTERS : (MOCK_PEN_PAL_LETTERS[friend.id] ?? [])
-  return toPenPalLetters(friend, entries)
+/** 대화의 주고받은 편지. 내 대화가 아니거나 없으면(404) null. */
+export async function fetchPenPalLetters(conversationId) {
+  if (isApiDemo) return fetchDemoPenPalLetters(conversationId)
+  try {
+    return toPenPalLetters(await request(`/api/mailbox/conversations/${encodeURIComponent(conversationId)}/`))
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null
+    throw error
+  }
 }

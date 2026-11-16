@@ -5,7 +5,7 @@ import './ChatCard.css'
 
 /**
  * 대화 중 카드(5-3). 상대 프로필, 상태 배지, 한 줄 설명, 왕복 횟수 점을 보여 준다.
- * 누르면 그 상대와 주고받은 편지(5-15, /pen-pal/:friendId)로 이동한다. 경로는 mapper가 정한다.
+ * 누르면 그 상대와 주고받은 편지(5-15, /pen-pal/:conversationId)로 이동한다. 경로는 mapper가 정한다.
  * @param {object} chat mailboxMapper.toChatCard의 결과
  */
 function ChatCard({ chat }) {

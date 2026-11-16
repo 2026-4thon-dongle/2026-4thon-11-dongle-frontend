@@ -4,12 +4,26 @@
   min-height: 486px;
   padding: 20px 20px 28px;
   border-radius: 24px;
-  background: var(--bg-surface);
+  background: var(--letter-bg, var(--bg-surface));
   box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
-  color: var(--text-brown);
+  color: var(--letter-text, var(--text-brown));
   /* 도장이 닿는 때: 도장 애니메이션 지연 250ms + 길이 700ms x 62% */
   --hit: 684ms;
   animation: letter-paper-press 260ms ease-out var(--hit);
+}
+
+/* 편지지 종류별 바탕·글씨색(편지 쓰기 Paper.css의 편지지 스펙과 같은 색). 줄·격자·장식은 그리지 않는다. */
+.letter-paper--ruled { --letter-bg: #dfeef3; }
+.letter-paper--check { --letter-bg: #fff5e1; }
+.letter-paper--mascot { --letter-bg: #ffeee1; }
+.letter-paper--night {
+  --letter-bg: linear-gradient(to bottom, #3e4386, #8a7cc4);
+  --letter-text: #fff;
+  --letter-line: rgba(255, 255, 255, 0.35);
+}
+.letter-paper--gold {
+  --letter-bg: linear-gradient(123.25deg, #f3d98b 0%, #fff7dc 21.429%, #ebc765 35.714%, #fff1c4 51.429%, #d6a43c 71.429%);
+  --letter-line: rgba(184, 134, 42, 0.45);
 }
 
 /* "첫 편지" 배지: 카드 위쪽 가장자리에 걸친다 */
@@ -141,20 +155,34 @@
     to bottom,
     transparent 0,
     transparent 28.5px,
-    var(--line-soft) 28.5px,
-    var(--line-soft) 30px
+    var(--letter-line, var(--line-soft)) 28.5px,
+    var(--letter-line, var(--line-soft)) 30px
   );
-  font: 400 21px / 30px var(--font-letter);
+  font: 400 21px / 30px var(--font-letter); /* 글씨체는 LetterPaper.jsx가 서버 값으로 덮어쓴다 */
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
-.letter-paper__signature {
-  margin: 14px 0 0;
-  color: var(--brand-orange-deep);
-  font: 400 24px / 1.5 var(--font-letter);
-  text-align: right;
-  transform: rotate(3deg);
+.letter-paper__sign {
+  position: relative;
+  margin-top: 14px;
+}
+
+/* 서명 이미지 없이 스티커만 있을 때: 편지 쓰기 서명 그림판과 같은 높이 */
+.letter-paper__sign--empty {
+  height: 220px;
+}
+
+.letter-paper__sign-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.letter-paper__sticker {
+  position: absolute;
+  line-height: 0;
+  pointer-events: none;
 }
 
 @keyframes letter-paper-tool {
@@ -223,4 +251,9 @@
   .letter-paper__tool {
     display: none;
   }
+}
+
+/* 어두운 편지지에서 보조 글씨가 묻히지 않게 */
+.letter-paper--night .letter-paper__route {
+  color: rgba(255, 255, 255, 0.75);
 }

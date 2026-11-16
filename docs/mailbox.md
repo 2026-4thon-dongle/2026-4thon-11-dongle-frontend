@@ -2,13 +2,15 @@
 
 Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 대상: 5-1~5-7-1 (`92:1001`, `92:1441`, `128:1601`, `171:2173`, `92:1129`, `171:2276`, `128:1746`, `340:5612`).
-5-8 이후(편지 열기·답장 등)와 5-14, 5-15(`pen-pal`)는 이번 범위에 없다.
+5-8 이후(편지 열기·답장 등)와 5-14, 5-15(`pen-pal`)는 `docs/letter-receive.md`를 본다.
+
+**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 지역 필터의 서버 연결(5-1)과 5-12·5-13은 이번 범위가 아니다.
 
 | 화면 | Figma | 경로·동작 |
 | --- | --- | --- |
 | 5-1 새 편지 | `92:1001` | `/mailbox` 첫 탭. 정렬 칩(지역별 ▾·최신순·오래된순·안읽음), 편지 카드 |
 | 5-2 새 편지 비었을 때 | `92:1441` | 새 편지 목록이 비면 표시. 버튼 "고향 일기 쓰러 가기" → `/diary/write` |
-| 5-3 대화 중 | `128:1601` | 대화 중 탭. 칩 없음, 상태 배지·왕복 점이 있는 대화 카드. 카드를 누르면 5-15(`/pen-pal/:friendId`)로 이동 |
+| 5-3 대화 중 | `128:1601` | 대화 중 탭. 칩 없음, 상태 배지·왕복 점이 있는 대화 카드. 카드를 누르면 5-15(`/pen-pal/:conversationId`)로 이동. id는 대화 id |
 | 5-4 대화 중 비었을 때 | `171:2173` | 버튼 "새 편지 보러 가기" → 이동 없이 새 편지 탭으로 전환 |
 | 5-5 배송 중 | `92:1129` | 배송 중 탭. 도착 임박순 고정(정렬 칩 없음), 진행 바 카드, "지도 보기", 맨 아래 배달 게임 안내 |
 | 5-6 배송 중 비었을 때 | `171:2276` | 버튼 "편지 쓰러 가기" → `/letter-write` |
@@ -21,29 +23,32 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
   - 정렬 칩과 지역 필터는 아직 화면 상태이다. 상세에 다녀오면 처음(최신순·전체)으로 돌아간다.
 - 이미 선택된 탭이나 정렬 칩, 지역을 다시 누르면 아무 일도 일어나지 않는다(로딩을 켜지 않는다).
 - **지역 필터("지역별 ▾")**: 칩을 누르면 아래에 목록("전체" + 목록에 있는 시·도)이 열린다. **시안 없음, 임시 UI**이다(Figma 5-1에는 칩만 있고 선택 화면이 없다). 고르면 그 지역 편지만 보이고 칩에 지역 이름이 표시되며 "전체"를 고르면 풀린다. 바깥을 누르거나 Esc로 닫는다.
-  지역 표기는 mock마다 달라("전주시", "충남 천안") `mailboxMapper.toProvince`가 `shared/region` 이름의 시·도("전북", "충남")로 맞춘다. 필터 결과가 비면 5-2가 아니라 칩 아래 한 줄 안내가 나온다.
-- 정렬 칩은 새 편지 탭(비었을 때 제외)에만 있다. 오른쪽 위 필터 아이콘은 모든 탭에서 없앴다. 배송 중 탭은 남은 시간이 짧은 순으로 고정이다.
-- **편지 상태에 따른 탭 이동**(mock, 화면을 오가는 동안만 유지·새로고침하면 처음으로): "나중에 읽을래요"는 읽음 처리 없이 한 칸 뒤로 돌아가(우체통에서 들어왔을 때, 보던 탭 그대로) 새 편지 탭에 빨간 점이 유지된다. 봉투를 열어 읽기만 한 편지는 새 편지 탭에 남되 점이 사라진다. "답장하기"를 누르면 대화 중 탭(배송 중 대화)으로, "넘기기"는 보관 탭(넘긴 편지)으로 옮겨지고 토스트("보관함으로 옮겼어요")와 함께 `?tab=stored`로 열린다. 같은 상대와의 대화가 이미 있으면 그 카드를 새 카드로 바꾼다.
+  **아직 서버 필터와 연결하지 않았다.** 지금까지 받아 온 편지(`from_region.sido`, 시·도 짧은 이름) 안에서만 걸러 보여 주고, 목록의 시·도는 받아 온 편지에서 계산한다. 그래서 20개를 넘는 편지는 "더 보기"로 받아 와야 필터에 잡힌다. `shared/region`이 서버 시·도 id를 주면(#59) 서버 `sido` 파라미터와 `GET /api/regions/`의 시·도 목록으로 바꾼다. 필터 결과가 비면 5-2가 아니라 칩 아래 한 줄 안내가 나온다.
+- 정렬 칩은 새 편지 탭(비었을 때 제외)에만 있고 서버 `ordering`(`latest`·`oldest`·`unread`)으로 보낸다. 오른쪽 위 필터 아이콘은 모든 탭에서 없앴다. 배송 중 탭은 서버가 도착 임박순으로 주고, 대화 중·보관 탭도 서버 정렬 그대로 보여 준다.
+- **로딩·에러·더 보기**: 처음과 탭·정렬을 바꿀 때는 스켈레톤이다. 목록 요청이 실패하면 목록 자리에 서버 메시지(`ApiError.message`, 네트워크 오류면 "서버에 연결하지 못했어요…")와 "다시 시도" 버튼이 나온다(탭은 그대로 남아 다른 탭으로 옮길 수 있다). mock으로 채우지 않는다. 페이지당 20개이고 `next`가 있으면 목록 아래에 "더 보기" 버튼이 나온다(시안에 없는 임시 UI). 더 보기가 실패하면 토스트로 알린다.
+- **새 편지 탭 점**: `GET /api/mailbox/summary/`의 `new_unread_count`가 0보다 크면 보인다(목록과 따로 요청하며, 점 요청만 실패하면 점 없이 목록을 보여 준다).
+- **편지 상태에 따른 탭 이동**(서버가 읽음·답장·넘김을 반영한 목록을 준다): "나중에 읽을래요"는 읽음 처리 없이 한 칸 뒤로 돌아가(우체통에서 들어왔을 때, 보던 탭 그대로) 새 편지 탭에 빨간 점이 유지된다. 봉투를 열어 읽기만 한 편지는 새 편지 탭에 남되 점이 사라진다. "넘기기"는 보관 탭(넘긴 편지)으로 옮겨지고 토스트("보관함으로 옮겼어요")와 함께 `?tab=stored`로 열린다. 답장한 편지는 답장을 **보냈을 때**(편지 쓰기 발송) 서버가 대화 중으로 옮긴다. "답장하기"를 누르는 것만으로는 옮겨지지 않는다.
 - 새 편지 탭 글씨 옆 점은 읽지 않은 편지가 있을 때만 보이고, 지역 필터와 상관없이 전체 기준이다. 5-2 시안에는 비어 있는데도 점이 있지만 시안과 다르게 구현했다.
 - 하단 탭바는 기존 `TabBarLayout`이 `/mailbox`에서 보여 준다.
-- 개발 모드에서 `/mailbox?mock=empty`로 들어가면 모든 탭의 mock이 비어 5-2, 5-4, 5-6, 5-7-1을 볼 수 있다. 운영 빌드에서는 동작하지 않는다.
+- **mock 모드**(`.env`의 `VITE_API_MOCK=true`, 개발 서버에서만): `/mailbox?mock=empty`로 들어가면 모든 탭의 mock이 비어 5-2, 5-4, 5-6, 5-7-1을 볼 수 있다. 기본(`VITE_API_MOCK=false`)에서는 이 쿼리가 무시된다. 실서버에서 빈 화면을 보려면 새 계정으로 로그인한다.
 
 ## 경로와 가정
 
-모든 데이터는 mock이다. 이동 경로는 API·화면이 정해지지 않아 가정한 것이다.
+목록 데이터는 서버에서 받는다. 이동 경로 중 일부는 화면이 정해지지 않아 가정한 것이다.
 
 | 위치 | 이동 경로 | 상태 |
 | --- | --- | --- |
-| 새 편지 카드, 넘긴 편지(보관) | `/mailbox/:letterId` | `RoutePlaceholder` "편지" |
-| 대화 중 카드 | `/pen-pal/:friendId` | 5-15. 끝난 대화는 "답장 쓰기"가 없다 |
-| 마무리된 대화(보관) | `/mailbox/:id` (임시) | 보관 카드는 모두 "찾을 수 없는 편지예요"로 간다. TODO: 넘긴 편지는 읽기 전용 화면, 끝난 대화는 5-15로 연결 |
+| 새 편지 카드, 넘긴 편지(보관) | `/mailbox/:letterId` | 5-8·5-9 (`LetterPage`). 넘긴 편지는 서버가 `can_reply`·`can_pass`를 주는 대로 읽기만 하거나 버튼이 보인다 |
+| 대화 중 카드 | `/pen-pal/:conversationId` | 5-15. 끝난 대화는 "답장 쓰기"가 없다 |
+| 마무리된 대화(보관) | `/pen-pal/:conversationId` | 보관 응답의 `conversation_id`로 5-15에 연결한다 |
 | 5-2 "고향 일기 쓰러 가기" | `/diary/write` | 공용 `TabBar`의 기본 경로와 같다. `/diary/*`가 `RoutePlaceholder`이다 |
 | 5-5 "지도 보기" | `/delivery/:id/map` | `letterRoutes`의 `RoutePlaceholder`(4-12) |
 | 5-5 배달 게임 안내 | `/delivery-game` | `letterRoutes`의 `RoutePlaceholder`. 어느 편지의 게임인지 넘기는 방법은 정하지 않았다 |
 | 5-6 "편지 쓰러 가기" | `/letter-write` | 구현된 편지 쓰기 화면 |
 
-- `/mailbox`, `/mailbox/:letterId`, `/mailbox/chats/:chatId`만 등록했다. 그 밖의 `/mailbox/...` 경로는 "페이지를 찾을 수 없어요" 화면이 나온다.
+- `/mailbox`, `/mailbox/:letterId`, `/mailbox/chats/:chatId`만 등록했다. `/mailbox/chats/:chatId`는 알림(`round_trip`)이 대화 id로 들어오는 주소라 `/pen-pal/:chatId`로 바로 넘긴다(`ChatRedirectPage`). 그 밖의 `/mailbox/...` 경로는 "페이지를 찾을 수 없어요" 화면이 나온다.
 - 경로를 바꿔야 하면 `mailboxMapper.js`(카드의 이동 경로, `mapPath`·`path`), `ShippingCard`, `StoredCard`, `GameBanner`, `MailboxPage.jsx`의 경로 상수를 고친다.
+- 5-5 "지도 보기"(`/delivery/:letterId/map`)의 id는 배송 응답의 편지 id이다.
 
 ## 다른 담당 화면과 연결되는 지점
 
@@ -53,7 +58,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 - **받은 편지 답장(5-10~)**: 이번 범위에 없다. `docs/letter-write.md`에 따라 `/letter-write`로 들어오며, 쿼리 이름은 합의가 필요하다(제안: `letterId`, `nickname`, `region`).
 - **배송 지도(4-12)·직접 배달하기(9-1)**: 각각 `/delivery/:id/map`, `/delivery-game`로 연결만 했다. 화면은 해당 담당이 만든다.
 - **일기 쓰기(6-1)**: `/diary/write`로 연결만 했다. 해당 브랜치에서 구현된 경로와 같은지 통합할 때 확인해야 한다.
-- **우표**: 카드의 우표는 `shared/ui/Stamp`가 `shared/assets/stamp`의 파일 이름(`stamp.code`)으로 그린다. `shared/mocks/stamps.js`와 같은 id 체계이다.
+- **우표**: 카드의 우표는 `shared/ui/Stamp`가 `shared/assets/stamp`의 파일 이름으로 그린다. 서버 우표 `code`가 그림 이름과 같으면 그대로, 다른 두 개(`long-delivery`→`long-way`, `cat-birthday`→`hometown-birthday`)는 `mailboxMapper.toStampArtId`가 바꾼다(`components/letter-write/data.js`의 `stampArtIdOf`와 같은 표를 따로 둠).
 
 ## 구현 구조
 
@@ -62,38 +67,33 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
   - 탭·카드: `MailboxTabs`, `NewLetterFilters`(지역 드롭다운 + 정렬 칩), `LetterCard`(5-1), `ChatCard`(5-3), `ShippingCard`(5-5), `StoredCard`(5-7)
   - 안내: `MailboxEmpty`(비었을 때 4종 공용), `StoredNotice`(5-7), `GameBanner`(5-5)
   - 정의: `mailboxFilters.js`(탭·정렬 칩)
-- 데이터 흐름: `MailboxPage` → `mailboxApi.js`(`fetchMailboxLetters`) → `shared/mocks/mailbox.js` → `mailboxMapper.js`(`toMailboxPage`)
-  - 화면은 서버(mock) 필드를 직접 쓰지 않고 변환 결과(`items`, `nextCursor`, `hasNext`)만 쓴다. 명세가 바뀌면 mapper와 api 파일만 고친다.
-  - mapper가 만드는 것: 시간 문구("6시간 걸려 도착", "도착까지 5시간 41분"), 날짜 문구, 진행률, 대화 상태별 배지·문구, 보관 종류별 이름·배지.
-- mock: `shared/mocks/mailbox.js`(새 파일, 기존 `shared` 파일은 수정하지 않았다). 탭별(`new`, `chatting`, `shipping`, `stored`)로 나뉘고 `empty` 옵션이 있다.
+- 데이터 흐름: `MailboxPage` → `mailboxApi.js`(`fetchMailboxLetters`, `fetchMailboxSummary`) → `shared/api/client.js`의 `request()` → 서버 → `mailboxMapper.js`(`toMailboxPage`)
+  - 화면은 서버 필드를 직접 쓰지 않고 변환 결과(`items`, `count`, `hasNext`)만 쓴다. 명세가 바뀌면 mapper와 api 파일만 고친다.
+  - mapper가 만드는 것: 시간 문구("6시간 걸려 도착", "도착까지 5시간 41분"), 날짜 문구, 진행률과 남은 시간(`sent_at`·`arrives_at`과 기기 시계로 계산), 대화 상태별 배지·문구, 보관 종류별 이름·배지·이동 경로.
+  - 목록 응답은 `{count, next, previous, results}`(`?page=`)이다. `next`는 있는지만 보고 다음 페이지 번호는 화면이 센다.
+- mock 모드: `mailboxDemo.js`가 옛 mock(`shared/mocks/mailbox.js`)을 서버 응답 모양으로 바꿔 같은 mapper에 넘긴다. `VITE_API_MOCK=true`이고 개발 서버일 때만(`shared/api/client.js`의 `isApiDemo`) 쓰며, 서버 호출이 실패해도 mock으로 채우지 않는다.
 - 재사용한 공용 컴포넌트: `Chip`, `Icon`, `Stamp`, `Mascot`, `Button`, `Skeleton`, `TabBar`(기존 레이아웃이 표시).
 - 공용 에셋은 수정하지 않았다. Figma에서 받은 `components/mailbox/assets/envelope-fold.svg`(5-1 카드의 봉투 접힌 선) 하나만 추가했다.
 - 최대 430px, 좌우 20px, 카드·탭·버튼은 100%와 flex로 맞춘다. 높이·폰트·아이콘 크기는 시안의 px를 그대로 쓴다.
 - 로딩은 `Skeleton`을 탭별 카드 높이(100·110·126·86)에 맞춰 보여 준다.
 
-## mock 처리
+## 서버 연동과 mock 모드
 
-mock으로 처리한 부분:
-
-- **목록 응답 형식**: mock은 `{ results, next_cursor, has_next }`이다. `api/common.md`의 목록 규칙(`?page=`, `count`·`next`·`previous`·`results`)과 다르다. `has_next`는 받기만 하고 더 보기 UI는 없다(시안에 없음).
-- **정렬**: 새 편지 탭에서만 mock이 정렬한다. 다른 탭은 mock 순서 그대로이다.
-- **상태 유지**: 읽음·답장·넘김은 `mailboxMockStore.js`(메모리)에 두고 `mailboxApi`(목록)와 `letterReceiveApi`(읽음·답장·넘기기)가 같이 쓴다. 실제 API로 바꿀 때는 이 저장소를 지우고, `mailboxApi`의 `buildMockResponse` 블록과 `letterReceiveApi`의 `markLetterReplied`를 없앤다(서버가 상태가 반영된 목록을 준다). 답장은 실제 발송 시점을 몰라 "답장하기"를 누르는 순간 옮긴다.
-- **배송 중 정렬·대화 상대 id**: 도착 임박순 정렬은 `mailboxApi`가 한다(서버가 정렬해 주면 지운다). 대화 카드의 친구 id(`friend_id`)와 끝난 대화 표시(`is_ended`, `penPalApi.js`의 감자왕)는 mock 전용 필드이다.
-- **지역 필터**: 서버 파라미터가 정해지지 않아 `mailboxApi`가 mock 목록을 걸러 낸다. 지역 목록과 읽지 않음 점도 `mailboxApi`가 전체 목록에서 계산한다. 서버가 필터를 받으면 걸러내기를 파라미터로 바꾸고, 목록과 점은 서버 값을 쓴다.
-- **우표**: `stamp.code`로 그린다. `code`가 없고 `image_url`만 있으면 `<img>`로 그리는 대비책이 있으나 mock에서는 쓰지 않는다.
-- **대화 상대 프로필**: 표정과 색을 id로 돌려 가며 고른다.
-- **시간 표기**: 배송 시간은 시안에 보이는 글자 기준으로 올림한 시간만 보여 준다. 1시간 미만은 분이다.
+- **전환**: `.env`의 `VITE_API_MOCK`이 `true`이고 개발 서버(`import.meta.env.DEV`)일 때만 mock이다(`shared/api/client.js`의 `isApiDemo`). 기본은 서버 호출이다. 로컬에서 서버로 확인하려면 `VITE_API_MOCK=false`로 두고 가입한 계정으로 로그인한 토큰을 쓴다(토큰은 코드·문서에 적지 않는다).
+- **에러 형식**: `client.js`의 `ApiError`(`status`, `code`, `message`)를 따른다. 401(`TOKEN_NOT_VALID`)은 `client.js`가 갱신을 시도하고, 갱신도 안 되면 세션을 비운다.
+- **mock 모드의 상태 유지**: 읽음·답장·넘김은 `mailboxMockStore.js`(메모리)에 두고 `mailboxDemo.js`(목록)와 `letterReceiveDemo.js`(상세)가 같이 쓴다. 새로고침하면 처음으로 돌아간다. 서버 모드에서는 쓰지 않는다. 답장은 실제 발송 시점을 몰라 mock에서만 "답장하기"를 누르는 순간 대화 중으로 옮긴다.
+- **mock 전용 값**(서버에는 없다): 새 편지 mock의 `subtitle`, 대화·보관 mock의 친구 id(`friend_id`)와 끝난 대화 표시. mock 모드는 이것들을 서버 응답 모양으로 바꿔 넘길 뿐 mapper는 서버 필드만 읽는다.
+- **서버에 없어서 정한 것**
+  - 카드 부제 "첫 편지 · 일기 답장": 새 편지 탭은 모두 "내 일기에 온 첫 편지"라서 고정 문구로 둔다(추정).
+  - 대화 상대 프로필: `partner.avatar` 코드(`cat-basic`, `cat-wink`, `cat-sparkle`, `cat-shy`, `cat-smile`)를 고향이 표정으로 바꾸고, 모르는 코드는 기본 얼굴이다. 배경 색은 서버에 없어 id로 돌려 가며 고른다.
+  - 시간 표기: 배송 시간은 시안에 보이는 글자 기준으로 올림한 시간만 보여 준다. 1시간 미만은 분이다. 서버가 데모 모드(편지가 1분 만에 도착)면 "1분 걸려 도착"이 나온다.
 - **고정 문구**: 보관 탭 안내 박스, 마무리된 대화의 "7일 동안 답장이 없어 조용히 마무리됐어요", "읽기만 할 수 있어요".
-- **mock 전용 필드**(Notion 초안에 없음):
-  - 새 편지: `subtitle`("첫 편지 · 일기 답장"). 없으면 그 줄이 사라진다.
-  - 대화 중: `status`(`my_turn`·`waiting_reply`·`in_transit`·`ended`), `last_message_preview`, `round_trip_count`, `arrived_at`, `remaining_minutes`.
-  - 배송 중: `direction`(`sent`·`received`), `counterpart_nickname`, `from_region`, `to_region`, `travel_minutes`, `remaining_minutes`. 진행률은 mapper가 이 둘로 계산한다.
-  - 보관: `kind`(`passed_letter`·`ended_chat`), `stored_at`.
+- **새로고침 없이는 낡는 화면**: 배송 중 편지가 도착해도 목록이 저절로 바뀌지 않는다. 탭을 다시 누르거나 화면에 다시 들어올 때 새로 받는다(주기 갱신은 넣지 않았다).
 
 ## 추후 연동·PR 참고
 
-- 5-5 "지도 보기"와 보관 카드 이동 경로는 mapper에서 정한다.
-- `../2026-4thon-11-dongle-documents`의 `api/common.md`는 대조했고 `letters.md`가 없어 편지 API 대조는 할 수 없었다.
-  PR에 관련 명세 경로(`api/common.md`)와 위 미연결 항목을 적는다.
+- 관련 명세: 문서 레포 `api/mailbox.md`(`GET /api/mailbox/summary/`, `/new/`, `/conversations/`, `/in-transit/`, `/archive/`), `api/common.md`.
+- 아직 연결하지 않은 것: 5-1 지역 필터의 서버 `sido` 파라미터(`shared/region` 서버 연동 대기), 5-12·5-13(우표·보상, 서버 질문 답 대기).
+- 명세와 어긋나거나 확인이 필요한 점은 PR 설명서에 적는다(보관 `passed_letter`의 상세에서 `can_reply`·`can_pass`, 새 편지 `diary`가 null일 수 있음 등).
 
 관련 지침: `CLAUDE.md`, `docs/ownership.md`, `docs/letter-write.md`.

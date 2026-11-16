@@ -73,3 +73,8 @@
 .mailbox-page__banner {
   margin-top: 26px;
 }
+
+/* 다음 페이지가 있을 때 목록 아래 "더 보기" 버튼(시안에 없는 임시 UI) */
+.mailbox-page__more {
+  margin-top: 16px;
+}
