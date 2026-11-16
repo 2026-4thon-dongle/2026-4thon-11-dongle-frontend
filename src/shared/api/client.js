@@ -6,8 +6,12 @@ let memoryTokens = null
 let revision = 0
 const sessionListeners = new Set()
 export function subscribeSession(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener) }
+function storageWorks() { try { localStorage.getItem(ACCESS_KEY); return true } catch { return false } }
 function stored(key) { try { return localStorage.getItem(key) || undefined } catch { return undefined } }
-export function getTokens() { return memoryTokens ?? { access: stored(ACCESS_KEY), refresh: stored(REFRESH_KEY) } }
+// 저장소를 쓸 수 있으면 늘 저장소 값을 읽는다. 다른 탭이 refresh를 돌리거나(옛 refresh는 무효, api/auth.md) 로그아웃하면
+// 이 탭도 같은 토큰을 쓴다. 메모리 값을 먼저 쓰면 옛 refresh로 갱신하다 401을 받고 두 탭이 함께 로그아웃됐다.
+// 저장소를 못 쓰는 환경(사생활 보호 모드 등)에서만 메모리 값을 쓴다.
+export function getTokens() { return storageWorks() ? { access: stored(ACCESS_KEY), refresh: stored(REFRESH_KEY) } : memoryTokens ?? {} }
 export const getAccessToken = () => getTokens().access
 export const hasSession = () => Boolean(getTokens().access || getTokens().refresh)
 export function setTokens(tokens) {
