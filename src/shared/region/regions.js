@@ -1,4 +1,5 @@
-// 디자인의 지역 선택용 목록. 서버 연동 시 공식 지역 ID를 가진 응답으로 교체한다.
+// 시·도 이름 목록과 regionLabel. 지역 선택기(RegionPicker)는 이 목록을 쓰지 않고 서버(GET /api/regions/)에서 받는다(useRegions).
+// 이 목록은 우체통의 지역 이름 맞춤(mailboxMapper 등)과 마이페이지 mock이 아직 쓰고 있어 남겨 둔다. 서버 id는 없다.
 const words = (value) => value.split(' ')
 export const PROVINCES = words('서울 부산 대구 인천 광주 대전 울산 세종 경기 강원 충북 충남 전북 전남 경북 경남 제주')
 export const METROPOLITAN = words('서울 부산 대구 인천 광주 대전 울산 세종')
