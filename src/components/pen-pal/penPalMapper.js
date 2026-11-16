@@ -46,11 +46,15 @@ export function formatMonthDay(isoString) {
   return `${month}.${day}`
 }
 
-/** 지금과의 차이를 "오늘", "3일 전", "1주 전", "2달 전"으로 줄여 쓴다. */
+// 한국 시간(UTC+9) 기준 날짜 번호. 두 시각이 같은 날인지 달력 날짜로 비교할 때 쓴다.
+const KST_OFFSET = 9 * 60 * 60 * 1000
+const kstDay = (time) => Math.floor((time + KST_OFFSET) / DAY)
+
+/** 한국 시간 달력 날짜 차이를 "오늘", "3일 전", "1주 전", "2달 전"으로 줄여 쓴다. 어제 밤 편지는 "1일 전"이다. */
 export function formatAgo(isoString, now = new Date()) {
   const time = new Date(isoString).getTime()
   if (!isoString || Number.isNaN(time)) return ''
-  const days = Math.max(Math.floor((now.getTime() - time) / DAY), 0)
+  const days = Math.max(kstDay(now.getTime()) - kstDay(time), 0)
   if (days < 1) return '오늘'
   if (days < 7) return `${days}일 전`
   if (days < 30) return `${Math.floor(days / 7)}주 전`
