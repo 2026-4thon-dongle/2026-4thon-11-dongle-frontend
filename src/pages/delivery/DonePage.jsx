@@ -5,6 +5,7 @@ import Mascot from '../../shared/ui/Mascot.jsx'
 import Stamp from '../../shared/ui/Stamp.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
+import LoadingPill from '../../shared/feedback/LoadingPill.jsx'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
 import useDeliveryInfo from '../../components/delivery/useDeliveryInfo.js'
 import './DonePage.css'
@@ -18,7 +19,7 @@ function DonePage() {
   const { state } = useLocation()
   const { info, error, retry } = useDeliveryInfo({ letterId, letter: state?.letter })
   if (error) return <ErrorScreen title="배송 정보를 불러오지 못했어요" description={error.message} hint="" onRetry={retry} />
-  if (!info) return null
+  if (!info) return <LoadingPill fullScreen />
   return <DoneView info={info} letterId={letterId} />
 }
 

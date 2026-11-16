@@ -28,11 +28,12 @@ export const findMaterial = (list, code) => list?.find((item) => item.code === c
 /**
  * 편지 재료를 받아 화면에 준다.
  * - materials: 서버 응답({ stationeries, fonts, stickers, stamps }). 받는 중이거나 실패하면 null이다.
- *   null일 때 화면은 기존 목록(data.js 등)으로 보여 준다(서버 없이 화면만 개발할 때).
- * - error: 실패했을 때의 LetterApiError. 없으면 null.
+ * - error: 실패했을 때의 LetterApiError. 없으면 null. 받는 중에는 materials와 error가 모두 null이다.
+ * - retry(): 실패한 뒤 처음부터 다시 받는다.
  */
 export default function useLetterMaterials() {
   const [state, setState] = useState({ materials: cached, error: null })
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (cached) return undefined
@@ -43,7 +44,12 @@ export default function useLetterMaterials() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [attempt])
 
-  return state
+  const retry = () => {
+    setState({ materials: null, error: null })
+    setAttempt((value) => value + 1)
+  }
+
+  return { ...state, retry }
 }

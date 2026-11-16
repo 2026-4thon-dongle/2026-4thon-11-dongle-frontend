@@ -1,0 +1,26 @@
+.ui-loading-pill {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.ui-loading-pill--screen {
+  align-items: center;
+  height: 100dvh;
+  padding: 0;
+}
+
+/* 8-1 알약: 흰 바탕, 작은 그림자, 졸린 고향이와 글자 */
+.ui-loading-pill__body {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px 0 8px;
+  border-radius: 20px;
+  background: var(--bg-surface);
+  box-shadow: 0 8px 22px rgba(140, 97, 51, 0.12);
+  color: var(--text-sub);
+  font: 400 14px / 1.4 var(--font-jua);
+  white-space: nowrap;
+}
