@@ -57,8 +57,14 @@ export default function SignupPage() {
       finally { setBusy(false) }
     } else if (step === 'residence') {
       setBusy(true)
-      try { const profile = saveSignupProfile(await completeSignup({ challengeKey: challenge.key, nickname, hometowns, residence: residence[0], agreements })); setResult(profile); navigate('/signup/complete', { state: { profile } }) }
-      catch (err) { setError(err.message); setErrorCode(err.code || '') }
+      // 완료 화면에서 뒤로 가기가 비어 있는 가입 첫 단계로 돌아오지 않도록 기록을 바꿔 끼운다.
+      try { const profile = saveSignupProfile(await completeSignup({ challengeKey: challenge.key, nickname, hometowns, residence: residence[0], agreements })); setResult(profile); navigate('/signup/complete', { replace: true, state: { profile } }) }
+      catch (err) {
+        // 마지막 단계에서는 고칠 수 없는 오류(api/auth.md signup)는 고칠 수 있는 단계로 돌려보낸다.
+        if (['NICKNAME_TAKEN', 'INVALID_NICKNAME', 'ACCOUNT_CONFLICT'].includes(err.code)) go('nickname')
+        else if (err.code === 'INVALID_SIGNUP_TOKEN') { setVerified(false); setChallenge(null); go('email') }
+        setError(err.message); setErrorCode(err.code || '')
+      }
       finally { setBusy(false) }
     } else go(STEPS[index + 1])
   }
