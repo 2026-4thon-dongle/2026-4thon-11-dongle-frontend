@@ -59,7 +59,7 @@ export default function HomePage() {
       {items.length ? <>{!away && <p className="reading-feed-label text-caption-11">오늘 우체통에 도착한 고향 소식</p>}<div className={away ? 'reading-feed-grid' : 'reading-feed-list'}>{items.map((diary) => <DiaryFeedCard key={diary.id} diary={diary} compact={away} from={from} />)}</div></> : <EmptyDiaryFeed region={selected === '전체' ? away ? '다른 동네' : [hometowns[0]?.province, hometowns[0]?.district].filter(Boolean).join(' ') : selected} onAll={() => changeTab(true)} />}
     </section>
     {state.loading && <Loading />}
-    {!isReadingDemo && state.next && <Button disabled={state.loading} onClick={() => loadReadingFeed({ away, region: requested, page: state.next })}>더 보기</Button>}
+    {!isReadingDemo && state.next && <Button disabled={state.loading} onClick={() => loadReadingFeed({ away, region: requested, page: state.next }).catch(() => {})}>더 보기</Button>}
     {isReadingDemo && <p className="reading-demo text-caption-11">개발용 미리보기 · 사용자·일기·알림은 예시 데이터예요</p>}
   </main>
 }
