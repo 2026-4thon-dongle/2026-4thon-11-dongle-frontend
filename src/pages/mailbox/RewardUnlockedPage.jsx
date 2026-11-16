@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
+import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import CelebrationFrame from '../../components/mailbox/CelebrationFrame.jsx'
 import RewardPreview from '../../components/mailbox/RewardPreview.jsx'
-import { fetchRewardUnlock, resolveTryTarget } from '../../components/mailbox/stampRewardApi.js'
+import useRewardUnlock from '../../components/mailbox/useRewardUnlock.js'
+import { markRewardSeen, resolveTryTarget } from '../../components/mailbox/stampRewardApi.js'
+import { CHATTING_TARGET } from '../../components/mailbox/stampRewardMapper.js'
 import './RewardUnlockedPage.css'
-
-// 시안 5-13은 우표 3개 보상이다. 주소에 threshold가 없으면 3으로 본다.
-const DEFAULT_THRESHOLD = 3
 
 // "스티커 써보기"를 눌렀을 때 토스트. 시안에 없어서 정한 문구이다.
 const TRY_TOAST = '답장할 때 서명 단계에서 붙여보세요'
@@ -25,40 +25,50 @@ const DOTS = [
 
 /**
  * 5-13 보상 해금. 우표를 모은 개수가 기준(3, 5, 10, 15개)에 닿아 수집 보상이 열렸을 때 보여 주는 화면이다.
- * 데이터는 mock이다(문서 레포에 우표·보상 API가 없다). 요청과 변환은 components/mailbox에서 한다.
+ * 서버 연동: GET /api/stamps/rewards/ 로 보상을 받고, 확인하면 POST /api/stamps/rewards/{code}/seen/ 을 보낸다(api/stamps.md). 요청과 변환은 components/mailbox에서 한다.
+ * 받는 입력(주소 쿼리):
+ *  - `?code=stickers-cat` 보상 code. 가장 정확하다.
+ *  - `?threshold=3` 기준 개수(3, 5, 10, 15). 5-12의 "확인"이 이 값으로 넘긴다.
+ *  - 둘 다 없으면 서버에서 열렸고 아직 확인하지 않은(unlocked && !seen) 첫 보상을 보여 준다. 없으면 "새로 열린 보상이 없어요"를 보여 준다.
  * 가정:
- *  - 언제 뜨는지가 정해지지 않았다(5-12 다음이라는 흐름만 있다). 어디서도 이 화면으로 보내지 않고, 주소로 직접 연다.
- *    다만 5-12에서 보상이 열렸다고 하면(`?unlock=3`) "확인"이 이 화면으로 이어진다.
- *  - 보조 버튼("스티커 써보기")은 토스트("답장할 때 서명 단계에서 붙여보세요")를 보여 주고 5-1 새 편지 탭으로 간다.
- *    받은 새 편지가 없으면 3-1 홈(/home)으로 간다. 새 편지가 있는지는 mock 목록 기준이다(stampRewardApi.resolveTryTarget).
+ *  - 언제 이 화면으로 오는지는 아직 정해지지 않았다(5-12 다음 흐름, 앱 진입 때 unlocked && !seen 확인). 이 화면은 주소를 받으면 그릴 뿐이다.
+ *  - "확인"과 보조 버튼("스티커 써보기")은 둘 다 화면을 떠나므로 아직 확인 전이면 seen을 먼저 보낸다. seen이 실패하면 이동하지 않고 토스트를 보여 준다.
+ *  - 보조 버튼은 토스트("답장할 때 서명 단계에서 붙여보세요")를 보여 주고 5-1 새 편지 탭으로 간다. 받은 새 편지가 없으면 3-1 홈(/home)으로 간다. 새 편지가 있는지는 GET /api/mailbox/summary/의 new_count로 본다.
  *  - "확인"은 5-3 대화 중 탭(/mailbox, state.tab = 'chatting')으로 간다.
- * 개발 중 확인용 주소: /mailbox/reward-unlocked (3개), ?threshold=5, ?threshold=10, ?threshold=15
+ * 개발 중 확인용(VITE_API_MOCK=true): /mailbox/reward-unlocked, ?threshold=5, ?threshold=10, ?threshold=15
  */
 function RewardUnlockedPage() {
   const navigate = useNavigate()
   const { showToast } = useOverlay()
   const [searchParams] = useSearchParams()
-  const threshold = Number(searchParams.get('threshold')) || DEFAULT_THRESHOLD
-  // undefined: 불러오는 중, null: 해당하는 보상 없음
-  const [reward, setReward] = useState(undefined)
+  const code = searchParams.get('code')
+  const threshold = Number(searchParams.get('threshold')) || null
+  const { loading, reward, error, reload } = useRewardUnlock({ code, threshold })
+  const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    fetchRewardUnlock(threshold).then((result) => {
-      if (!cancelled) setReward(result)
-    })
-    return () => {
-      cancelled = true
+  // 화면을 떠나기 전에 아직 확인 전인 보상이면 seen을 보낸다. 실패하면 이동하지 않고 토스트를 보여 준다.
+  const leave = async (resolveTarget, toast) => {
+    if (busy) return
+    setBusy(true)
+    try {
+      if (reward.needsSeen) await markRewardSeen(reward.code)
+      const target = await resolveTarget()
+      if (toast) showToast(toast)
+      navigate(target.path, { state: target.state })
+    } catch (reason) {
+      showToast(reason?.message ?? '잠시 후 다시 시도해 주세요')
+      setBusy(false)
     }
-  }, [threshold])
-
-  const handleTry = async () => {
-    const target = await resolveTryTarget()
-    showToast(TRY_TOAST)
-    navigate(target.path, { state: target.state })
   }
 
-  if (reward === undefined) {
+  const handleTry = () => leave(resolveTryTarget, TRY_TOAST)
+  const handleConfirm = () => leave(async () => reward.confirmTarget)
+
+  if (error) {
+    return <ErrorScreen description={error.message} hint="" onRetry={reload} />
+  }
+
+  if (loading) {
     return (
       <main className="reward-unlocked">
         <div className="reward-unlocked__loading" aria-busy="true">
@@ -69,10 +79,13 @@ function RewardUnlockedPage() {
     )
   }
 
-  if (reward === null) {
+  if (!reward) {
     return (
       <main className="reward-unlocked">
-        <p className="reward-unlocked__missing">열린 보상을 찾을 수 없어요</p>
+        <p className="reward-unlocked__missing">새로 열린 보상이 없어요</p>
+        <Button variant="ghost" onClick={() => navigate(CHATTING_TARGET.path, { state: CHATTING_TARGET.state })}>
+          우체통으로
+        </Button>
       </main>
     )
   }
@@ -86,10 +99,12 @@ function RewardUnlockedPage() {
         description={reward.subtitle}
         actions={
           <>
-            <Button variant="ghost" onClick={handleTry}>
+            <Button variant="ghost" onClick={handleTry} disabled={busy}>
               {reward.tryLabel}
             </Button>
-            <Button onClick={() => navigate(reward.confirmTarget.path, { state: reward.confirmTarget.state })}>확인</Button>
+            <Button onClick={handleConfirm} disabled={busy}>
+              확인
+            </Button>
           </>
         }
       >

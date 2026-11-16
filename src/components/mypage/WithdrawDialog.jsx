@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Button from '../../shared/ui/Button.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import './WithdrawDialog.css'
@@ -5,9 +6,23 @@ import './WithdrawDialog.css'
 /**
  * 회원 탈퇴 확인 다이얼로그의 내용(7-13). 바깥 틀(딤, 둥근 카드)은 shared의 useOverlay().openDialog가 그린다.
  * @param {() => void} onStay "더 있을래요"를 눌렀을 때(닫기)
- * @param {() => void} onWithdraw "탈퇴할게요"를 눌렀을 때
+ * @param {() => Promise<void>} onWithdraw "탈퇴할게요"를 눌렀을 때. 실패하면 던진다(다이얼로그가 오류 문구와 "다시 시도"를 보여 준다)
  */
 function WithdrawDialog({ onStay, onWithdraw }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleWithdraw = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await onWithdraw()
+    } catch (reason) {
+      setError(reason)
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="withdraw-dialog">
       <span className="withdraw-dialog__circle">
@@ -20,10 +35,17 @@ function WithdrawDialog({ onStay, onWithdraw }) {
         모두 사라져요
       </p>
       <div className="withdraw-dialog__stay">
-        <Button onClick={onStay}>더 있을래요</Button>
+        <Button onClick={onStay} disabled={busy}>
+          더 있을래요
+        </Button>
       </div>
-      <button type="button" className="withdraw-dialog__leave" onClick={onWithdraw}>
-        탈퇴할게요
+      {error && (
+        <p className="withdraw-dialog__error" role="alert">
+          {error.message ?? '탈퇴하지 못했어요.'} 계정은 그대로 남아 있어요.
+        </p>
+      )}
+      <button type="button" className="withdraw-dialog__leave" onClick={handleWithdraw} disabled={busy}>
+        {busy ? '처리하는 중…' : error ? '다시 시도' : '탈퇴할게요'}
       </button>
     </div>
   )

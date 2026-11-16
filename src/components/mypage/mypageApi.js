@@ -7,9 +7,9 @@
 //   GET·PATCH /api/users/me/settings/                 → fetchSettings, updateSettings (7-11)
 //   GET /api/blocks/, DELETE /api/blocks/{user_id}/   → fetchBlocks, unblock (7-12)
 //   GET /api/users/me/, PUT /api/users/me/regions/    → fetchRegionSettings, saveRegions (7-10)
-// 연결하지 않은 것(이번 범위 밖): logout·withdraw(7-13).
+//   POST /api/auth/logout/, DELETE /api/users/me/     → logout, withdraw (7-13)
 // VITE_API_MOCK=true(개발 모드)일 때만 mypageDemo.js의 가짜 서버를 쓴다. 서버가 실패해도 mock으로 채우지 않는다.
-import { isApiDemo, request } from '../../shared/api/client.js'
+import { ApiError, clearTokens, getTokens, isApiDemo, request } from '../../shared/api/client.js'
 import { demoSource } from './mypageDemo.js'
 import {
   toMyPage,
@@ -39,6 +39,8 @@ const serverSource = {
   // 7-10. 두 번째 인자(고른 지역 원본)는 mock이 화면용 이름을 만들 때만 쓴다. 서버는 id만 받는다.
   putRegions: (body) => request('/api/users/me/regions/', { method: 'PUT', json: body }),
   unblock: (userId) => request(`/api/blocks/${encodeURIComponent(userId)}/`, { method: 'DELETE' }),
+  logout: (refresh) => request('/api/auth/logout/', { method: 'POST', json: { refresh } }),
+  withdraw: () => request('/api/users/me/', { method: 'DELETE' }),
 }
 
 const source = isApiDemo ? demoSource : serverSource
@@ -171,8 +173,48 @@ export async function unblock(userId) {
   await source.unblock(userId)
 }
 
-/** 로그아웃(7-13). 이번 범위 밖이라 아무것도 하지 않는다(refresh 토큰을 꺼내는 shared 변경이 필요하다). */
-export async function logout() {}
+/**
+ * 로그아웃(7-13). POST /api/auth/logout/ { refresh } 로 refresh 토큰을 무효화하고, 서버 결과와 상관없이 로컬 토큰을 지운다.
+ * 서버 호출이 실패해도(네트워크, 400 INVALID_REFRESH_TOKEN 등) 이 기기에서는 로그아웃된다. 이때 serverOk는 false이고 서버의 refresh는 만료 때까지 남는다.
+ * 토큰을 지우면 SessionGate가 로그인 화면(/login)으로 보내므로, 화면 이동은 beforeClear에서 먼저 한다.
+ * access가 만료돼 있으면 request()가 refresh를 새로 받아 오므로(회전) 처음 보낸 refresh가 무효가 될 수 있다. 그때는 새 refresh로 한 번 다시 보낸다.
+ * @param {{ beforeClear?: () => void }} [options] beforeClear: 토큰을 지우기 직전에 부른다(예: navigate)
+ * @returns {Promise<{ serverOk: boolean }>} 이 함수는 던지지 않는다
+ */
+export async function logout({ beforeClear } = {}) {
+  let serverOk = true
+  try {
+    const sent = getTokens().refresh
+    if (!isApiDemo && sent) {
+      try {
+        await source.logout(sent)
+      } catch (error) {
+        const current = getTokens().refresh
+        if (!(error instanceof ApiError && error.code === 'INVALID_REFRESH_TOKEN' && current && current !== sent)) throw error
+        await source.logout(current)
+      }
+    }
+  } catch {
+    serverOk = false
+  }
+  try {
+    beforeClear?.()
+  } finally {
+    clearTokens()
+  }
+  return { serverOk }
+}
 
-/** 회원 탈퇴(7-13). 이번 범위 밖이라 아무것도 지우지 않는다. */
-export async function withdraw() {}
+/**
+ * 회원 탈퇴(7-13). DELETE /api/users/me/ 가 성공한 뒤에만 로컬 토큰을 지운다. 탈퇴 뒤에는 logout을 부르지 않는다.
+ * 서버가 실패하면 ApiError를 그대로 던지고 토큰은 지우지 않는다(계정이 아직 있으므로). 화면이 오류와 다시 시도를 보여 준다.
+ * @param {{ beforeClear?: () => void }} [options] beforeClear: 토큰을 지우기 직전에 부른다(예: navigate)
+ */
+export async function withdraw({ beforeClear } = {}) {
+  if (!isApiDemo) await source.withdraw()
+  try {
+    beforeClear?.()
+  } finally {
+    clearTokens()
+  }
+}

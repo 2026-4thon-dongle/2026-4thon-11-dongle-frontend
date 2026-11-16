@@ -77,10 +77,18 @@ export function toLetterArrival(raw) {
   }
 }
 
+/** 스티커 기본 크기: 편지지 너비 대비 비율(시안 64px ÷ 360px). 서버가 scale을 주지 않을 때 쓴다. */
+export const DEFAULT_STICKER_SCALE = 0.18
+
+function toStickerScale(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.min(value, 1) : DEFAULT_STICKER_SCALE
+}
+
 /**
  * 편지 열람(5-9) 화면용 데이터.
  * 본문은 줄바꿈 문자로 나눈 문자열 그대로 둔다(화면이 pre-wrap으로 그린다).
- * signatureUrl: 서명 이미지 URL(없으면 null). stickers: 서명 영역 기준 0~1 위치와 기울기(도)이고 크기(scale)는 서버가 아직 주지 않는다.
+ * signatureUrl: 서명 이미지 URL(없으면 null). stickers: 서명 영역 기준 0~1 위치(x, y)와 기울기(도), 크기 scale(편지지 너비 대비 비율).
+ * scale은 서버가 주면 쓰고(요청 1115_fe2be_sticker-scale, 아직 응답 없음) 없거나 0 이하·숫자가 아니면 기본값 0.18(64÷360)을 쓴다.
  * paperKind·fontId: 편지지와 글씨체. canReply·canPass: 서버가 정한 버튼 표시 여부.
  */
 export function toLetterView(raw) {
@@ -103,6 +111,7 @@ export function toLetterView(raw) {
       x: sticker.x,
       y: sticker.y,
       rotation: sticker.rotation ?? 0,
+      scale: toStickerScale(sticker.scale),
     })),
     paperKind: PAPER_KIND[raw.stationery] ?? 'basic',
     fontId: FONT_ID_BY_CODE[raw.font] ?? raw.font ?? 'nanum-pen',
