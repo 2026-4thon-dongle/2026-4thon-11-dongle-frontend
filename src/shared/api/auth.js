@@ -12,7 +12,18 @@ export async function requestCode(email, purpose) {
   if (isApiDemo) return demo.requestCode(email, purpose)
   email = email.trim().toLowerCase()
   if (!isSchoolEmail(email)) throw new Error('학교 이메일(ac.kr)을 입력해주세요')
-  const data = await request('/api/auth/email/send/', { method: 'POST', auth: false, json: { email, purpose } })
+  let data
+  try { data = await request('/api/auth/email/send/', { method: 'POST', auth: false, json: { email, purpose } }) }
+  catch (error) {
+    // 60초 안에 다시 요청하면(429 CODE_RESEND_TOO_SOON) 서버는 새 코드를 보내지 않지만 방금 받은 코드는 그대로 유효하다.
+    // 이 화면에서 받은 코드가 아직 살아 있으면 그 코드 입력 단계로 돌려보낸다(코드 화면에서 뒤로 왔다가 다시 누른 경우).
+    const previous = challenges.get(`${purpose}:${email}`)
+    if (error?.code === 'CODE_RESEND_TOO_SOON' && previous && previous.expiresAt > Date.now()) {
+      const retry = Number(error.retry_after_seconds)
+      return { ...previous, resendAt: Number.isFinite(retry) ? Date.now() + retry * 1000 : previous.resendAt }
+    }
+    throw error
+  }
   const challenge = { key: `${purpose}:${email}`, email, purpose, expiresAt: Date.parse(data.expires_at), resendAt: Date.now() + data.resend_available_seconds * 1000 }
   challenges.set(challenge.key, challenge)
   return challenge
