@@ -173,8 +173,9 @@ export function toStampDetail(stamp) {
     description: stamp.description ?? '',
     obtainedLabel: [dateLabel, stamp.granted_with ? `${stamp.granted_with.nickname}님과의 편지로 받음` : ''].filter(Boolean).join(' · '),
     abilities: ['편지 봉투에 붙여서 보내기', `우표첩 보상 개수에 포함돼요${progress}`],
-    // 편지 쓰기로 넘기는 값(서버 우표 code). stampId 쿼리는 docs/letter-write.md에 없는 제안이라 채현님과 합의가 필요하다.
-    letterWritePath: `${MYPAGE_PATHS.letterWrite}?${new URLSearchParams({ stampId: stamp.code }).toString()}`,
+    // "이 우표 붙여서 편지 쓰기": 받는 사람 없이 편지 쓰기로 들어가면 4단계에서 보낼 대상이 없어 막힌다.
+    // 편지 쓰기는 우표를 미리 고르는 쿼리(stampId)를 받지 않으므로 홈 피드로 보내 답장할 일기를 고르게 한다.
+    letterWritePath: MYPAGE_PATHS.feed,
   }
 }
 

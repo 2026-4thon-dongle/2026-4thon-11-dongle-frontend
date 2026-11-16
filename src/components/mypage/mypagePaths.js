@@ -19,5 +19,7 @@ export const MYPAGE_PATHS = {
   myDiaries: '/diary/mine', // 7-2 내 일기 = 효령 담당(6-6 목록). 브랜치가 합쳐진 뒤 확인한다.
   penPal: '/pen-pal', // 5-14, 5-15 펜팔 친구
   letterWrite: '/letter-write', // 임시저장 이어 쓰기
+  // 3-1 홈 피드. 편지는 일기나 받은 편지에 답장할 때만 쓰므로(docs/letter-write.md) 받는 사람 없이 "편지 쓰기"로 가는 버튼은 여기서 일기를 고르게 한다.
+  feed: '/home',
   diaryWrite: '/diary/write', // 7-6 "첫 일기 쓰러 가기". 공용 TabBar의 일기 쓰기 경로와 같다(가정)
 }
