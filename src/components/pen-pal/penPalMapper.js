@@ -3,31 +3,10 @@
 // 입력은 항상 서버 응답 모양이다. mock 모드(VITE_API_MOCK=true)도 penPalDemo.js가 서버 모양으로 바꿔 넘긴다.
 // 펜팔·기록의 id는 친구 id가 아니라 대화 id(conversation_id)이다. 경로도 /pen-pal/:conversationId 이다.
 
-import { toStampArtId } from '../mailbox/stampArt.js' // 서버 우표 code → 그림 id 표는 한 곳(mailbox/stampArt.js)에 있다.
-
-// 아래 세 가지(고향이 표정, 첫 줄 미리보기, 답장 경로)는 components/mailbox와 같은 규칙이다. 이전처럼 여기에도 따로 둔다.
-
-// 서버 avatar 코드 → 고향이(Mascot) 표정. 모르는 값은 기본 얼굴이다.
-const AVATAR_POSE = { 'cat-basic': 'face', 'cat-wink': 'wink', 'cat-sparkle': 'sparkle', 'cat-shy': 'shy', 'cat-smile': 'smile' }
-const toAvatarPose = (avatar) => AVATAR_POSE[avatar] ?? 'face'
-
-const PREVIEW_MAX_LENGTH = 60
-
-/** 본문의 첫 줄(빈 줄은 건너뜀). 주소가 길어지지 않게 60자까지만 쓴다. */
-export function toPreview(body) {
-  const line = body?.split(/\r?\n/).find((text) => text.trim())?.trim() ?? ''
-  return line.slice(0, PREVIEW_MAX_LENGTH)
-}
-
-// 가정: 답장은 편지 쓰기로 들어간다. docs/letter-write.md의 제안 쿼리(letterId, nickname, region)를 따른다.
-const LETTER_WRITE_PATH = '/letter-write'
-
-/** 답장하기 경로. 예: /letter-write?letterId=101&nickname=하늘빛&region=충남 천안시 (한글·공백은 인코딩된다) */
-export function buildReplyPath({ letterId, nickname, region, preview }) {
-  const query = new URLSearchParams({ letterId: String(letterId), nickname: nickname ?? '', region: region ?? '' })
-  if (preview) query.set('preview', preview)
-  return `${LETTER_WRITE_PATH}?${query.toString()}`
-}
+// 서버 우표 code → 그림 id 표, 고향이 표정, 첫 줄 미리보기, 답장 경로는 우체통(같은 담당)과 같은 규칙이라 한 곳에서 가져다 쓴다.
+import { toStampArtId } from '../mailbox/stampArt.js'
+import { toAvatarPose } from '../mailbox/mailboxMapper.js'
+import { buildReplyPath, toPreview } from '../mailbox/letterReceiveMapper.js'
 
 const DAY = 24 * 60 * 60 * 1000
 
