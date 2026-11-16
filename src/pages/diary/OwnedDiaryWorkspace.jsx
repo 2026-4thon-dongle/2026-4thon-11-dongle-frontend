@@ -6,7 +6,7 @@ import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import useOwnedDiaries from '../../shared/hooks/useOwnedDiaries.js'
-import { isOwnedDiaryDemo, loadOwnedDiaries, loadOwnedDiary } from '../../shared/api/ownedDiary.js'
+import { clearOwnedDiaryError, isOwnedDiaryDemo, loadOwnedDiaries, loadOwnedDiary } from '../../shared/api/ownedDiary.js'
 import OwnedDiaryEditor from '../../components/diary/OwnedDiaryEditor.jsx'
 import OwnedDiaryDetail from '../../components/diary/OwnedDiaryDetail.jsx'
 import OwnedDiaryList from '../../components/diary/OwnedDiaryList.jsx'
@@ -29,7 +29,10 @@ export default function OwnedDiaryWorkspace() {
     if (isOwnedDiaryDemo) return
     if (segment === 'mine') loadOwnedDiaries()
     else if ((section === 'mine' || section === 'published') && id) loadOwnedDiary(id)
-    else if (!getSignupProfile()) loadProfile().catch((error) => showToast(error.message))
+    else {
+      clearOwnedDiaryError()
+      if (!getSignupProfile()) loadProfile().catch((error) => showToast(error.message))
+    }
   }, [segment, section, id, showToast])
   function menu() {
     openSheet({ title: '내 일기', content: <OwnedDiaryMenu onEdit={() => { close(); navigate(`/diary/mine/${encodeURIComponent(id)}/edit`) }} onDelete={() => openDialog({ label: '일기 삭제 확인', content: ({ close: closeLayer }) => <OwnedDeleteDialog diary={diary} close={closeLayer} onDeleted={() => { navigate('/diary/mine', { replace: true }); showToast(<span className="owned-delete-toast"><Icon name="check" size={22} />일기를 삭제했어요</span>) }} /> })} onVisibility={() => openSheet({ title: '누구에게 보여줄까요?', content: ({ close: closeLayer }) => <OwnedVisibilitySheet diary={diary} close={closeLayer} onSaved={() => showToast('공개 범위를 저장했어요')} /> })} /> })

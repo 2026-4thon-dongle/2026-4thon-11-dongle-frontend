@@ -32,8 +32,15 @@ export async function loadOwnedDiary(id) {
     const profile = getSignupProfile() || await loadProfile()
     const diary = mapDiary(await request(`/api/diaries/${encodeURIComponent(id)}/`))
     if (current === generation) update({ profile: profileView(profile), diaries: [diary, ...state.diaries.filter((item) => item.id !== diary.id)], loading: false })
-  } catch (error) { if (current === generation) update({ loading: false, error }) }
+  } catch (error) {
+    if (current !== generation) return
+    // 없거나 내 일기가 아니면(404 NOT_FOUND) 재시도 화면 대신 화면의 "이 일기를 찾을 수 없어요"를 보여 준다.
+    if (error?.status === 404) update({ loading: false, diaries: state.diaries.filter((item) => item.id !== String(id)) })
+    else update({ loading: false, error })
+  }
 }
+/** 다른 화면(일기 쓰기)으로 옮길 때 앞 화면의 불러오기 오류를 지운다. 오류가 남으면 그 화면까지 오류 화면이 된다. */
+export function clearOwnedDiaryError() { if (!isApiDemo && state.error) update({ error: null }) }
 function form(draft, editing = false) {
   const content = draft.content.trim()
   if (!content || content.length > 500) throw new Error('일기를 1~500자로 입력해주세요')
