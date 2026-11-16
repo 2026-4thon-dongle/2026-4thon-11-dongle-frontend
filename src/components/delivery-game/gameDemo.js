@@ -21,9 +21,9 @@ const LETTERS = [
 const reduced = new Map()
 
 const GOALS = [
-  ['star-candy', 13, '별사탕', '배달에 처음 성공하기 (별 1개 이상)', 1, 'successes'],
-  ['strawberry-cat', 14, '딸기 고양이', '처음으로 별 3개 받기', 1, 'three_stars'],
-  ['cloud-bread', 15, '구름빵', '배달 성공 5번', 5, 'successes'],
+  ['star-candy', 15, '별사탕', '배달에 처음 성공하기 (별 1개 이상)', 1, 'successes'],
+  ['strawberry-cat', 13, '딸기 고양이', '처음으로 별 3개 받기', 1, 'three_stars'],
+  ['cloud-bread', 14, '구름빵', '배달 성공 5번', 5, 'successes'],
   ['tulip', 16, '튤립', '별 3개 3번', 3, 'three_stars'],
   ['little-whale', 17, '꼬마 고래', '12시간 거리 편지를 별 3개로 배달하기', 1, 'far_three_stars'],
   ['rainbow-letter', 20, '무지개 편지', '한 판에서 우표 조각을 모두 줍고 한 번도 안 부딪히기', 1, 'perfects'],
