@@ -3,7 +3,6 @@ import Button from '../../shared/ui/Button.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Stamp from '../../shared/ui/Stamp.jsx'
-import useOverlay from '../../shared/hooks/useOverlay.js'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import LoadingPill from '../../shared/feedback/LoadingPill.jsx'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
@@ -25,7 +24,6 @@ function DonePage() {
 
 function DoneView({ info, letterId }) {
   const navigate = useNavigate()
-  const { showToast } = useOverlay()
   const { from, to, sentAt, arrivesAt } = info
   const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
   // 새로 받은 우표: 첫 편지를 보내는 등 우표를 받았을 때만 알린다. 여러 장이면 첫 장을 보여 준다.
@@ -61,8 +59,8 @@ function DoneView({ info, letterId }) {
         <p className="done-page__notice">도착하면 알림으로 알려드려요</p>
       </section>
 
-      {/* 직접 배달하기(→ 9-1, 보류): 자리만 두고 동작은 아직 연결하지 않는다. */}
-      <button type="button" className="done-page__game" onClick={() => showToast('직접 배달하기는 준비 중이에요')}>
+      {/* 직접 배달하기(→ 9-1 배달 게임) */}
+      <button type="button" className="done-page__game" onClick={() => navigate(`/delivery-game?letterId=${letterId}`)}>
         <Mascot pose="face" size={54} />
         <span className="done-page__game-text">
           <span className="done-page__game-caption">기다리기 심심하다면?</span>

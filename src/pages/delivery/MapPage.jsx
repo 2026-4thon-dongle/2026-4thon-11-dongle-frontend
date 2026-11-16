@@ -2,7 +2,6 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
-import useOverlay from '../../shared/hooks/useOverlay.js'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import LoadingPill from '../../shared/feedback/LoadingPill.jsx'
 import { MAP_THEMES, pickMapTheme } from '../../components/delivery/mapThemes.js'
@@ -58,7 +57,6 @@ function MapPage() {
  */
 function MapView({ info, letterId }) {
   const navigate = useNavigate()
-  const { showToast } = useOverlay()
   const { from, to, recipient, towns, sentAt, arrivesAt } = info
   const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
   // 지도 배경은 서버가 편지마다 정해 준다. 없으면 편지 번호로 고른다.
@@ -163,11 +161,11 @@ function MapView({ info, letterId }) {
           <Mascot pose="face" size={48} />
         </span>
 
-        {/* 직접 배달하기(→ 9-1, 보류): 자리만 두고 동작은 아직 연결하지 않는다. */}
+        {/* 직접 배달하기(→ 9-1 배달 게임) */}
         <button
           type="button"
           className="map-page__game"
-          onClick={() => showToast('직접 배달하기는 준비 중이에요')}
+          onClick={() => navigate(`/delivery-game?letterId=${letterId}`)}
         >
           <Icon name="game" size={24} />
           직접 배달하기
