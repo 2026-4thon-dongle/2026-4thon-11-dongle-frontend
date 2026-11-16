@@ -4,26 +4,10 @@ import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Stamp from '../../shared/ui/Stamp.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
-import { MOCK_DELIVERY, MOCK_EARNED_STAMP_ID } from '../../components/delivery/data.js'
+import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
 import useDeliveryInfo from '../../components/delivery/useDeliveryInfo.js'
 import './DonePage.css'
-
-// 서버에서 받지 못했을 때(서버 없이 화면만 볼 때) 보여 주는 mock 배송 정보
-function mockInfo() {
-  const sentAt = Date.now() - MOCK_DELIVERY.elapsedMinutes * 60_000
-  return {
-    from: MOCK_DELIVERY.from,
-    to: MOCK_DELIVERY.to,
-    recipient: MOCK_DELIVERY.recipient,
-    sentAt: new Date(sentAt).toISOString(),
-    arrivesAt: new Date(sentAt + MOCK_DELIVERY.totalMinutes * 60_000).toISOString(),
-    direction: 'sent',
-    mapTheme: null,
-    towns: [],
-    grantedStamps: [{ code: MOCK_EARNED_STAMP_ID, name: '첫 편지' }],
-  }
-}
 
 /**
  * 4-11 발송 완료: 편지가 출발했고 도착까지 얼마나 남았는지 보여준다.
@@ -32,7 +16,8 @@ function mockInfo() {
 function DonePage() {
   const { letterId } = useParams()
   const { state } = useLocation()
-  const { info } = useDeliveryInfo({ letterId, letter: state?.letter, fallback: mockInfo })
+  const { info, error, retry } = useDeliveryInfo({ letterId, letter: state?.letter })
+  if (error) return <ErrorScreen title="배송 정보를 불러오지 못했어요" description={error.message} hint="" onRetry={retry} />
   if (!info) return null
   return <DoneView info={info} letterId={letterId} />
 }

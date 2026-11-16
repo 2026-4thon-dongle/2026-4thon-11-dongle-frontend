@@ -1,16 +1,16 @@
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
-import { STICKERS, STICKER_UNLOCK_STAMPS, MOCK_STAMP_COUNT } from './data.js'
+import { STICKERS, STICKER_UNLOCK_STAMPS } from './data.js'
 import useLetterMaterials, { findMaterial } from './useLetterMaterials.js'
 import './StickerDrawer.css'
 
 /**
  * 스티커 서랍(시안 4-5). 스티커를 누르면 서명 그림판에 붙는다.
  * @param {(sticker: {id: string, pose: string}) => void} onPick
- * @param {string} reward 오른쪽에 보여주는 스티커를 얻은 곳(예: '우표 3개 보상')
+ * @param {string} [reward] 오른쪽에 보여주는 스티커를 얻은 곳. 기본은 우표 3개 보상
  */
-function StickerDrawer({ onPick, reward }) {
-  // 잠긴 스티커는 서버 값을 따른다(우표 3개를 모으면 열린다). 서버에서 못 받았으면 모두 고를 수 있게 둔다.
+function StickerDrawer({ onPick, reward = `우표 ${STICKER_UNLOCK_STAMPS}개 보상` }) {
+  // 잠긴 스티커는 서버 값을 따른다(우표 3개를 모으면 열린다). 서버 값을 아직 못 받았으면 열린 것으로 보지 않고 잠가 둔다.
   const { materials } = useLetterMaterials()
 
   return (
@@ -22,8 +22,7 @@ function StickerDrawer({ onPick, reward }) {
       <ul className="sticker-drawer__list">
         {STICKERS.map((sticker) => {
           const server = findMaterial(materials?.stickers, sticker.code)
-          // 서버 값이 있으면 따르고, 없으면 모은 우표가 3개 미만일 때 잠근다.
-          const locked = server ? !server.unlocked : MOCK_STAMP_COUNT < STICKER_UNLOCK_STAMPS
+          const locked = server ? !server.unlocked : true
           const condition = server?.unlock_condition ?? `우표 ${STICKER_UNLOCK_STAMPS}개`
           return (
             <li key={sticker.id}>

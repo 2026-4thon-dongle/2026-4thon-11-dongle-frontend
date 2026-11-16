@@ -1,17 +1,44 @@
 import { useState } from 'react'
-import { regionLabel } from './regions.js'
+import { isApiDemo } from '../api/client.js'
+import { CITIES, DISTRICTS, METROPOLITAN, PROVINCES, regionLabel } from './regions.js'
+import { buildRegionTree } from './regionTree.js'
 import useRegions from './useRegions.js'
 import Icon from '../ui/Icon.jsx'
 import Button from '../ui/Button.jsx'
 import route from '../assets/decorations/region-route.svg'
 import './RegionPicker.css'
 
+// 데모 모드(VITE_API_MOCK)에서는 서버 없이 고정 목록으로 같은 모양의 트리를 만든다. id는 화면용 가짜 값이다.
+let demoTree = null
+function getDemoTree() {
+  if (demoTree) return demoTree
+  let nextId = 1000
+  const regions = PROVINCES.map((name, index) => {
+    const metropolitan = METROPOLITAN.includes(name)
+    const children = name === '세종' ? [] : (DISTRICTS[name] || []).map((district) => ({
+      id: nextId++,
+      name: district,
+      can_be_hometown: !metropolitan && Boolean(CITIES[name]),
+      can_be_residence: true,
+    }))
+    return { id: index + 1, name, short_name: name, is_metropolitan: metropolitan, can_be_hometown: metropolitan, can_be_residence: name === '세종', children }
+  })
+  demoTree = buildRegionTree(regions)
+  return demoTree
+}
+
 /**
  * 지역 선택기. 지역 목록은 서버(GET /api/regions/)에서 받는다. 선택값의 id는 서버 지역 id이다(regionTree.js).
  * 목록을 받는 중에는 안내 문구를, 받지 못하면 서버 메시지와 다시 시도 버튼을 보여 준다.
+ * 데모 모드에서는 서버 없이 고정 목록을 쓴다. server prop은 예전 호출부 호환용이며 쓰지 않는다.
  * @param {{mode: 'hometown'|'residence', value: Array<{province: string, district: string, id?: number}>, onChange: (regions: Array<{province: string, district: string, id: number}>) => void, hometowns?: Array<{province: string, district: string}>}} props
  */
 export default function RegionPicker(props) {
+  if (isApiDemo) return <RegionPickerView tree={getDemoTree()} {...props} />
+  return <ServerRegionPicker {...props} />
+}
+
+function ServerRegionPicker(props) {
   const { tree, error, retry } = useRegions()
   if (error) {
     return <div className="region-picker"><p className="auth-caption auth-error" role="alert">{error.message}</p><Button variant="secondary" onClick={retry}>다시 시도</Button></div>

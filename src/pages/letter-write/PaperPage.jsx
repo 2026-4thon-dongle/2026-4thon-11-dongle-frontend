@@ -7,7 +7,7 @@ import useLetterMaterials, { findMaterial } from '../../components/letter-write/
 import useReplyDiary, { firstLineOf } from '../../components/letter-write/useReplyDiary.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
 import { isLetterReply, letterWriteTitle } from '../../components/letter-write/replyTitle.js'
-import { PAPERS, MOCK_STAMP_COUNT } from '../../components/letter-write/data.js'
+import { PAPERS } from '../../components/letter-write/data.js'
 import Icon from '../../shared/ui/Icon.jsx'
 import './PaperPage.css'
 
@@ -16,7 +16,7 @@ function PaperPage() {
   const { goNext, goBack } = useStepNavigation(1)
   const { draft, updateDraft } = useLetterDraft()
   const { reply } = draft
-  // 잠금·새 편지지 표시는 서버 값을 따른다. 서버에서 못 받았으면(서버 없이 화면만 볼 때) 기존 mock 규칙을 쓴다.
+  // 잠금·새 편지지 표시는 서버 값을 따른다. 서버 값을 아직 못 받았으면 우표가 필요한 편지지는 잠가 두고 NEW는 표시하지 않는다.
   const { materials } = useLetterMaterials()
   // 답장하는 일기: 배너에 일기 작성자 닉네임과 본문 첫 줄을 서버에서 받은 값으로 보여 준다.
   const { diary } = useReplyDiary(reply.diaryId)
@@ -50,8 +50,8 @@ function PaperPage() {
       <ul className="paper-page__grid">
         {PAPERS.map((paper) => {
           const server = findMaterial(materials?.stationeries, paper.code)
-          const locked = server ? !server.unlocked : paper.lockedStamps > MOCK_STAMP_COUNT
-          const badge = server ? (server.is_new ? 'NEW' : null) : paper.badge
+          const locked = server ? !server.unlocked : Boolean(paper.lockedStamps)
+          const badge = server?.is_new ? 'NEW' : null
           const lockLabel = server?.unlock_condition ?? `우표 ${paper.lockedStamps}개`
           const selected = draft.paperId === paper.id
           return (

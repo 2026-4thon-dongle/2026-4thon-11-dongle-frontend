@@ -6,12 +6,7 @@ import { request } from './client.js'
 let cached = null
 let pending = null
 
-/**
- * 지역 트리를 받는다. 이미 받았으면 받아 둔 값을, 받는 중이면 같은 요청을 기다린다.
- * @returns {Promise<Array<{ id: number, name: string, short_name: string, is_metropolitan: boolean,
- *   can_be_hometown: boolean, can_be_residence: boolean,
- *   children: Array<{ id: number, name: string, can_be_hometown: boolean, can_be_residence: boolean }> }>>}
- */
+/** 지역 트리를 받는다. 이미 받았으면 받아 둔 값을, 받는 중이면 같은 요청을 기다린다. */
 export function fetchRegions() {
   if (cached) return Promise.resolve(cached)
   if (!pending) {
@@ -25,4 +20,17 @@ export function fetchRegions() {
       })
   }
   return pending
+}
+
+// 가입·프로필 쪽이 쓰는 이름. 같은 캐시를 쓴다.
+export const getRegions = fetchRegions
+
+export async function resolveRegion(region, mode) {
+  if (Number.isInteger(region?.id)) return region.id
+  const parents = await getRegions()
+  const parent = parents.find((item) => item.short_name === region.province || item.name === region.province)
+  const normalize = (name) => name.replace(/[시군구]$/, '')
+  const selected = !region.district || region.district === '세종 전체' ? parent : parent?.children.find((item) => normalize(item.name) === normalize(region.district))
+  if (!selected?.[`can_be_${mode}`]) throw new Error('지역 목록에서 지역을 다시 선택해주세요')
+  return selected.id
 }

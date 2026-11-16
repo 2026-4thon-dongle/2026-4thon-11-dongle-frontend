@@ -55,25 +55,29 @@ function fromRoute(route) {
  * 배송 정보를 받는다.
  * - letter를 주면(방금 보낸 편지 응답) 서버에 묻지 않고 그 값으로 만든다. 경유지는 없다.
  * - 없으면 GET /api/letters/{id}/route/로 받는다.
- * - 받지 못하면 fallback()의 mock 정보를 쓰고 error에 알린다(서버 없이 화면만 볼 때도 열린다).
- * @param {{ letterId: string, letter?: object, fallback: () => object }} options
- * @returns {{ info: object | null, error: Error | null }} 받는 중에는 info가 null이다.
+ * - 받지 못하면 info는 null이고 error에 서버 에러(ApiError)가 담긴다. retry()로 다시 받는다.
+ * @param {{ letterId: string, letter?: object }} options
+ * @returns {{ info: object | null, error: Error | null, retry: () => void }} 받는 중에는 info와 error가 모두 null이다.
  */
-export default function useDeliveryInfo({ letterId, letter, fallback }) {
+export default function useDeliveryInfo({ letterId, letter }) {
   const [state, setState] = useState(() => ({ info: letter ? fromLetter(letter) : null, error: null }))
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (letter) return undefined
     let cancelled = false
     fetchLetterRoute(letterId)
       .then((route) => !cancelled && setState({ info: fromRoute(route), error: null }))
-      .catch((error) => !cancelled && setState({ info: fallback(), error }))
+      .catch((error) => !cancelled && setState({ info: null, error }))
     return () => {
       cancelled = true
     }
-    // 편지가 바뀔 때만 다시 받는다. fallback은 렌더마다 새로 만들어지는 함수이다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [letterId, letter])
+  }, [letterId, letter, attempt])
 
-  return state
+  const retry = () => {
+    setState({ info: null, error: null })
+    setAttempt((value) => value + 1)
+  }
+
+  return { ...state, retry }
 }

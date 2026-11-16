@@ -1,86 +1,82 @@
-import { getSignupProfile, subscribeSignupProfile } from './profile.js'
-import { MOCK_OWNED_DIARIES, MOCK_OWNED_PROFILE, OWNED_VISIBILITY } from '../mocks/ownedDiary.js'
-
-export const isOwnedDiaryDemo = import.meta.env.DEV
-const STORAGE_KEY = 'dongle.owned-diaries.v1'
+import * as demo from './ownedDiaryDemo.js'
+import { isApiDemo, request, subscribeSession } from './client.js'
+import { getSignupProfile, loadProfile, saveSignupProfile, subscribeSignupProfile } from './profile.js'
+import { mapDiary } from './mappers.js'
+export const isOwnedDiaryDemo = isApiDemo
 const listeners = new Set()
-function loadRecords() {
+const empty = () => ({ profile: null, diaries: [], loading: false, error: null, next: null, count: 0 })
+let state = { ...empty(), profile: profileView(getSignupProfile()) }, generation = 0
+function update(patch) { state = { ...state, ...patch }; listeners.forEach((fn) => fn()) }
+function profileView(profile) { return profile ? { ...profile, ...profile.residence, regionLabel: [profile.residence?.province, profile.residence?.district].filter(Boolean).join(' ') } : null }
+subscribeSignupProfile((profile) => { if (!isApiDemo) update({ profile: profileView(profile) }) })
+subscribeSession(() => { generation++; update(empty()) })
+export const getOwnedDiarySnapshot = () => isApiDemo ? demo.getOwnedDiarySnapshot() : state
+export const getLocalDiaries = () => isApiDemo ? demo.getLocalDiaries() : state.diaries
+export function subscribeOwnedDiaries(fn) { if (isApiDemo) return demo.subscribeOwnedDiaries(fn); listeners.add(fn); return () => listeners.delete(fn) }
+export async function loadOwnedDiaries(page = 1) {
+  if (isApiDemo) return
+  const current = ++generation
+  update({ loading: true, error: null })
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    return Array.isArray(saved) ? saved : null
-  } catch { return null }
+    const profile = getSignupProfile() || await loadProfile()
+    const data = await request('/api/diaries/me/', { query: { page } })
+    if (current !== generation) return
+    update({ profile: profileView(profile), diaries: page === 1 ? data.results.map(mapDiary) : [...state.diaries, ...data.results.map(mapDiary)].filter((item, index, all) => all.findIndex((other) => other.id === item.id) === index), count: data.count, next: data.next ? page + 1 : null, loading: false })
+  } catch (error) { if (current === generation) update({ loading: false, error }) }
 }
-let records = isOwnedDiaryDemo ? loadRecords() || (getSignupProfile() ? [] : MOCK_OWNED_DIARIES) : []
-function ownedProfile(profile) {
-  return profile ? { ...profile, ...profile.residence, regionLabel: [profile.residence.province, profile.residence.district].filter(Boolean).join(' ') } : isOwnedDiaryDemo ? MOCK_OWNED_PROFILE : null
+export async function loadOwnedDiary(id) {
+  if (isApiDemo) return
+  const current = ++generation
+  update({ loading: true, error: null })
+  try {
+    const profile = getSignupProfile() || await loadProfile()
+    const diary = mapDiary(await request(`/api/diaries/${encodeURIComponent(id)}/`))
+    if (current === generation) update({ profile: profileView(profile), diaries: [diary, ...state.diaries.filter((item) => item.id !== diary.id)], loading: false })
+  } catch (error) { if (current === generation) update({ loading: false, error }) }
 }
-let snapshot = { profile: ownedProfile(getSignupProfile()), diaries: [] }
-function refresh() {
-  snapshot = { ...snapshot, diaries: records.filter((diary) => diary.authorId === snapshot.profile?.id) }
-  listeners.forEach((listener) => listener())
+function form(draft, editing = false) {
+  const content = draft.content.trim()
+  if (!content || content.length > 500) throw new Error('일기를 1~500자로 입력해주세요')
+  const data = new FormData()
+  data.set('body', content)
+  data.set('accepts_letters', String(draft.receiveLetters ?? true))
+  const file = draft.photo?.file
+  if (file) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) throw new Error('사진은 JPEG·PNG·WEBP, 5MB 이하로 첨부해주세요')
+    data.set('image', file)
+  } else if (editing && !draft.photo) data.set('remove_image', 'true')
+  return data
 }
-refresh()
-subscribeSignupProfile((profile) => { snapshot = { ...snapshot, profile: ownedProfile(profile) }; refresh() })
-export const getOwnedDiarySnapshot = () => snapshot
-export const getLocalDiaries = () => records
-export function subscribeOwnedDiaries(listener) { listeners.add(listener); return () => listeners.delete(listener) }
-function update(diaries) {
-  const next = [...diaries, ...records.filter((diary) => diary.authorId !== snapshot.profile.id)]
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)) }
-  catch { throw new Error('브라우저에 저장하지 못했어요. 저장 공간과 브라우저 설정을 확인해주세요.') }
-  records = next
-  refresh()
+function remember(raw) {
+  const diary = mapDiary(raw)
+  update({ diaries: [diary, ...state.diaries.filter((item) => item.id !== diary.id)] })
+  return diary
 }
-function requireDemo() { if (!isOwnedDiaryDemo) throw new Error('아직 일기 API가 연결되지 않았어요. 입력 내용은 이 화면에 유지돼요.') }
-function owned(id) { const record = snapshot.diaries.find((diary) => diary.id === id && diary.authorId === snapshot.profile?.id); if (!record) throw new Error('수정할 수 없거나 존재하지 않는 일기예요'); return record }
-function validate(draft) { if (!draft.content.trim() || draft.content.trim().length > 500) throw new Error('일기를 1~500자로 입력해주세요') }
-async function photoValue(photo, previous) {
-  if (!photo) return { key: 'snow', isDefault: true }
-  if (photo === previous) return previous
-  if (photo.file) {
-    const url = await new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
-      reader.onerror = () => reject(new Error('사진을 읽지 못했어요. 다시 첨부해주세요.'))
-      reader.readAsDataURL(photo.file)
-    })
-    return { url }
-  }
-  return photo.url ? { url: photo.url } : { key: photo.key || 'snow' }
-}
-function releasePhoto(photo, next) { if (photo?.url?.startsWith('blob:') && photo.url !== next?.url) URL.revokeObjectURL(photo.url) }
-function dateLabels() {
-  const now = new Date()
-  const parts = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul' }).formatToParts(now)
-  const month = parts.find((part) => part.type === 'month').value
-  const day = parts.find((part) => part.type === 'day').value
-  return { dateLabel: `${Number(month)}월 ${Number(day)}일`, postmarkDate: `${month}.${day}` }
-}
-
-/** @param {{content: string, photo: object|null, receiveLetters: boolean}} draft 서버 연동 시 FormData·인증 처리를 교체한다. */
 export async function createOwnedDiary(draft) {
-  requireDemo(); validate(draft)
-  const profile = snapshot.profile
-  const diary = { id: crypto.randomUUID(), authorId: profile.id, province: profile.province, district: profile.district, title: draft.content.trim().split('\n')[0].slice(0, 24), content: draft.content.trim(), photo: await photoValue(draft.photo), receiveLetters: draft.receiveLetters, visibility: 'all', isFirstDiary: draft.isFirstDiary === true, nickname: profile.nickname, createdAt: new Date().toISOString(), ...dateLabels() }
-  update([diary, ...snapshot.diaries])
+  if (isApiDemo) return demo.createOwnedDiary(draft)
+  const data = await request('/api/diaries/', { method: 'POST', formData: form(draft) })
+  const diary = remember(data)
+  const profile = getSignupProfile()
+  if (profile && !profile.first_diary_completed) saveSignupProfile({ ...profile, first_diary_completed: true })
   return diary
 }
-
-/** @param {string} id @param {{content: string, photo: object|null, receiveLetters: boolean}} draft */
 export async function updateOwnedDiary(id, draft) {
-  requireDemo(); validate(draft)
-  const previous = owned(id)
-  const diary = { ...previous, content: draft.content.trim(), title: draft.content.trim().split('\n')[0].slice(0, 24), photo: await photoValue(draft.photo, previous.photo), receiveLetters: draft.receiveLetters }
-  update(snapshot.diaries.map((item) => item.id === id ? diary : item)); releasePhoto(previous.photo, diary.photo)
-  return diary
+  if (isApiDemo) return demo.updateOwnedDiary(id, draft)
+  return remember(await request(`/api/diaries/${encodeURIComponent(id)}/`, { method: 'PATCH', formData: form(draft, true) }))
 }
-
-export async function deleteOwnedDiary(id) { requireDemo(); const diary = owned(id); update(snapshot.diaries.filter((item) => item.id !== id)); releasePhoto(diary.photo) }
-export async function setOwnedDiaryVisibility(id, visibility) { requireDemo(); owned(id); if (!OWNED_VISIBILITY.includes(visibility)) throw new Error('공개 범위를 선택해주세요'); update(snapshot.diaries.map((diary) => diary.id === id ? { ...diary, visibility } : diary)) }
-
-// First diaries share the same records and ownership checks as ordinary diaries.
+export async function deleteOwnedDiary(id) {
+  if (isApiDemo) return demo.deleteOwnedDiary(id)
+  await request(`/api/diaries/${encodeURIComponent(id)}/`, { method: 'DELETE' })
+  update({ diaries: state.diaries.filter((item) => item.id !== id), count: Math.max(0, state.count - 1) })
+}
+export async function setOwnedDiaryVisibility(id, visibility) {
+  if (isApiDemo) return demo.setOwnedDiaryVisibility(id, visibility)
+  if (!['all', 'hometown', 'private'].includes(visibility)) throw new Error('공개 범위를 선택해주세요')
+  return remember(await request(`/api/diaries/${encodeURIComponent(id)}/`, { method: 'PATCH', json: { visibility: visibility === 'hometown' ? 'same_hometown' : visibility } }))
+}
 export async function createFirstOwnedDiary(draft) {
-  const previous = snapshot.diaries.find((diary) => diary.isFirstDiary)
-  if (previous) return previous
-  return createOwnedDiary({ ...draft, photo: draft.photo ? { file: draft.photo } : null, receiveLetters: true, isFirstDiary: true })
+  if (isApiDemo) return demo.createFirstOwnedDiary(draft)
+  const diary = await createOwnedDiary({ ...draft, photo: draft.photo ? { file: draft.photo } : null, receiveLetters: true })
+  diary.isFirstDiary = true
+  return diary
 }

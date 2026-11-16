@@ -13,3 +13,17 @@
 .code-expiry { margin-top: 18px; padding: 10px 16px; border-radius: 18px; background: var(--bg-peach); font-size: 11px; color: var(--text-sub); }
 .code-expiry strong { font: 400 13px / 1.4 var(--font-jua); color: var(--text-brown); }
 .code-expiry p { margin: 5px 0 0; }
+
+/* Figma 509:10408 — attempts exhausted */
+.code-page--locked { padding-bottom: 32px; }
+.code-page--locked .code-digits input:disabled { opacity: 1; background: var(--line-soft); color: var(--text-hint) !important; -webkit-text-fill-color: var(--text-hint); }
+.code-locked-title { margin: 18px 0 0; color: var(--brand-berry); font: 400 15px / 1.4 var(--font-jua); }
+.code-page--locked #code-error { margin: 12px 0 0; }
+.code-locked-note { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 60px; margin-top: 20px; padding: 10px 8px 10px 16px; border-radius: 18px; background: color-mix(in srgb, var(--bg-peach) 45%, transparent); }
+.code-locked-note > div { min-width: 0; }
+.code-locked-note strong { display: block; font: 400 13px / 1.4 var(--font-jua); }
+.code-locked-note p { margin: 5px 0 0; color: var(--text-sub); font: 400 11px / 1.5 var(--font-body); }
+.code-locked-note img { display: block; flex-shrink: 0; }
+.code-recovery-actions { display: grid; gap: 6px; }
+.code-recovery-actions .ui-button--ghost:hover { background: var(--bg-butter); color: var(--text-brown); }
+@media (max-width: 359px) { .code-locked-note { padding-left: 12px; }.code-locked-note strong { font-size: 12px; } }

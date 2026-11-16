@@ -40,3 +40,8 @@
 .signup-complete { text-align: center; padding-top: 90px; }.signup-complete img { display: block; margin: 0 auto; }.signup-complete h2 { margin: 30px 0 16px; }.signup-complete p { color: var(--text-sub); }
 .signup-complete-link { display: block; text-align: center; color: var(--brand-orange-deep); }
 @media (max-width: 359px) { .signup-terms-heading h2 { font-size: 21px; }.signup-terms-heading > img { transform: scale(.85); transform-origin: right; margin-left: -10px; }.signup-agreement-row label > span:last-child { font-size: 13px; } }
+
+/* Figma 509:10392 — registered school email recovery */
+.signup-recovery-actions { display: grid; gap: 6px; }
+.signup-page--email:has(.signup-recovery-actions) { padding-bottom: 32px; }
+.signup-recovery-actions .ui-button--ghost:hover { background: var(--bg-butter); color: var(--text-brown); }
