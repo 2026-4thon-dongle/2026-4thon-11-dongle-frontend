@@ -8,6 +8,7 @@ import { regionLabel } from '../../shared/region/regions.js'
 import HeaderSaveButton from '../../components/mypage/HeaderSaveButton.jsx'
 import RegionSummaryCard from '../../components/mypage/RegionSummaryCard.jsx'
 import LeaveEditDialog from '../../components/mypage/LeaveEditDialog.jsx'
+import LoadError from '../../components/mypage/LoadError.jsx'
 import RegionPickerSheet from '../../components/mypage/RegionPickerSheet.jsx'
 import { fetchRegionSettings, saveRegions } from '../../components/mypage/mypageApi.js'
 import { MYPAGE_PATHS } from '../../components/mypage/mypagePaths.js'
@@ -17,8 +18,10 @@ const sameRegions = (a, b) => a.length === b.length && a.every((item, index) => 
 
 /**
  * 7-10 지역 설정 수정. 본가 지역(1~3곳), 거주 지역(1곳)을 고르고 저장한다.
- * 데이터는 mock이다. 문서 레포 명세(api/users.md PUT /api/users/me/regions/: hometown_region_ids[1~3], residence_region_id)를
- * 따르지만 실제 API는 부르지 않는다. 지역 id는 임시 값이다.
+ * 처음 값은 GET /api/users/me/(hometowns[], residence)에서, 저장은 PUT /api/users/me/regions/(hometown_region_ids[1~3], residence_region_id)로 한다.
+ * 지역 선택기(shared/region)의 id가 서버 지역 id라서 그대로 보낸다. VITE_API_MOCK=true(개발 전용)일 때만 mock이다.
+ * 불러오기가 실패하면 오류 화면과 다시 시도를 보여 준다. 저장이 실패하면 값은 그대로 두고 토스트로 서버 메시지를 알린다.
+ * 이미 저장된 지역에 id가 없으면(옛 프로필 값) 화면은 그대로 뜨고, 저장할 때 "지역을 다시 골라 주세요"로 안내한다. 다시 고르면 id가 채워진다.
  * 가정:
  *  - 설정 화면으로 들어오는 길이 시안에 없어서 /mypage/regions 주소로 직접 연다. 7-1의 "지역 수정 ›"도 이 주소로 온다.
  *  - 지역 카드를 누르면 바텀시트에 공용 지역 선택기(shared/region)를 띄운다. 이 시트는 시안에 없다.
@@ -38,19 +41,26 @@ function RegionsPage() {
   const [hometowns, setHometowns] = useState([])
   const [residence, setResidence] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [loadError, setLoadError] = useState(null)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let cancelled = false
-    fetchRegionSettings().then((settings) => {
-      if (cancelled) return
-      setOriginal({ hometowns: settings.hometowns, residence: settings.residence })
-      setHometowns(settings.hometowns)
-      setResidence(settings.residence)
-    })
+    setLoadError(null)
+    fetchRegionSettings()
+      .then((settings) => {
+        if (cancelled) return
+        setOriginal({ hometowns: settings.hometowns, residence: settings.residence })
+        setHometowns(settings.hometowns)
+        setResidence(settings.residence)
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(error)
+      })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [attempt])
 
   const isReady = original !== null && residence !== null
   const isChanged =
@@ -131,6 +141,8 @@ function RegionsPage() {
         />
       ),
     })
+
+  if (loadError) return <LoadError error={loadError} onRetry={() => setAttempt((n) => n + 1)} />
 
   return (
     <main className="regions-page">

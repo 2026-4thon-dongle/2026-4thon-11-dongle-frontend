@@ -15,15 +15,16 @@ const TAB_PATH = {
 /**
  * 탭별 목록 한 페이지. 페이지당 20개이고 다음 페이지가 있으면 hasNext가 true이다.
  * @param {'new'|'chatting'|'shipping'|'stored'} tab
- * @param {{ sort?: 'latest'|'oldest'|'unread', page?: number, empty?: boolean }} [options]
+ * @param {{ sort?: 'latest'|'oldest'|'unread', sido?: number|string|null, page?: number, empty?: boolean }} [options]
  *   sort: 새 편지 탭만 쓴다(서버 ordering). 배송 중은 서버가 도착 임박순으로, 대화 중·보관은 서버 정렬 그대로 준다.
+ *   sido: 새 편지 탭만 쓴다. 보낸 사람 출발 지역의 시·도 id(GET /api/regions/ 최상위 id)로 서버가 거른다. 없으면 전체.
  *   empty: mock 모드에서만 쓴다(비었을 때 화면 확인용).
  * @returns {Promise<{ items: object[], count: number, hasNext: boolean }>}
  */
-export async function fetchMailboxLetters(tab, { sort = 'latest', page = 1, empty = false } = {}) {
-  if (isApiDemo) return fetchDemoMailboxLetters(tab, { sort, empty })
+export async function fetchMailboxLetters(tab, { sort = 'latest', sido = null, page = 1, empty = false } = {}) {
+  if (isApiDemo) return fetchDemoMailboxLetters(tab, { sort, sido, empty })
   const data = await request(TAB_PATH[tab] ?? TAB_PATH.new, {
-    query: { page, ordering: tab === 'new' ? sort : undefined },
+    query: { page, ordering: tab === 'new' ? sort : undefined, sido: tab === 'new' ? (sido ?? undefined) : undefined },
   })
   return toMailboxPage(tab, data)
 }
