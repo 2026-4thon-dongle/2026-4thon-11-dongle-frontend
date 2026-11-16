@@ -25,7 +25,8 @@ export async function loadReadingFeed({ away = false, region, page = 1 } = {}) {
     // 배너 숫자·알림 점은 부가 정보라 실패해도 피드는 보여 준다.
     const [regions, summary, unread] = await Promise.all([getRegions(), request('/api/feed/hometown/summary/').catch(() => null), request('/api/notifications/unread-count/').catch(() => null)])
     const selected = !region || region === '전체' ? undefined : away ? regions.find((item) => item.short_name === region)?.id : profile.hometowns.find((item) => (item.district || item.province) === region)?.id
-    if (region && region !== '전체' && !selected) throw new Error('지역을 다시 선택해주세요')
+    // 주소에 남은 지역이 지금 고를 수 없는 지역이면(본가를 바꾼 뒤 뒤로 가기 등) 화면 칩처럼 "전체"로 불러온다.
+    // 오류로 막으면 다시 시도해도 같은 지역으로 다시 실패했다.
     const data = await request(away ? '/api/feed/others/' : '/api/feed/hometown/', { query: { page, [away ? 'sido' : 'region']: selected } })
     if (current !== generation) return
     // 첫 페이지는 서버가 차단·신고한 일기를 이미 빼고 주므로 화면에서 숨기던 목록을 비운다(차단 해제 뒤 다시 보이게).
