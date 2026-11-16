@@ -7,3 +7,5 @@
 .postcard-postmark-waves { position: absolute; top: 15px; right: calc(100% + 2px); display: grid; gap: 5px; }.postcard-postmark-waves img { display: block; }
 .postcard-photo { position: relative; width: fit-content; padding: 6px 6px 18px; background: var(--white); border-radius: 4px; box-shadow: 0 6px 16px rgba(140,97,51,.12); transform: rotate(-3deg); flex-shrink: 0; }.postcard-photo img { display: block; }
 .postcard-photo--large { padding-bottom: 20px; transform: rotate(3deg); }.postcard-photo-tape { position: absolute; top: -7px; left: 42%; width: 32px; height: 12px; background: var(--bg-butter); border-radius: 2px; transform: rotate(4deg); }
+
+.postcard-stamp > .ui-stamp { display: block; }

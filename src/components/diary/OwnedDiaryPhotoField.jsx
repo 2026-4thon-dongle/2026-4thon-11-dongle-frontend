@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Icon from '../../shared/ui/Icon.jsx'
 import OwnedDiaryPhoto from './OwnedDiaryPhoto.jsx'
 
-const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']
+const TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 /** @param {{photo: object|null, onChange: (photo: object|null) => void, editing: boolean, province: string, disabled?: boolean}} props */
 export default function OwnedDiaryPhotoField({ photo, onChange, editing, province, disabled = false }) {
@@ -14,7 +14,8 @@ export default function OwnedDiaryPhotoField({ photo, onChange, editing, provinc
     event.target.value = ''
     if (!file) return
     const request = ++generation.current
-    if (!TYPES.includes(file.type)) { setError('JPG, PNG, WEBP, GIF, AVIF 사진을 선택해주세요'); return }
+    if (!TYPES.includes(file.type)) { setError('JPG, PNG, WEBP 사진을 선택해주세요'); return }
+    if (file.size > 5 * 1024 * 1024) { setError('사진은 5MB 이하로 첨부해주세요'); return }
     const url = URL.createObjectURL(file)
     try { const image = new Image(); image.src = url; await image.decode(); if (generation.current === request) { onChange({ file }); setError('') } }
     catch { if (generation.current === request) setError('사진을 불러올 수 없어요. 다른 사진을 골라주세요') }

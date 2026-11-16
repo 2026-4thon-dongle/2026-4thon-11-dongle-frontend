@@ -60,3 +60,6 @@
 .first-diary-complete-message { margin-top: 21px !important; }
 .first-diary-confetti--complete .first-diary-dot--sky { top: 330px; }.first-diary-confetti--complete .first-diary-dot--berry { top: 350px; }.first-diary-confetti--complete .first-diary-dot--peach { top: 92px; left: 47.222%; }
 @media (max-width: 359px) { .first-diary-editor-heading h1 { font-size: 22px; }.first-diary-gift { gap: 12px; padding-inline: 14px; }.first-diary-reward { gap: 10px; margin-inline: 0; }.first-diary-reward p { font-size: 13px; } }
+
+.first-diary-use-prompt { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: var(--text-brown); text-align: left; cursor: pointer; }
+.first-diary-use-prompt:disabled { cursor: not-allowed; }

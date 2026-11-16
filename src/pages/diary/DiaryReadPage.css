@@ -6,3 +6,5 @@
 .reading-reply-note { display: flex; align-items: center; gap: 10px; min-height: 92px; margin: 14px 20px 0; padding: 6px 10px; border-radius: 24px; background: var(--bg-butter); }.reading-reply-note > img { display: block; flex-shrink: 0; }.reading-reply-note > div { flex: 1; min-width: 0; }.reading-reply-note p { margin-top: 6px; color: var(--text-sub); }
 .reading-detail-reply { width: calc(100% - 40px); margin: 18px 20px 0; text-decoration: none; }.reading-detail-demo { margin: 12px 20px 0 !important; text-align: center; color: var(--text-sub); }
 @media (max-width: 359px) { .reading-diary-paper { padding-inline: 16px; }.reading-diary-scene > .postcard-photo { transform: scale(.9) rotate(3deg); transform-origin: left top; }.reading-diary-author { align-items: flex-start; flex-direction: column; gap: 0; }.reading-diary-author p { text-align: left; }.reading-diary-stamp { right: -2px; }.reading-diary-postmark { right: 0; } }
+
+.reading-diary-author h2 { flex-shrink: 0; }.reading-diary-author p { min-width: 0; }

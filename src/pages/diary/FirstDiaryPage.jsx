@@ -1,3 +1,5 @@
+import { insertDiaryPrompt } from '../../shared/utils/diaryPrompt.js'
+import useDiaryPrompt from '../../shared/hooks/useDiaryPrompt.js'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import FirstDiaryWelcome from '../../components/diary/FirstDiaryWelcome.jsx'
@@ -21,7 +23,7 @@ export default function FirstDiaryPage() {
   const [profile] = useState(() => validProfile(location.state?.profile) ? location.state.profile : getSignupProfile() || (isFirstDiaryDemo ? MOCK_FIRST_DIARY_PROFILE : null))
   const [content, setContent] = useState('')
   const [photo, setPhoto] = useState(null)
-  const [promptIndex, setPromptIndex] = useState(0)
+  const prompt = useDiaryPrompt(MOCK_DIARY_PROMPTS, step === 'write')
   const [result, setResult] = useState(() => getOwnedDiarySnapshot().diaries.find((diary) => diary.isFirstDiary) || null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -46,10 +48,11 @@ export default function FirstDiaryPage() {
     finally { submitting.current = false; setBusy(false) }
   }
 
+  if (profile?.first_diary_completed && !result) return <Navigate to="/home" replace />
   if (!['welcome', 'write', 'complete'].includes(step)) return <Navigate to="/diary/first" replace state={{ profile }} />
   if (step === 'complete' && !result) return <Navigate to="/diary/first/write" replace state={{ profile }} />
   if (step === 'write' && result) return <Navigate to="/diary/first/complete" replace state={{ profile }} />
   if (step === 'complete') return <FirstDiaryComplete profile={profile} demo={isFirstDiaryDemo} onNext={() => navigate('/home')} />
   if (step === 'welcome') return <FirstDiaryWelcome profile={profile} demo={isFirstDiaryDemo} onNext={() => go(result ? 'complete' : 'write')} />
-  return <FirstDiaryEditor profile={profile} content={content} onContent={(value) => { setContent(value); setError('') }} photo={photo} onPhoto={setPhoto} prompt={MOCK_DIARY_PROMPTS[promptIndex]} onPrompt={() => setPromptIndex((index) => (index + 1) % MOCK_DIARY_PROMPTS.length)} onSubmit={submit} busy={busy} error={error} demo={isFirstDiaryDemo} />
+  return <FirstDiaryEditor profile={profile} content={content} onContent={(value) => { setContent(value); setError('') }} photo={photo} onPhoto={setPhoto} prompt={prompt.text} onPrompt={prompt.next} onUsePrompt={() => { try { setContent(insertDiaryPrompt(content, prompt.text)); setError(''); document.getElementById('first-diary-content')?.focus() } catch (err) { setError(err.message) } }} onSubmit={submit} busy={busy} error={error || prompt.error} demo={isFirstDiaryDemo} />
 }

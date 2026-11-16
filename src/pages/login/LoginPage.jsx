@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import Button from '../../shared/ui/Button.jsx'
 import CodeVerification from '../../shared/ui/CodeVerification.jsx'
 import AuthFrame from '../../shared/ui/AuthFrame.jsx'
@@ -9,10 +9,11 @@ import './LoginPage.css'
 
 function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const { state: entry } = useLocation()
+  const [email, setEmail] = useState(entry?.email || '')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [challenge, setChallenge] = useState(null)
+  const [challenge, setChallenge] = useState(entry?.challenge || null)
   const [busy, setBusy] = useState(false)
   const { '*': path = '' } = useParams()
 
@@ -30,7 +31,7 @@ function LoginPage() {
     finally { setBusy(false) }
   }
 
-  if (path === 'code') return challenge ? <CodeVerification login challenge={challenge} onChallenge={setChallenge} onBack={() => navigate('/login')} onVerified={() => navigate('/home', { replace: true })} /> : <Navigate to="/login" replace />
+  if (path === 'code') return challenge ? <CodeVerification login challenge={challenge} onChallenge={setChallenge} onBack={() => navigate('/login')} onVerified={(profile) => navigate(isAuthDemo || profile.first_diary_completed ? '/home' : '/diary/first', { replace: true })} /> : <Navigate to="/login" replace />
 
   return (
     <AuthFrame title="로그인" onBack={() => navigate('/start')} className="login-page" footer={<div className="login-actions"><Button type="submit" form="login-form" className="login-submit" disabled={busy}>{busy ? '확인 중…' : '로그인 코드 받기'}</Button><Link className="login-signup text-label-15" to="/signup">처음이신가요?&nbsp; 회원가입</Link></div>}>
