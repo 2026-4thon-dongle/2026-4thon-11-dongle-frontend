@@ -9,6 +9,8 @@ import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
 import { isLetterReply, letterWriteTitle } from '../../components/letter-write/replyTitle.js'
 import { PAPERS } from '../../components/letter-write/data.js'
 import Icon from '../../shared/ui/Icon.jsx'
+import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
+import LoadingPill from '../../shared/feedback/LoadingPill.jsx'
 import './PaperPage.css'
 
 /** 4-1 편지지 선택 */
@@ -16,8 +18,8 @@ function PaperPage() {
   const { goNext, goBack } = useStepNavigation(1)
   const { draft, updateDraft } = useLetterDraft()
   const { reply } = draft
-  // 잠금·새 편지지 표시는 서버 값을 따른다. 서버 값을 아직 못 받았으면 우표가 필요한 편지지는 잠가 두고 NEW는 표시하지 않는다.
-  const { materials } = useLetterMaterials()
+  // 잠금·새 편지지 표시는 서버 값을 따른다. 받는 동안은 편지지 칸에 로딩(8-1)을, 받지 못하면 에러 화면(8-2)과 다시 시도를 보여 준다.
+  const { materials, error: materialsError, retry: retryMaterials } = useLetterMaterials()
   // 답장하는 일기: 배너에 일기 작성자 닉네임과 본문 첫 줄을 서버에서 받은 값으로 보여 준다.
   const { diary } = useReplyDiary(reply.diaryId)
   const nickname = diary?.author.nickname ?? reply.nickname
@@ -25,6 +27,10 @@ function PaperPage() {
   const letterReply = isLetterReply(reply)
   const bannerTitle = letterReply ? `Re. ${nickname}님의 편지` : `Re. ${nickname}님의 고향 일기`
   const excerpt = letterReply ? (reply.preview ?? '') : firstLineOf(diary?.body)
+
+  if (materialsError) {
+    return <ErrorScreen title="편지지를 불러오지 못했어요" description={materialsError.message} hint="" onRetry={retryMaterials} />
+  }
 
   return (
     <StepLayout
@@ -47,7 +53,7 @@ function PaperPage() {
 
       <h2 className="paper-page__heading">편지지를 골라주세요</h2>
 
-      <ul className="paper-page__grid">
+      {!materials ? <LoadingPill /> : <ul className="paper-page__grid">
         {PAPERS.map((paper) => {
           const server = findMaterial(materials?.stationeries, paper.code)
           const locked = server ? !server.unlocked : Boolean(paper.lockedStamps)
@@ -84,7 +90,7 @@ function PaperPage() {
             </li>
           )
         })}
-      </ul>
+      </ul>}
 
       {/* 개발 중에만 보인다(배포 빌드에는 들어가지 않는다): 잠긴 금박 엽서를 골라 바로 편지 쓰기 화면에서 확인한다. */}
       {import.meta.env.DEV && (

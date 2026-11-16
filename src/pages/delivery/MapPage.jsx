@@ -4,6 +4,7 @@ import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
+import LoadingPill from '../../shared/feedback/LoadingPill.jsx'
 import { MAP_THEMES, pickMapTheme } from '../../components/delivery/mapThemes.js'
 import { ROUTE_POINTS, pointAt, toPolyline, traveledPoints } from '../../components/delivery/mapRoute.js'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
@@ -47,7 +48,7 @@ function MapPage() {
   const { letterId } = useParams()
   const { info, error, retry } = useDeliveryInfo({ letterId })
   if (error) return <ErrorScreen title="배송 정보를 불러오지 못했어요" description={error.message} hint="" onRetry={retry} />
-  if (!info) return null
+  if (!info) return <LoadingPill fullScreen />
   return <MapView info={info} letterId={letterId} />
 }
 

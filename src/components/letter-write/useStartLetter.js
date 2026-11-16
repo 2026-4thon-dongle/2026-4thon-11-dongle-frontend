@@ -1,9 +1,12 @@
 import { createElement, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useOverlay from '../../shared/hooks/useOverlay.js'
+import LoadingPill from '../../shared/feedback/LoadingPill.jsx'
 import ResumeSheet from './ResumeSheet.jsx'
 import { clearLetterDraft, loadLetterDraft } from './letterDraftStorage.js'
 import { LETTER_STEPS } from './steps.js'
+
+const LOADING_DELAY_MS = 300
 
 /**
  * 편지 쓰기를 시작한다. 일기 상세의 "편지로 답장하기"처럼 편지 쓰기로 들어가는 버튼은
@@ -18,7 +21,7 @@ import { LETTER_STEPS } from './steps.js'
  */
 export default function useStartLetter() {
   const navigate = useNavigate()
-  const { openSheet } = useOverlay()
+  const { openSheet, openDialog, close: closeOverlay } = useOverlay()
 
   return useCallback(
     async ({ diaryId = null, letterId = null, nickname = null, region = null } = {}) => {
@@ -30,7 +33,15 @@ export default function useStartLetter() {
       const search = params.size ? `?${params}` : ''
 
       const reply = { diaryId, letterId, nickname, region }
+      // 임시저장은 서버에서 확인해서 잠깐 걸린다. 0.3초가 넘으면 불러오는 중(8-1)을 보여 준다.
+      const loading = { shown: false }
+      const loadingTimer = setTimeout(() => {
+        loading.shown = true
+        openDialog({ label: '불러오는 중', content: createElement(LoadingPill) })
+      }, LOADING_DELAY_MS)
       const saved = await loadLetterDraft(reply)
+      clearTimeout(loadingTimer)
+      if (loading.shown) closeOverlay()
       if (!saved) {
         navigate(`/letter-write${search}`)
         return
@@ -56,6 +67,6 @@ export default function useStartLetter() {
           }),
       })
     },
-    [navigate, openSheet],
+    [navigate, openSheet, openDialog, closeOverlay],
   )
 }

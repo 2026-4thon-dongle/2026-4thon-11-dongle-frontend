@@ -125,7 +125,7 @@ function StampSendSheet({ open, onOpenChange, title, ready = true, children }) {
               // 키보드는 Enter/Space(click의 detail이 0)로 연다. 누르기와 끌기는 위 포인터 동작이 맡는다.
               onClick={(event) => event.detail === 0 && onOpenChange(true)}
             >
-              위로 올리면 우표를 고르고 보낼 수 있어요
+              {ready ? '위로 올리면 우표를 고르고 보낼 수 있어요' : '우표와 도착 시간을 불러오는 중이에요…'}
             </button>
             <Button className="stamp-send__send" onClick={() => onOpenChange(true)} disabled={!ready}>
               우표 고르고 보내기
