@@ -40,3 +40,8 @@
 .account-page__row--danger {
   color: var(--brand-berry);
 }
+
+.account-page__row:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

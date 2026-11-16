@@ -43,3 +43,15 @@
   font: 400 14px / 1.4 var(--font-jua);
   cursor: pointer;
 }
+
+/* 탈퇴 실패 안내. 시안에 없어서 정한 문구와 색이다. */
+.withdraw-dialog__error {
+  margin: 12px 0 0;
+  color: var(--brand-berry);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+}
+
+.withdraw-dialog__leave:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

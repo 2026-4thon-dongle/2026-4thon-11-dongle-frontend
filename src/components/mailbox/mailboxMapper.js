@@ -95,6 +95,12 @@ export function toLetterCard(raw) {
   }
 }
 
+const IN_TRANSIT_PREVIEW = {
+  sent: '내가 보낸 편지가 가는 중이에요',
+  received: '상대 편지가 오는 중이에요',
+  unknown: '편지가 가는 중이에요',
+}
+
 // 상태별 배지 색(tone)과 글자, 아래 한 줄 설명. 시안 5-3 기준. 상태값은 서버 status(my_turn/waiting/in_transit/closed).
 const CHAT_STATUS = {
   my_turn: (raw) => ({
@@ -107,10 +113,12 @@ const CHAT_STATUS = {
     badgeTone: 'sky',
     preview: `내가 보낸 편지 · ${formatArrivedAt(raw.last_letter?.arrived_at)}`.replace(/ · $/, ''),
   }),
+  // 마지막 편지가 내가 보낸 것(sent)이면 "내가 보낸 편지가 가는 중", 상대가 보낸 것(received)이면 "상대 편지가 오는 중"이다. direction이 없으면 방향 없는 문구를 쓴다.
+  // 상대 편지가 오는 중일 때와 방향을 모를 때의 문구는 시안에 없어서 정했다.
   in_transit: (raw, now) => ({
     badge: `배송 중 · ${formatRemaining(minutesUntil(raw.last_letter?.arrives_at, now))}`.replace(/ · $/, ''),
     badgeTone: 'butter',
-    preview: '내가 보낸 편지가 가는 중이에요',
+    preview: IN_TRANSIT_PREVIEW[raw.last_letter?.direction] ?? IN_TRANSIT_PREVIEW.unknown,
   }),
   closed: () => ({
     badge: '여기까지예요',
