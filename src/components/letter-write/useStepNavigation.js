@@ -1,5 +1,5 @@
 import { createElement } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import useLetterDraft from './useLetterDraft.js'
 import ExitConfirm from './ExitConfirm.jsx'
@@ -25,6 +25,8 @@ function hasWritten(draft) {
  */
 export default function useStepNavigation(step) {
   const navigate = useNavigate()
+  // 받는 사람 쿼리(diaryId·letterId 등)를 단계 주소에 계속 붙여 둔다. 새로고침해도 받는 사람이 남아야 4단계에서 보낼 수 있다.
+  const { search } = useLocation()
   const { openDialog, showToast } = useOverlay()
   const { draft, resetDraft } = useLetterDraft()
   const next = LETTER_STEPS[step] // step이 1부터라 인덱스 step이 다음 단계다.
@@ -62,11 +64,11 @@ export default function useStepNavigation(step) {
 
   return {
     // 단계를 오갈 때는 기록을 쌓지 않고 갈아끼운다. 그래야 편지 쓰기를 나갈 때(navigate(-1)) 들어오기 전 화면으로 간다.
-    goNext: () => next && navigate(next.path, { replace: true }),
+    goNext: () => next && navigate(`${next.path}${search}`, { replace: true }),
     goBack: () => {
       if (!prev) return leave()
       if (step === ASK_STEP && hasWritten(draft)) return askBeforeLeaving()
-      return navigate(prev.path, { replace: true })
+      return navigate(`${prev.path}${search}`, { replace: true })
     },
   }
 }
