@@ -26,12 +26,22 @@ function EntryRedirect() {
   const { reply } = draft
   // 쿼리 없이 들어오면(개발 확인용) 확인할 대상이 없다.
   const [checked, setChecked] = useState(!reply.diaryId && !reply.letterId)
+  // 마이 7-3에서 "이어 쓰기"로 들어오면(resume=1) 시트를 다시 묻지 않고 바로 이어 쓴다. 이 표시는 다음 주소에 남기지 않는다.
+  const params = new URLSearchParams(search)
+  const resumeNow = params.get('resume') === '1'
+  params.delete('resume')
+  const nextSearch = params.toString() ? `?${params.toString()}` : ''
 
   useEffect(() => {
     if (checked) return undefined
     let cancelled = false
     loadLetterDraft(reply).then((saved) => {
       if (cancelled) return
+      if (saved && resumeNow) {
+        updateDraft(saved.draft)
+        navigate(`${LETTER_STEPS[saved.step - 1].path}${nextSearch}`, { replace: true })
+        return
+      }
       if (saved) {
         openSheet({
           title: reply.diaryId ? '이 일기에 쓰던 편지가 있어요' : '쓰던 편지가 있어요',
@@ -45,7 +55,7 @@ function EntryRedirect() {
               onResume={() => {
                 close()
                 updateDraft(saved.draft)
-                navigate(`${LETTER_STEPS[saved.step - 1].path}${search}`, { replace: true })
+                navigate(`${LETTER_STEPS[saved.step - 1].path}${nextSearch}`, { replace: true })
               }}
             />
           ),
@@ -56,10 +66,10 @@ function EntryRedirect() {
     return () => {
       cancelled = true
     }
-  }, [checked, reply, search, navigate, openSheet, updateDraft])
+  }, [checked, reply, resumeNow, nextSearch, navigate, openSheet, updateDraft])
 
   if (!checked) return <LoadingPill fullScreen />
-  return <Navigate to={{ pathname: LETTER_STEPS[0].path, search }} replace />
+  return <Navigate to={{ pathname: LETTER_STEPS[0].path, search: nextSearch }} replace />
 }
 
 export default EntryRedirect

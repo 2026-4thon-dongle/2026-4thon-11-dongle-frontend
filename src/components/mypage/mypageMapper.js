@@ -84,6 +84,8 @@ export function toDraftCard(raw) {
   if (isFirstLetter) query.set('diaryId', raw.diary_id)
   else query.set('letterId', raw.reply_to)
   if (nickname) query.set('nickname', nickname)
+  // 이미 "이어 쓰기"를 골랐으므로 편지 쓰기 입구에서 4-9 시트를 다시 묻지 않는다(docs/letter-write.md).
+  query.set('resume', '1')
 
   const savedAt = new Date(raw.saved_at)
   const savedLabel = Number.isNaN(savedAt.getTime()) ? '' : `${DATE_FORMAT.format(savedAt)} 저장`
