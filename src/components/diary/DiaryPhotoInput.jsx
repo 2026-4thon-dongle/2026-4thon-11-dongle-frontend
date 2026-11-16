@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Icon from '../../shared/ui/Icon.jsx'
-
-const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+import { DIARY_IMAGE_MAX_BYTES, DIARY_IMAGE_TYPES as PHOTO_TYPES } from '../../shared/api/ownedDiary.js'
 
 /** @param {{file: File|null, onChange: (file: File|null) => void, disabled?: boolean}} props */
 export default function DiaryPhotoInput({ file, onChange, disabled = false }) {
@@ -22,7 +21,7 @@ export default function DiaryPhotoInput({ file, onChange, disabled = false }) {
     if (!next) return
     const version = ++request.current
     if (!PHOTO_TYPES.includes(next.type)) { setError('JPG, PNG, WEBP 사진을 선택해주세요'); return }
-    if (next.size > 5 * 1024 * 1024) { setError('사진은 5MB 이하로 첨부해주세요'); return }
+    if (next.size > DIARY_IMAGE_MAX_BYTES) { setError('사진은 5MB 이하로 첨부해주세요'); return }
     const url = URL.createObjectURL(next)
     try {
       const image = new Image()

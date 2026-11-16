@@ -4,6 +4,9 @@ import { getSignupProfile, loadProfile, saveSignupProfile, subscribeSignupProfil
 import { mapDiary } from './mappers.js'
 import appendUnique from './appendUnique.js'
 export const isOwnedDiaryDemo = isApiDemo
+// 일기 사진 규칙(api/diaries.md POST·PATCH image): JPEG·PNG·WEBP, 5MB 이하. 첫 일기·내 일기 사진 칸이 같이 쓴다.
+export const DIARY_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+export const DIARY_IMAGE_MAX_BYTES = 5 * 1024 * 1024
 const listeners = new Set()
 const empty = () => ({ profile: null, diaries: [], loading: false, error: null, next: null, count: 0 })
 let state = { ...empty(), profile: profileView(getSignupProfile()) }, generation = 0
@@ -55,7 +58,7 @@ function form(draft, editing = false) {
   data.set('accepts_letters', String(draft.receiveLetters ?? true))
   const file = draft.photo?.file
   if (file) {
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) throw new Error('사진은 JPEG·PNG·WEBP, 5MB 이하로 첨부해주세요')
+    if (!DIARY_IMAGE_TYPES.includes(file.type) || file.size > DIARY_IMAGE_MAX_BYTES) throw new Error('사진은 JPEG·PNG·WEBP, 5MB 이하로 첨부해주세요')
     data.set('image', file)
   } else if (editing && !draft.photo) data.set('remove_image', 'true')
   return data
