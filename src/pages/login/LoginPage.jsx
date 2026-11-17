@@ -12,7 +12,7 @@ function LoginPage() {
   const { state: entry } = useLocation()
   const [email, setEmail] = useState(entry?.email || '')
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(entry?.expired ? '로그인이 만료됐어요. 다시 로그인해주세요' : '')
   const [challenge, setChallenge] = useState(entry?.challenge || null)
   const [busy, setBusy] = useState(false)
   const { '*': path = '' } = useParams()
