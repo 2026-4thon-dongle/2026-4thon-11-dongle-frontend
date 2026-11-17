@@ -130,6 +130,7 @@ export function toLetterView(raw) {
  * 서버 편지 상세 → { arrival(5-8), view(5-9), needsOpen }.
  * needsOpen: 내가 받은 편지인데 아직 열지 않았으면 true(5-8 "새 편지 도착"부터 보여 준다). 보낸 편지는 항상 false이다.
  * roundTripProbe: 봉투를 열 때 「첫 왕복」 우표(5-12)를 보여 줄지 판단하는 값. 안 읽은 받은 답장(is_first가 false)일 때만 { senderId, sentAt, arrivedAt }, 아니면 null.
+ * isReceived, sender: 5-9 신고·차단에 쓴다. 신고는 내가 받은 편지만 할 수 있고, 차단 대상은 보낸 사람(sender.id)이다(api/safety.md).
  */
 export function toLetterDetail(raw) {
   const needsOpen = raw.direction === 'received' && !raw.is_read
@@ -137,6 +138,8 @@ export function toLetterDetail(raw) {
     arrival: toLetterArrival(raw),
     view: toLetterView(raw),
     needsOpen,
+    isReceived: raw.direction === 'received',
+    sender: { id: raw.sender?.id ?? null, nickname: raw.sender_nickname ?? raw.sender?.nickname ?? '' },
     roundTripProbe:
       needsOpen && !raw.is_first && raw.sender?.id != null
         ? { senderId: raw.sender.id, sentAt: raw.sent_at, arrivedAt: raw.arrived_at }
