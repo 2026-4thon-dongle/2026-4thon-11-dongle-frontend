@@ -19,8 +19,8 @@ import { findRoundTripGain } from '../../components/mailbox/stampRewardApi.js'
 import './LetterPage.css'
 
 const MAILBOX_PATH = '/mailbox'
-// "붙일 우표가 없나요?" 줄(보류 기능 HOLD-02 진입점). 팀이 숨기기로 하면 false로 바꾼다. 켜도 지금은 토스트만 나온다.
-const SHOW_STAMP_MAKE_ENTRY = true
+// "붙일 우표가 없나요?" 줄(보류 기능 HOLD-02 진입점). 2026-11-17 팀 결정으로 HOLD-02는 범위에서 빼고 숨긴다(문서 레포 requests/1110_be2fe_hold-entry-points.md).
+const SHOW_STAMP_MAKE_ENTRY = false
 
 /**
  * 5-8 새 편지 도착 · 5-9 편지 열람. 우체통 카드(/mailbox/:letterId)를 누르면 들어온다.
@@ -36,7 +36,7 @@ const SHOW_STAMP_MAKE_ENTRY = true
  *  - "답장하기"는 /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다). 편지를 대화 중으로 옮기는 것은 서버가 답장을 보낼 때 한다.
  *  - "답장하기"·"넘기기" 버튼은 서버가 준 can_reply·can_pass일 때만 보인다. 둘 다 없으면(보관한 편지 등) 읽기만 할 수 있다.
  *  - 오른쪽 위 "…"는 신고·차단 메뉴 시트를 열고, 항목은 토스트만 보여 준다(효령님 3-6~3-8과 연결 전).
- *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이다. SHOW_STAMP_MAKE_ENTRY로 켜고 끈다(눌러도 토스트만).
+ *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이라 숨긴다(SHOW_STAMP_MAKE_ENTRY).
  * 개발 중 확인용 주소(VITE_API_MOCK=true일 때): /mailbox/101, /mailbox/102(읽지 않음 → 5-8), /mailbox/103, /mailbox/104(읽음 → 5-9)
  */
 function LetterPage() {
