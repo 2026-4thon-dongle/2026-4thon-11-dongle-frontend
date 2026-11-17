@@ -4,7 +4,7 @@ import StepLayout from '../../app/layouts/StepLayout.jsx'
 import StepFooter from '../../components/letter-write/StepFooter.jsx'
 import LetterCard from '../../components/letter-write/LetterCard.jsx'
 import FontPicker from '../../components/letter-write/FontPicker.jsx'
-import hasPhoneNumber from '../../components/letter-write/detectPrivateInfo.js'
+import { detectContactTypes } from '../../components/letter-write/detectPrivateInfo.js'
 import useStepNavigation from '../../components/letter-write/useStepNavigation.js'
 import useLetterDraft from '../../components/letter-write/useLetterDraft.js'
 import { LETTER_STEP_LABELS } from '../../components/letter-write/steps.js'
@@ -26,7 +26,9 @@ function ContentPage() {
 
   // 받는 사람: 답장하는 상대 닉네임. 쿼리 없이 들어온 경우만 임시 문구를 쓴다.
   const recipient = draft.reply.nickname ?? '고향 친구'
-  const warn = hasPhoneNumber(draft.content)
+  // 전화번호는 시안 문구, 이메일·카카오톡·인스타그램은 같은 자리에 「연락처」 문구(시안에 없어 가정)로 알린다.
+  const contacts = detectContactTypes(draft.content)
+  const warn = contacts.length === 0 ? '' : contacts.includes('phone') ? '전화번호처럼 보이는 내용이 있어요' : '연락처처럼 보이는 내용이 있어요'
   // 받은 편지에 답장할 때(5-11)만 받은 편지를 다시 볼 수 있다.
   const letterId = isLetterReply(draft.reply) ? draft.reply.letterId : null
 
@@ -58,10 +60,10 @@ function ContentPage() {
         <FontPicker fontId={draft.fontId} onChange={(fontId) => updateDraft({ fontId })} />
       </div>
 
-      {/* 전화번호처럼 보이는 내용이 있으면 알려 준다. 막지는 않는다. */}
+      {/* 연락처처럼 보이는 내용이 있으면 알려 준다. 막지는 않는다. */}
       {warn && (
         <p className="content-page__warning" role="alert">
-          전화번호처럼 보이는 내용이 있어요
+          {warn}
         </p>
       )}
 
