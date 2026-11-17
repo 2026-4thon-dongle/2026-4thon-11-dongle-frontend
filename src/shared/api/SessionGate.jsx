@@ -17,6 +17,8 @@ export default function SessionGate({ children }) {
     loadProfile().catch((reason) => { if (active) setError(reason) })
     return () => { active = false }
   }, [publicPage, attempt, pathname])
+  // 로그인한 사람이 뒤로 가기나 주소로 소개·시작·가입·로그인 화면에 오면 홈(첫 일기 전이면 2-1)으로 보낸다.
+  if (!isApiDemo && hasSession() && /^\/(?:intro|start|signup|login)(?:\/|$)/.test(pathname)) return <Navigate to="/" replace />
   if (isApiDemo || publicPage) return children
   if (!hasSession()) return <Navigate to="/login" replace />
   if (error) return <ErrorScreen description={error.message} hint="" onRetry={() => { setError(null); setAttempt((n) => n + 1) }} />
