@@ -1,4 +1,4 @@
-.intro-page { position: relative; isolation: isolate; display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: max(760px, 100dvh); padding: 44px 20px 38px; overflow: hidden; text-align: center; }
+.intro-page { position: relative; isolation: isolate; display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: max(760px, 100dvh); padding: 16px 20px 38px; overflow: hidden; text-align: center; }
 .intro-page img { display: block; flex-shrink: 0; }
 .intro-page h1, .intro-page p { margin: 0; }
 .intro-page .ui-button { width: 100%; }

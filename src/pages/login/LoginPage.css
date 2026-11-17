@@ -4,7 +4,7 @@
   width: 100%;
   max-width: var(--app-width);
   min-height: max(760px, 100dvh);
-  padding: 44px 20px 63px;
+  padding: 0 20px 63px;
 }
 
 .login-welcome h2,

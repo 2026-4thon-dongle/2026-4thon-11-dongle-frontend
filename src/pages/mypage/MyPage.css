@@ -3,12 +3,13 @@
   width: 100%;
   max-width: var(--app-width);
   margin: 0 auto;
-  padding: 52px 20px 24px;
+  padding: 0 20px 24px;
 }
 
 .mypage__header {
   display: flex;
   align-items: center;
+  min-height: 56px;
   justify-content: space-between;
 }
 
