@@ -4,6 +4,7 @@ import { getSignupProfile, loadProfile, subscribeSignupProfile } from './profile
 import { getRegions } from './regions.js'
 import { mapDiary } from './mappers.js'
 import appendUnique from './appendUnique.js'
+import { relativeTime } from '../utils/relativeTime.js'
 import { READING_REPORT_REASONS } from '../mocks/readingDiary.js'
 export const isReadingDemo = isApiDemo
 const empty = () => ({ profile: null, diaries: [], notifications: [], hiddenDiaryIds: [], blockedAuthorIds: [], regions: [], newCount: 0, unreadCount: 0, loading: false, error: null, next: null, notificationNext: null })
@@ -52,7 +53,7 @@ export async function loadReadingDetail(id) {
 }
 function mapNotice(raw) {
   const paths = { letter_arrived: `/mailbox/${raw.target_id}`, letter_departed: '/mailbox?tab=shipping', letter_location: `/delivery/${raw.target_id}/map`, round_trip: `/mailbox/chats/${raw.target_id}`, prompt: '/diary/write' }
-  return { ...raw, id: String(raw.id), unread: !raw.read_at, to: paths[raw.type] || '/notification', icon: ({ prompt: 'sparkle', letter_location: 'map', round_trip: 'stamp' })[raw.type] || 'mail', tone: ({ prompt: 'sage', letter_location: 'sky', round_trip: 'cream' })[raw.type] || 'peach', ago: new Date(raw.created_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) }
+  return { ...raw, id: String(raw.id), unread: !raw.read_at, to: paths[raw.type] || '/notification', icon: ({ prompt: 'sparkle', letter_location: 'map', round_trip: 'stamp' })[raw.type] || 'mail', tone: ({ prompt: 'sage', letter_location: 'sky', round_trip: 'cream' })[raw.type] || 'peach', ago: relativeTime(raw.created_at) }
 }
 export async function loadReadingNotifications(page = 1) {
   if (isApiDemo) return
