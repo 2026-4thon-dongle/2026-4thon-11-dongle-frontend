@@ -8,6 +8,10 @@ const STAMPS = Object.fromEntries(
   Object.entries(files).map(([path, url]) => [path.split('/').pop().replace('.svg', ''), url]),
 )
 
+// 서버 우표 code와 그림 파일 이름이 다른 우표(api/stamps.md의 code 표 기준 두 개뿐): 서버 code → 그림 id.
+// 이 표 덕분에 서버 code를 그대로 id로 넘겨도 그려진다. 나머지 우표는 code가 곧 그림 id이다.
+const ART_ID_BY_CODE = { 'long-delivery': 'long-way', 'cat-birthday': 'hometown-birthday' }
+
 const BASIC_STAMPS = MOCK_STAMPS.filter((stamp) => stamp.kind === 'basic')
 
 /**
@@ -15,18 +19,19 @@ const BASIC_STAMPS = MOCK_STAMPS.filter((stamp) => stamp.kind === 'basic')
  * - 기본 우표(basic): 이름 띠 + 왼쪽 위 "동글" + 오른쪽 위 번호(No.01처럼 기본 우표 목록 순서)
  * - 꾸미기 우표(decoration): 이름 띠 + 오른쪽 위 하트
  * 이름과 종류는 shared/mocks/stamps.js에서 id로 찾는다.
- * @param {string} id 우표 id (assets/stamp 아래 파일 이름, 예: 'first-diary')
+ * @param {string} id 우표 id. assets/stamp 아래 파일 이름(예: 'first-diary')이나 서버 우표 code(예: 'long-delivery')
  * @param {number} [size=96] 가로(px). 높이는 비율(5:4)에 맞춰 정해지고, 글자도 같은 비율로 줄어든다.
  * @param {boolean} [label=true] 이름 띠와 글자를 보일지. false면 그림만 보인다.
  * @param {string} [alt] 의미가 있는 그림이면 설명. 없으면 장식으로 숨긴다.
  */
 function Stamp({ id, size = 96, label = true, alt = '', className = '' }) {
-  const src = STAMPS[id]
+  const artId = ART_ID_BY_CODE[id] ?? id
+  const src = STAMPS[artId]
   if (!src) return null
 
-  const info = MOCK_STAMPS.find((stamp) => stamp.id === id)
+  const info = MOCK_STAMPS.find((stamp) => stamp.id === artId)
   const isBasic = info?.kind === 'basic'
-  const number = `No.${String(BASIC_STAMPS.findIndex((stamp) => stamp.id === id) + 1).padStart(2, '0')}`
+  const number = `No.${String(BASIC_STAMPS.findIndex((stamp) => stamp.id === artId) + 1).padStart(2, '0')}`
 
   return (
     <span

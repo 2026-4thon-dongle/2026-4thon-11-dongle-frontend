@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { METROPOLITAN } from '../../shared/region/regions.js'
+import { fetchRegions } from '../../shared/api/regions.js'
 import { fetchLetterRoute } from '../letter-write/letterApi.js'
 
 // 배송 화면(4-11 발송 완료, 4-12 배송 지도)이 쓰는 배송 정보를 서버에서 받는다.
@@ -12,7 +13,7 @@ import { fetchLetterRoute } from '../letter-write/letterApi.js'
 //   - sentAt, arrivesAt: 보낸·도착 시각(ISO 문자열). 남은 시간과 진행률은 이 값으로 화면이 계산한다
 //   - direction: 'sent'(내가 보냄) / 'incoming'(나에게 옴)
 //   - mapTheme: 'city' | 'sea' | 'mountain' | 'field' | 'river'. 없으면 null
-//   - towns: 지나는 동네 [{ id, name, at(0~1 진행률), news, icon, tone }]. 발송 직후 응답에는 없어 빈 배열이다
+//   - towns: 지나는 동네 [{ id, name, at(0~1 진행률), news }]. 발송 직후 응답에는 없어 빈 배열이다
 //   - grantedStamps: 이 편지로 새로 받은 우표 [{ code, number, name, description }]
 
 // 서버 지역({ name, full_name, sido })을 시안의 화면 이름으로 줄인다(서울 성북구 → 서울 성북, 충남 천안시 → 충남 천안).
@@ -23,6 +24,16 @@ function regionName(region) {
   const suffix = METROPOLITAN.includes(region.sido) ? /구$/ : /[시군]$/
   const stripped = region.name.replace(suffix, '')
   return `${region.sido} ${stripped.length >= 2 ? stripped : region.name}`
+}
+
+// 배송 지도(4-12)의 동네 이름. 경유지는 시·도 단위로 와서 이름이 길다(전라남도, 광주광역시).
+// 지도에서는 시안처럼 줄임말(전남, 광주)을 쓰므로 지역 목록(GET /api/regions/)의 short_name으로 바꾼다.
+// 지역 목록을 못 받았거나 시·도가 아니면 위의 regionName을 쓴다.
+function townName(region, provinces) {
+  const province = provinces?.find(
+    (item) => item.id === region.id || item.name === region.name || item.name === region.full_name,
+  )
+  return province ? province.short_name : regionName(region)
 }
 
 // 방금 보낸 편지(POST /api/letters/ 응답)를 배송 정보로 바꾼다. 경유지는 없다.
@@ -41,7 +52,7 @@ function fromLetter(letter) {
 }
 
 // 배송 경로 응답을 배송 정보로 바꾼다. 경유지의 일기 한 줄이 동네 소식이다.
-function fromRoute(route) {
+function fromRoute(route, provinces) {
   return {
     from: regionName(route.from_region),
     to: regionName(route.to_region),
@@ -50,13 +61,11 @@ function fromRoute(route) {
     arrivesAt: route.arrives_at,
     direction: route.direction,
     mapTheme: route.map_theme,
-    towns: route.waypoints.map((waypoint, index) => ({
+    towns: route.waypoints.map((waypoint) => ({
       id: String(waypoint.region.id),
-      name: regionName(waypoint.region),
+      name: townName(waypoint.region, provinces),
       at: waypoint.progress,
       news: waypoint.story?.body_preview ?? '',
-      icon: index % 2 === 0 ? 'heart' : 'pin',
-      tone: index % 2 === 0 ? 'peach' : 'sage',
     })),
     grantedStamps: [],
   }
@@ -77,8 +86,9 @@ export default function useDeliveryInfo({ letterId, letter }) {
   useEffect(() => {
     if (letter) return undefined
     let cancelled = false
-    fetchLetterRoute(letterId)
-      .then((route) => !cancelled && setState({ info: fromRoute(route), error: null }))
+    // 지역 목록은 동네 이름을 줄이는 데만 쓴다. 못 받아도 지도는 그려야 하므로 실패는 무시한다.
+    Promise.all([fetchLetterRoute(letterId), fetchRegions().catch(() => null)])
+      .then(([route, provinces]) => !cancelled && setState({ info: fromRoute(route, provinces), error: null }))
       .catch((error) => !cancelled && setState({ info: null, error }))
     return () => {
       cancelled = true
