@@ -74,10 +74,16 @@
 }
 
 .map-page__place {
+  z-index: 1; /* 동네 이름표나 고향이에 가려지지 않게 위에 둔다 */
   transform: translateX(-50%);
   color: var(--text-brown);
   font: 400 var(--body-13-size) / 1.4 var(--font-jua);
   white-space: nowrap;
+}
+
+/* 도착한 뒤의 「○○ 도착!」: 고향이 왼쪽에서 글자가 끝난다. */
+.map-page__place--arrived {
+  transform: translateX(-100%);
 }
 
 /* 출발·도착 점: 안쪽 12px 색 + 바깥 4px 흰 테두리 = 20px */
@@ -115,8 +121,9 @@
 
 .map-page__town-chip {
   display: block;
-  width: 74px;
+  width: max-content; /* 글자 너비에 맞춘다 */
   height: 24px;
+  padding: 0 10px;
   border-radius: 12px;
   background: var(--bg-surface);
   box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
@@ -329,6 +336,32 @@
   margin-top: 4px;
   color: var(--text-sub);
   font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+/* 도착 안내(시안 4-12-1): 답장 안내 박스와 우체통 버튼 */
+.map-page__arrived-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--bg-cream);
+}
+
+.map-page__arrived-note > :first-child {
+  flex: none;
+}
+
+.map-page__arrived-note p {
+  margin: 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / 1.5 var(--font-body);
+}
+
+.map-page__arrived-button {
+  /* 아래 여백: 접힘 영역이 안쪽을 잘라 내므로 버튼 그림자가 보일 자리를 둔다. */
+  margin: 54px 0 12px;
 }
 
 @media (prefers-reduced-motion: reduce) {

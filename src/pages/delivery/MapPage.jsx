@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import Button from '../../shared/ui/Button.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
@@ -20,6 +21,26 @@ const ROUTE_FIT_WIDTH = 340
 
 // 위아래로 이만큼(px) 이상 끌면 시트가 접히거나 펼쳐진다. 이보다 적게 움직이면 누른 것으로 본다.
 const SWIPE_PX = 30
+
+// 도착한 뒤 고향이와 「○○ 도착!」 이름의 자리(시안 좌표). 고향이는 도착 점(300, 420)을 덮어서 도착한 곳에 선다.
+// 원 아래쪽이 시트(y 440부터 지도를 덮는다)에 걸리지 않게 점보다 살짝 위쪽에 둔다. 이름은 고향이 왼쪽에서 끝난다.
+// 시안 4-12-1은 고향이를 점 왼쪽(232, 404)에 두었는데, 도착한 곳에 더 가깝게 붙였다.
+const ARRIVED_RIDER = [288, 406]
+const ARRIVED_LABEL = [252, 397]
+
+// 도착 지역 이름이 차지하는 범위(시안 좌표 px, 넉넉하게). 동네 이름표가 여기와 겹치면 이름표를 점 왼쪽으로 옮긴다.
+const END_LABEL_HALF_WIDTH = 48
+const END_LABEL_TOP_OFFSET = 44
+const END_LABEL_HEIGHT = 24
+const TOWN_CHIP_HEIGHT = 24
+// 동네 이름표는 글자 너비에 맞춘다(11px 글자 + 좌우 여백 10px). 위치 계산에 쓰는 어림값이다.
+const townChipWidth = (name) => [...name].length * 11 + 20
+
+// 지도에서는 시·도와 시가 같은 글자면 한 번만 쓴다(제주 제주 → 제주).
+const mapName = (name) => {
+  const [province, district] = name.split(' ')
+  return district && province === district ? province : name
+}
 
 // 받침이 있으면 "을", 없으면 "를"
 const objectJosa = (word) => {
@@ -59,7 +80,9 @@ function MapPage() {
 function MapView({ info, letterId }) {
   const navigate = useNavigate()
   const { showToast } = useOverlay()
-  const { from, to, recipient, towns, sentAt, arrivesAt } = info
+  const { recipient, towns, sentAt, arrivesAt } = info
+  const from = mapName(info.from)
+  const to = mapName(info.to)
   const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
   // 지도 배경은 서버가 편지마다 정해 준다. 없으면 편지 번호로 고른다.
   const theme = MAP_THEMES.find((item) => item.id === info.mapTheme) ?? pickMapTheme(letterId)
@@ -104,7 +127,9 @@ function MapView({ info, letterId }) {
     else setCollapsed((value) => !value)
   }
 
-  const [mascotX, mascotY] = pointAt(progress)
+  // 도착했으면(진행률 1) 시안 4-12-1 모습: 고향이는 웃고, 길은 끝까지 지나왔고, 시트는 도착 안내와 우체통 버튼을 보여 준다.
+  const arrived = progress >= 1
+  const [mascotX, mascotY] = arrived ? ARRIVED_RIDER : pointAt(progress)
   const [startX, startY] = ROUTE_POINTS[0]
   const [endX, endY] = ROUTE_POINTS[ROUTE_POINTS.length - 1]
 
@@ -115,6 +140,11 @@ function MapView({ info, letterId }) {
   )
   const current = towns[currentIndex]
   const next = towns[currentIndex + 1]
+  // 시트의 동네 소식 카드: 지금 지나는 동네 1장 + 다음 동네 1장(있을 때만). 지나는 동네가 없으면(같은 지역끼리) 도착 동네 카드 1장만 보여 준다.
+  // 아이콘은 동네가 아니라 카드 자리가 정한다: 첫 카드(지금 지나는 동네)는 하트, 둘째 카드(곧 지나요)는 핀. 동네를 지나가면 글자만 바뀐다.
+  const newsCards = towns.length
+    ? [current, next].filter(Boolean)
+    : [{ id: 'destination', name: to, news: '' }]
 
   return (
     <main className="map-page" style={{
@@ -138,20 +168,39 @@ function MapView({ info, letterId }) {
           {from}
         </span>
         <span className="map-page__pin map-page__pin--from" style={at(startX, startY)} />
-        <span className="map-page__place" style={atInside(endX - 24, endY - 40, 30, true)}>
-          {to}
-        </span>
+        {arrived ? (
+          <span className="map-page__place map-page__place--arrived" style={at(...ARRIVED_LABEL)}>
+            {to} 도착!
+          </span>
+        ) : (
+          <span className="map-page__place" style={atInside(endX, endY - 40, 30, true)}>
+            {to}
+          </span>
+        )}
         <span className="map-page__pin map-page__pin--to" style={at(endX, endY)} />
 
         {towns.map((town, index) => {
           const [x, y] = pointAt(town.at)
+          // 도착 지역 이름과 겹치는 이름표는 점 오른쪽이 아니라 왼쪽에 둔다(도착한 뒤에는 이름이 다른 자리에 있어 겹치지 않는다).
+          const chipWidth = townChipWidth(town.name)
+          const chipLeft = x + 10
+          const chipTop = y - 12
+          const overlapsEnd =
+            !arrived &&
+            chipLeft < endX + END_LABEL_HALF_WIDTH &&
+            chipLeft + chipWidth > endX - END_LABEL_HALF_WIDTH &&
+            chipTop < endY - END_LABEL_TOP_OFFSET + END_LABEL_HEIGHT &&
+            chipTop + TOWN_CHIP_HEIGHT > endY - END_LABEL_TOP_OFFSET
           return (
             <Fragment key={town.id}>
               <span
-                className={`map-page__town-dot${index <= currentIndex ? ' is-passed' : ''}`}
+                className={`map-page__town-dot${arrived || index <= currentIndex ? ' is-passed' : ''}`}
                 style={at(x, y)}
               />
-              <span className="map-page__town-chip" style={atInside(x + 10, y - 12, 37, false)}>
+              <span
+                className="map-page__town-chip"
+                style={atInside(overlapsEnd ? x - 10 - chipWidth : chipLeft, chipTop, chipWidth / 2, false)}
+              >
                 {town.name}
               </span>
             </Fragment>
@@ -160,18 +209,20 @@ function MapView({ info, letterId }) {
 
         {/* 지금 편지가 있는 곳 */}
         <span className="map-page__rider" style={at(mascotX, mascotY)}>
-          <Mascot pose="face" size={48} />
+          <Mascot pose={arrived ? 'smile' : 'face'} size={48} />
         </span>
 
-        {/* 직접 배달하기(→ 9-1, 보류): 자리만 두고 동작은 아직 연결하지 않는다. */}
-        <button
-          type="button"
-          className="map-page__game"
-          onClick={() => showToast('직접 배달하기는 준비 중이에요')}
-        >
-          <Icon name="game" size={24} />
-          직접 배달하기
-        </button>
+        {/* 직접 배달하기(→ 9-1, 보류): 자리만 두고 동작은 아직 연결하지 않는다. 도착한 뒤에는 시안(4-12-1)에 없고 「○○ 도착!」을 가리므로 숨긴다. */}
+        {!arrived && (
+          <button
+            type="button"
+            className="map-page__game"
+            onClick={() => showToast('직접 배달하기는 준비 중이에요')}
+          >
+            <Icon name="game" size={24} />
+            직접 배달하기
+          </button>
+        )}
 
         <button type="button" className="map-page__back" aria-label="뒤로 가기" onClick={() => navigate(-1)}>
           <Icon name="back" size={24} />
@@ -186,7 +237,7 @@ function MapView({ info, letterId }) {
         <button
           type="button"
           className="map-page__grab"
-          aria-label={collapsed ? '동네 소식 펼치기' : '동네 소식 접기'}
+          aria-label={collapsed ? '배송 현황 펼치기' : '배송 현황 접기'}
           aria-expanded={!collapsed}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
@@ -197,48 +248,65 @@ function MapView({ info, letterId }) {
         >
           <span className="map-page__handle" />
         </button>
-        <h1 className="map-page__remaining">도착까지 {formatRemaining(remainingMinutes)}</h1>
-        {current && (
+        <h1 className="map-page__remaining">
+          {arrived ? '편지가 도착했어요!' : `도착까지 ${formatRemaining(remainingMinutes)}`}
+        </h1>
+        {arrived ? (
           <p className="map-page__now">
-            지금 {current.name}
-            {objectJosa(current.name)} 지나고 있어요
+            {info.direction === 'incoming' ? '내 우체통에 쏙 들어갔어요' : `${recipient}님의 우체통에 쏙 들어갔어요`}
           </p>
+        ) : (
+          current && (
+            <p className="map-page__now">
+              지금 {current.name}
+              {objectJosa(current.name)} 지나고 있어요
+            </p>
+          )
         )}
         <div className="map-page__bar">
           <div className="map-page__bar-fill" style={{ width: `${progress * 100}%` }} />
         </div>
 
-        {/* 지나는 동네가 없어도(같은 지역끼리 보낸 편지) 시트 모양은 그대로 두고 안내만 보여 준다. */}
         <div className="map-page__more" aria-hidden={collapsed}>
           <div className="map-page__more-inner">
-            <h2 className="map-page__news-title">편지가 지나가는 동네 소식</h2>
-            <ul className="map-page__news">
-              {!current && (
-                <li className="map-page__news-item">
-                  <span className="map-page__news-icon map-page__news-icon--sage">
-                    <Icon name="pin" size={24} />
-                  </span>
-                  <span className="map-page__news-text">
-                    <span className="map-page__news-name">{to}</span>
-                    <span className="map-page__news-desc">지나는 동네 없이 바로 도착해요</span>
-                  </span>
-                </li>
-              )}
-              {[current, next].filter(Boolean).map((town) => (
-                <li key={town.id} className="map-page__news-item">
-                  <span className={`map-page__news-icon map-page__news-icon--${town.tone}`}>
-                    <Icon name={town.icon} size={24} />
-                  </span>
-                  <span className="map-page__news-text">
-                    <span className="map-page__news-name">
-                      {town.name}
-                      {town.id === next?.id && ' · 곧 지나요'}
-                    </span>
-                    <span className="map-page__news-desc">{town.news || '아직 올라온 일기가 없어요'}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {arrived ? (
+              <>
+                {/* 보낸 편지만 답장 안내를 보여 준다. 받은 편지는 내 우체통으로 바로 간다. */}
+                {info.direction !== 'incoming' && (
+                  <div className="map-page__arrived-note">
+                    <Mascot pose="smile" size={40} />
+                    <p>
+                      답장이 오면 우체통에서 알려드릴게요.
+                      <br />
+                      고향이는 잠깐 쉬러 갈게요!
+                    </p>
+                  </div>
+                )}
+                <Button className="map-page__arrived-button" onClick={() => navigate('/mailbox')}>
+                  우체통으로 가기
+                </Button>
+              </>
+            ) : (
+              <>
+                <h2 className="map-page__news-title">편지가 지나가는 동네 소식</h2>
+                <ul className="map-page__news">
+                  {newsCards.map((town, position) => (
+                    <li key={position} className="map-page__news-item">
+                      <span className={`map-page__news-icon map-page__news-icon--${position === 0 ? 'peach' : 'sage'}`}>
+                        <Icon name={position === 0 ? 'heart' : 'pin'} size={24} />
+                      </span>
+                      <span className="map-page__news-text">
+                        <span className="map-page__news-name">
+                          {town.name}
+                          {town.id === next?.id && ' · 곧 지나요'}
+                        </span>
+                        <span className="map-page__news-desc">{town.news || '아직 올라온 일기가 없어요'}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         </div>
       </section>
