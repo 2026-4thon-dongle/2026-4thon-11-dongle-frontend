@@ -1,0 +1,8 @@
+.delivery-game-page {
+  min-height: 100dvh;
+  background: var(--bg-cream);
+}
+
+.delivery-game-page--playing {
+  overscroll-behavior: none;
+}
