@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
+import { OverlayContext } from '../../shared/ui/overlayContext.js'
 import Loading from '../../shared/feedback/Loading.jsx'
 import Button from '../../shared/ui/Button.jsx'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
@@ -17,6 +18,8 @@ const ALL_REGIONS = ['전체', '강원', '부산', '제주', '전남', '경기',
 
 export default function HomePage() {
   const state = useReadingDiary()
+  // 다음 페이지 실패 토스트용. 오버레이 밖에서 그려지는 경우(계약 테스트)도 있어 useOverlay 대신 문맥을 그대로 읽는다.
+  const overlay = useContext(OverlayContext)
   const [params, setParams] = useSearchParams()
   const location = useLocation()
   const away = params.get('tab') === 'all'
@@ -48,7 +51,7 @@ export default function HomePage() {
     event.currentTarget.querySelectorAll('[role="tab"]')[next ? 1 : 0]?.focus()
   }
   if (!isReadingDemo && state.error) return <ErrorScreen description={state.error.message} hint="" onRetry={() => loadReadingFeed({ away, region: requested })} />
-  if (!isReadingDemo && !state.profile) return <Loading />
+  if (!isReadingDemo && (!state.profile || (state.loading && !items.length))) return <Loading />
   return <main className="reading-home">
     <header className="reading-home-header"><h1>동글</h1><div><Link className="reading-game" to="/delivery-game"><Icon name="game" size={24} /><span>배달 게임</span></Link><Link className="reading-bell" to="/notification" aria-label={unread ? '새 알림 보기' : '알림 보기'}><Icon name="bell" />{unread && <img src={unreadDot} alt="" />}</Link></div></header>
     <div className="reading-tabs" role="tablist" aria-label="일기 피드" onKeyDown={tabKey}><button type="button" role="tab" id="hometown-feed-tab" aria-selected={!away} tabIndex={away ? -1 : 0} aria-controls="reading-feed" onClick={() => changeTab(false)}>고향 ↔ 타지</button><button type="button" role="tab" id="away-feed-tab" aria-selected={away} tabIndex={away ? 0 : -1} aria-controls="reading-feed" onClick={() => changeTab(true)}>전체 타지</button></div>
@@ -58,8 +61,8 @@ export default function HomePage() {
     <section id="reading-feed" role="tabpanel" aria-labelledby={away ? 'away-feed-tab' : 'hometown-feed-tab'}>
       {items.length ? <>{!away && <p className="reading-feed-label text-caption-11">오늘 우체통에 도착한 고향 소식</p>}<div className={away ? 'reading-feed-grid' : 'reading-feed-list'}>{items.map((diary) => <DiaryFeedCard key={diary.id} diary={diary} compact={away} from={from} />)}</div></> : <EmptyDiaryFeed region={selected === '전체' ? away ? '다른 동네' : [hometowns[0]?.province, hometowns[0]?.district].filter(Boolean).join(' ') : selected} onAll={() => changeTab(true)} />}
     </section>
-    {state.loading && <Loading />}
-    {!isReadingDemo && state.next && <Button disabled={state.loading} onClick={() => loadReadingFeed({ away, region: requested, page: state.next })}>더 보기</Button>}
+    {/* 다음 페이지를 부르는 동안에는 버튼만 바꾼다. 8-1 로딩은 화면 전체용이라 목록 아래에 붙이면 화면이 한 벌 더 생긴다. */}
+    {!isReadingDemo && state.next && <Button disabled={state.loading} onClick={() => loadReadingFeed({ away, region: requested, page: state.next }).catch((error) => overlay?.showToast(error.message))}>{state.loading ? '불러오는 중…' : '더 보기'}</Button>}
     {isReadingDemo && <p className="reading-demo text-caption-11">개발용 미리보기 · 사용자·일기·알림은 예시 데이터예요</p>}
   </main>
 }

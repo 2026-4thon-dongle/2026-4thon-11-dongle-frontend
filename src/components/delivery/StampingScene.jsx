@@ -18,10 +18,14 @@ const DONE_AFTER = 3400
  * @param {Date} [date] 소인 날짜 (기본: 오늘)
  * @param {() => void} [onDone] 연출이 끝났을 때
  */
+// 소인 날짜 "MM.DD". 기기 시간대와 상관없이 한국 시간 날짜를 찍는다(en-CA는 0을 채운 "11-07" 모양이라 구분자만 바꾼다).
+const POSTMARK_DATE = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit' })
+const formatPostmarkDate = (date) => POSTMARK_DATE.format(date).replace('-', '.')
+
 function StampingScene({ stampId = 'handwriting-master', place = '서울', date, onDone }) {
   const [today] = useState(() => new Date()) // 렌더링마다 바뀌지 않게 처음 한 번만 정한다.
   const stampedAt = date ?? today
-  const monthDay = `${String(stampedAt.getMonth() + 1).padStart(2, '0')}.${String(stampedAt.getDate()).padStart(2, '0')}`
+  const monthDay = formatPostmarkDate(stampedAt)
 
   useEffect(() => {
     if (!onDone) return undefined

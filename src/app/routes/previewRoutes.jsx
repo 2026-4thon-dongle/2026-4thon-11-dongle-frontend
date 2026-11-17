@@ -17,6 +17,7 @@ function buildRoutes() {
     ['/preview/stamping', dev('DevStamping')],
     ['/preview/stamp-sheet', dev('DevStampSheet')],
     ['/preview/diary-reply', dev('DevDiaryReply')],
+    ['/preview/gold-paper', dev('DevGoldPaper')],
   ]
   return screens.map(([path, screen]) => ({ path, element: createElement(screen) }))
 }

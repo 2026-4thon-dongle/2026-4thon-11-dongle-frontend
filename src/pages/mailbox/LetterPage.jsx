@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
@@ -48,6 +48,20 @@ function LetterPage() {
   // 불러온 결과. 어떤 편지·시도(key)로 받았는지 같이 둔다: 지금 key와 다르면 아직 불러오는 중이다.
   //   detail: 편지 상세, null이면 없는 편지. error: 불러오지 못한 이유(ApiError)
   const [result, setResult] = useState(null)
+  // 봉투 열기·넘기기·답장하기는 서버 요청 하나가 끝날 때까지 다시 누를 수 없다(두 번 누르면 409로 오류 토스트가 덮였다).
+  const busyRef = useRef(false)
+  const [busy, setBusy] = useState(false)
+  const guard = (action) => async () => {
+    if (busyRef.current) return
+    busyRef.current = true
+    setBusy(true)
+    try {
+      await action()
+    } finally {
+      busyRef.current = false
+      setBusy(false)
+    }
+  }
 
   const requestKey = `${letterId}|${reloadKey}`
   const loaded = result?.key === requestKey ? result : null
@@ -162,7 +176,7 @@ function LetterPage() {
   if (detail.needsOpen) {
     return (
       <main className="letter-page letter-page--arrival">
-        <LetterArrival arrival={detail.arrival} onOpen={handleOpen} onLater={handleLater} />
+        <LetterArrival arrival={detail.arrival} onOpen={guard(handleOpen)} onLater={handleLater} />
       </main>
     )
   }
@@ -199,11 +213,11 @@ function LetterPage() {
         <footer className="letter-page__footer">
           <div className="letter-page__actions">
             {canPass && (
-              <Button variant="ghost" className="letter-page__pass" onClick={handlePass}>
+              <Button variant="ghost" className="letter-page__pass" onClick={guard(handlePass)} disabled={busy}>
                 넘기기
               </Button>
             )}
-            {canReply && <Button onClick={handleReply}>답장하기</Button>}
+            {canReply && <Button onClick={guard(handleReply)} disabled={busy}>답장하기</Button>}
           </div>
           {canPass && <p className="letter-page__hint">넘겨도 상대에게 알림이 가지 않아요</p>}
         </footer>

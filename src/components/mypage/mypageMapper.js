@@ -84,6 +84,8 @@ export function toDraftCard(raw) {
   if (isFirstLetter) query.set('diaryId', raw.diary_id)
   else query.set('letterId', raw.reply_to)
   if (nickname) query.set('nickname', nickname)
+  // 이미 "이어 쓰기"를 골랐으므로 편지 쓰기 입구에서 4-9 시트를 다시 묻지 않는다(docs/letter-write.md).
+  query.set('resume', '1')
 
   const savedAt = new Date(raw.saved_at)
   const savedLabel = Number.isNaN(savedAt.getTime()) ? '' : `${DATE_FORMAT.format(savedAt)} 저장`
@@ -171,8 +173,9 @@ export function toStampDetail(stamp) {
     description: stamp.description ?? '',
     obtainedLabel: [dateLabel, stamp.granted_with ? `${stamp.granted_with.nickname}님과의 편지로 받음` : ''].filter(Boolean).join(' · '),
     abilities: ['편지 봉투에 붙여서 보내기', `우표첩 보상 개수에 포함돼요${progress}`],
-    // 편지 쓰기로 넘기는 값(서버 우표 code). stampId 쿼리는 docs/letter-write.md에 없는 제안이라 채현님과 합의가 필요하다.
-    letterWritePath: `${MYPAGE_PATHS.letterWrite}?${new URLSearchParams({ stampId: stamp.code }).toString()}`,
+    // "이 우표 붙여서 편지 쓰기": 받는 사람 없이 편지 쓰기로 들어가면 4단계에서 보낼 대상이 없어 막힌다.
+    // 편지 쓰기는 우표를 미리 고르는 쿼리(stampId)를 받지 않으므로 홈 피드로 보내 답장할 일기를 고르게 한다.
+    letterWritePath: MYPAGE_PATHS.feed,
   }
 }
 
@@ -304,11 +307,8 @@ export function toSettingsHome(me, settings, blockCount) {
       { id: 'blocks', icon: 'ban', label: '차단 목록', value: `${blockCount}명`, to: MYPAGE_PATHS.blocks },
       { id: 'account', icon: 'settings', label: '계정', value: '로그아웃 · 탈퇴', to: MYPAGE_PATHS.account },
     ],
-    // 시안의 "정보" 카드. 이용약관·문의하기는 만들어진 화면이 없어 눌러도 토스트만 보여 준다. 버전 문구는 시안 그대로이다(서버와 무관).
-    infoItems: [
-      { id: 'terms', label: '이용약관 · 개인정보 처리방침' },
-      { id: 'contact', label: '문의하기' },
-    ],
+    // 시안의 "정보" 카드. 누르면 약관 화면(7-1-2)으로 간다. 버전 문구는 시안 그대로이다(서버와 무관).
+    infoItems: [{ id: 'terms', label: '이용약관 · 개인정보 처리방침', to: MYPAGE_PATHS.terms }],
     versionLabel: '동글 v1.0.0',
   }
 }

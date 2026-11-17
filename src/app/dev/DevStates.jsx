@@ -6,6 +6,7 @@ import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import Button from '../../shared/ui/Button.jsx'
 import StampSheet from '../../components/letter-write/StampSheet.jsx'
 import { clearLetterDraft } from '../../components/letter-write/letterDraftStorage.js'
+import { EMPTY_DRAFT } from '../../components/letter-write/letterDraftContext.js'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import { MOCK_OWNED_STAMPS } from '../../shared/mocks/stamps.js'
 import StampingScene from '../../components/delivery/StampingScene.jsx'
@@ -103,6 +104,25 @@ export function DevDiaryReply() {
       >
         임시저장 지우기
       </Button>
+    </main>
+  )
+}
+
+// /preview/gold-paper : 우표 15개를 모아야 열리는 금박 엽서로 편지 쓰기(4-2~4-6)를 바로 확인한다.
+// 4-1에서는 잠겨서 고를 수 없으므로, 작성 상태(resumeDraft)에 금박 엽서를 담아 내용 쓰기 단계로 들어간다.
+export function DevGoldPaper() {
+  const navigate = useNavigate()
+  const open = () =>
+    navigate(`/letter-write/content?${new URLSearchParams(MOCK_DIARY)}`, {
+      state: { resumeDraft: { ...EMPTY_DRAFT, reply: { ...EMPTY_DRAFT.reply, ...MOCK_DIARY }, paperId: 'gold' } },
+    })
+  return (
+    <main style={{ display: 'grid', gap: 12, padding: 24 }}>
+      <h1 className="text-title-20" style={{ margin: 0 }}>금박 엽서 (확인용)</h1>
+      <p className="text-body-13" style={{ margin: 0 }}>
+        우표 15개가 있어야 쓸 수 있는 편지지입니다. 눌러서 금박 엽서에 편지를 쓰는 화면(4-2)부터 확인하세요.
+      </p>
+      <Button onClick={open}>금박 엽서로 편지 쓰기</Button>
     </main>
   )
 }

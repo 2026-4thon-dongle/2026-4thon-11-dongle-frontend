@@ -1,5 +1,6 @@
 import Mascot from '../../shared/ui/Mascot.jsx'
 import nightSky from './assets/night-sky.svg'
+import GoldFoil from './GoldFoil.jsx'
 import SignatureView from './SignatureView.jsx'
 import './Paper.css'
 import './LetterResult.css'
@@ -23,6 +24,8 @@ function LetterResult({ paperId = 'basic', recipient, content, fontFamily, signa
       {paperId === 'night' && (
         <img className="letter-result__deco letter-result__deco--sky" src={nightSky} alt="" width="108" height="106" />
       )}
+      {/* 금박 엽서: 4-2 편지 쓰는 카드(LetterCard)와 같은 틀·글판·반짝이. 빠져 있어서 보내기 전 모습이 밋밋한 금색 판으로만 보였다. */}
+      {paperId === 'gold' && <GoldFoil shine={false} frameSparkles />}
       <p className="letter-result__to">To. {recipient}</p>
       {/* 줄은 본문과 손글씨를 함께 감싼 이 칸에 깔려서, 손글씨 아래로도 줄이 이어진다. */}
       <div className="letter-result__sheet">

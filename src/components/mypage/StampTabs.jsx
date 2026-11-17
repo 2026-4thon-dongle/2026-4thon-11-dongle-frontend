@@ -6,13 +6,28 @@ import './StampTabs.css'
  * @param {Array<{id: string, label: string}>} options
  * @param {string} value 고른 탭의 id
  * @param {(id: string) => void} onChange
+ * @param {string} [ariaLabel] 탭 목록 이름(스크린 리더용)
  */
-function StampTabs({ options, value, onChange }) {
+function StampTabs({ options, value, onChange, ariaLabel = '우표 종류' }) {
+  // 탭 목록 키보드 규칙: 고른 탭만 Tab으로 들어오고(roving tabindex), 좌우 화살표·Home·End로 옮기며 바로 고른다.
+  const handleKeyDown = (event) => {
+    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
+    if (!keys.includes(event.key)) return
+    event.preventDefault()
+    const current = options.findIndex((option) => option.id === value)
+    const last = options.length - 1
+    const next =
+      event.key === 'Home' ? 0 : event.key === 'End' ? last : event.key === 'ArrowLeft' ? (current <= 0 ? last : current - 1) : current >= last ? 0 : current + 1
+    onChange(options[next].id)
+    event.currentTarget.querySelectorAll('[role="tab"]')[next]?.focus()
+  }
+
   return (
     <div
       className="stamp-tabs"
       role="tablist"
-      aria-label="우표 종류"
+      aria-label={ariaLabel}
+      onKeyDown={handleKeyDown}
       style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
     >
       {options.map((option) => (
@@ -21,6 +36,7 @@ function StampTabs({ options, value, onChange }) {
           type="button"
           role="tab"
           aria-selected={option.id === value}
+          tabIndex={option.id === value ? 0 : -1}
           className={`stamp-tabs__tab${option.id === value ? ' is-selected' : ''}`}
           onClick={() => onChange(option.id)}
         >

@@ -77,8 +77,8 @@ function RegionPickerView({ tree, mode, value, onChange, hometowns = [] }) {
     if (!home && byProvince[next].residenceDirect) onChange([{ province: next, district: byProvince[next].residences[0].district, id: byProvince[next].id }])
   }
   return <div className={`region-picker ${home ? 'region-picker--home' : ''}`}>
-    {home && <><span className="region-count text-label-15" aria-live="polite">{value.length}/3</span><div className="region-selected" aria-label="선택한 본가 지역">{value.length ? value.map((item) => <button type="button" key={regionLabel(item)} onClick={() => onChange(value.filter((entry) => entry !== item))} aria-label={`${regionLabel(item)} 삭제`}>{regionLabel(item)}<Icon name="close" size={16} /></button>) : <span className="text-caption-11">본가 지역을 최대 3곳 골라주세요</span>}</div></>}
-    <div className="region-chips" aria-label="시·도 선택">{provinces.map((item) => {
+    {home && <><span className="region-count text-label-15" aria-live="polite">{value.length}/3</span><div className="region-selected" role="group" aria-label="선택한 본가 지역">{value.length ? value.map((item) => <button type="button" key={regionLabel(item)} onClick={() => onChange(value.filter((entry) => entry !== item))} aria-label={`${regionLabel(item)} 삭제`}>{regionLabel(item)}<Icon name="close" size={16} /></button>) : <span className="text-caption-11">본가 지역을 최대 3곳 골라주세요</span>}</div></>}
+    <div className="region-chips" role="group" aria-label="시·도 선택">{provinces.map((item) => {
       const direct = home && byProvince[item].hometownDirect
       const selected = hasProvince(item)
       const active = !direct && province === item

@@ -18,5 +18,6 @@ export function Postmark({ province, date, small = false, waves = false }) {
 
 /** @param {{large?: boolean}} props */
 export function DiaryPhoto({ large = false, photo }) {
-  return <div className={`postcard-photo ${large ? 'postcard-photo--large' : ''}`}><img src={photo?.url || (large ? detail : preview)} alt={photo?.url ? "일기에 첨부한 동네 사진" : "노을 아래 초록 언덕을 담은 동네 풍경 일러스트"} />{large && <span className="postcard-photo-tape" aria-hidden="true" />}</div>
+  // 서버 사진은 원본 크기라 기본 그림(92×70, 178×144)과 같은 틀에 맞춰 자른다.
+  return <div className={`postcard-photo ${large ? 'postcard-photo--large' : ''}`}><img src={photo?.url || (large ? detail : preview)} width={large ? 178 : 92} height={large ? 144 : 70} alt={photo?.url ? "일기에 첨부한 동네 사진" : "노을 아래 초록 언덕을 담은 동네 풍경 일러스트"} />{large && <span className="postcard-photo-tape" aria-hidden="true" />}</div>
 }

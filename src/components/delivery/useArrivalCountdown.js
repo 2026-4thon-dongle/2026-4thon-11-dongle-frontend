@@ -13,10 +13,17 @@ export default function useArrivalCountdown({ sentAt, arrivesAt }) {
   const totalMinutes = Math.max((Date.parse(arrivesAt) - startedAt) / 60_000, 1 / 60)
   const [now, setNow] = useState(() => Date.now())
 
+  const arrivesAtMs = startedAt + totalMinutes * 60_000
+  // 도착한 뒤에는 더 셀 것이 없으므로 1초 갱신을 멈춘다(배송 지도·발송 완료 화면이 계속 다시 그려지지 않게).
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), TICK_MS)
+    if (Date.now() >= arrivesAtMs) return undefined
+    const timer = setInterval(() => {
+      const current = Date.now()
+      setNow(current)
+      if (current >= arrivesAtMs) clearInterval(timer)
+    }, TICK_MS)
     return () => clearInterval(timer)
-  }, [])
+  }, [arrivesAtMs])
 
   const elapsedMs = Math.min(Math.max(now - startedAt, 0), totalMinutes * 60_000)
   const remainingMs = totalMinutes * 60_000 - elapsedMs
