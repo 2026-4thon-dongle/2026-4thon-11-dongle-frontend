@@ -16,7 +16,10 @@ import './DonePage.css'
 function DonePage() {
   const { letterId } = useParams()
   const { state } = useLocation()
+  const navigate = useNavigate()
   const { info, error, retry } = useDeliveryInfo({ letterId, letter: state?.letter })
+  // 없는 편지·볼 수 없는 편지(404·403)는 다시 시도해도 같으므로 우체통으로 보낸다.
+  if (error && [403, 404].includes(error.status)) return <ErrorScreen title="편지를 찾을 수 없어요" description={error.message} hint="" retryLabel="우체통으로 가기" onRetry={() => navigate('/mailbox', { replace: true })} />
   if (error) return <ErrorScreen title="배송 정보를 불러오지 못했어요" description={error.message} hint="" onRetry={retry} />
   if (!info) return <LoadingPill fullScreen />
   return <DoneView info={info} letterId={letterId} />
