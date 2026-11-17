@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import Header from '../../shared/ui/Header.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
@@ -16,12 +17,19 @@ function DraftsPage() {
   const { showToast } = useOverlay()
   const { data: drafts, error, reload, setData: setDrafts } = useLoad(fetchDrafts)
 
+  // 지우는 중인 임시저장 id. 같은 휴지통을 연달아 누르면 두 번째 DELETE가 404로 실패해 성공 토스트 뒤에 오류 토스트가 떴다.
+  const deletingRef = useRef(new Set())
+
   const handleDelete = async (id) => {
+    if (deletingRef.current.has(id)) return
+    deletingRef.current.add(id)
     try {
       await deleteDraft(id)
     } catch (deleteError) {
       showToast(deleteError.message)
       return
+    } finally {
+      deletingRef.current.delete(id)
     }
     setDrafts((current) => current.filter((draft) => draft.id !== id))
     showToast('임시저장한 편지를 삭제했어요')

@@ -24,6 +24,7 @@ import './SignaturePad.css'
 function SignaturePad({ ops, onOpsChange, tool, colorId, mode, paperId = 'basic', selectedId = null, onSelect, onRemove }) {
   const canvasRef = useRef(null)
   const currentRef = useRef(null) // 지금 그리고 있는 선
+  const pointerRef = useRef(null) // 그 선을 그리고 있는 손가락(pointerId)
   const dragRef = useRef(null) // 지금 옮기고 있는 스티커
   const resizeRef = useRef(null) // 지금 크기·각도를 조절하고 있는 스티커
 
@@ -72,11 +73,15 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode, paperId = 'basic'
   }
 
   // ── 선 그리기 ──
+  // 한 번에 한 손가락만 그린다. 그리는 중에 손바닥·다른 손가락이 닿아도 그 입력은 무시한다
+  // (같이 받으면 앞 선이 저장되지 않고 사라지거나, 두 손가락 사이를 잇는 선이 생겼다).
   const handleDown = (event) => {
     if (mode !== 'draw') {
       onSelect?.(null) // 빈 곳을 누르면 스티커 선택을 푼다.
       return
     }
+    if (currentRef.current) return
+    pointerRef.current = event.pointerId
     event.currentTarget.setPointerCapture(event.pointerId)
     const start = point(event)
     currentRef.current = { type: 'stroke', erase: tool === 'eraser', color: colorId, points: [start] }
@@ -86,7 +91,7 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode, paperId = 'basic'
 
   const handleMove = (event) => {
     const current = currentRef.current
-    if (!current) return
+    if (!current || event.pointerId !== pointerRef.current) return
     const next = point(event)
     const from = current.points[current.points.length - 1]
     current.points.push(next)
@@ -94,10 +99,11 @@ function SignaturePad({ ops, onOpsChange, tool, colorId, mode, paperId = 'basic'
     paintSegment(canvasRef.current.getContext('2d'), current, from, next, width, height)
   }
 
-  const handleUp = () => {
+  const handleUp = (event) => {
     const current = currentRef.current
-    if (!current) return
+    if (!current || event.pointerId !== pointerRef.current) return
     currentRef.current = null
+    pointerRef.current = null
     onOpsChange([...ops, current])
   }
 

@@ -20,9 +20,9 @@ import './MailboxPage.css'
 
 // 가정: 다른 담당 화면으로 가는 경로. 모두 지금은 RoutePlaceholder(임시 화면)이거나 다른 담당이 만든 화면이다.
 //   일기 쓰기: shared TabBar의 기본 경로와 같다 (/diary/* 임시 화면)
-//   편지 쓰기: 채현이 만든 편지 쓰기 첫 단계로 보내는 경로
+//   홈 피드: 답장할 일기를 고르는 곳(배송 중이 비었을 때 "편지 쓰러 가기")
 const DIARY_WRITE_PATH = '/diary/write'
-const LETTER_WRITE_PATH = '/letter-write'
+const HOME_PATH = '/home'
 
 // 탭마다 카드 모양, 로딩 자리 높이가 다르다 (시안 5-1 / 5-3 / 5-5 / 5-7)
 const TAB_VIEW = {
@@ -281,7 +281,8 @@ function MailboxPage() {
           title="지금 오가는 편지가 없어요"
           description={['편지를 보내면 도착할 때까지', '여기서 남은 시간을 볼 수 있어요']}
           actionLabel="편지 쓰러 가기"
-          onAction={() => navigate(LETTER_WRITE_PATH)}
+          // 편지는 일기나 받은 편지에 답장할 때만 쓴다. 받는 사람 없이 편지 쓰기로 가면 4단계에서 막히므로 홈 피드로 간다.
+          onAction={() => navigate(HOME_PATH)}
         />
       )}
 

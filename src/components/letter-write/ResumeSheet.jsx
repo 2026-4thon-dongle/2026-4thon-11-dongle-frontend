@@ -3,10 +3,14 @@ import Button from '../../shared/ui/Button.jsx'
 import { getLetterFontFamily, loadLetterFont } from '../../shared/fonts/letterFonts.js'
 import './ResumeSheet.css'
 
+// 기기 시간대와 상관없이 한국 시간 날짜로 쓴다.
+const SAVED_DATE = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric' })
+
 /** "11월 6일에 임시저장했어요" */
 const formatSavedAt = (iso) => {
   const date = new Date(iso)
-  return `${date.getMonth() + 1}월 ${date.getDate()}일에 임시저장했어요`
+  if (Number.isNaN(date.getTime())) return '임시저장했어요'
+  return `${SAVED_DATE.format(date)}에 임시저장했어요`
 }
 
 /**

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigationType } from 'react-router-dom'
 import { OverlayContext } from './overlayContext.js'
 import BottomSheet from './BottomSheet.jsx'
 import Dialog from './Dialog.jsx'
@@ -46,6 +47,17 @@ function OverlayProvider({ children }) {
   }, [])
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  // 브라우저·기기 뒤로 가기(POP)로 화면이 바뀌면 열려 있던 시트·다이얼로그를 바로 없앤다. 남아 있으면 떠난 화면의
+  // 버튼(예: 4-9 "이어 쓰기")이 새 화면 위에 그대로 보이고 눌린다. 화면 코드가 navigate·<Navigate>로 옮길 때(PUSH·REPLACE)는
+  // 이동 직후에 시트를 여는 흐름(4-9 입구 등)이 있어 건드리지 않는다.
+  const location = useLocation()
+  const navigationType = useNavigationType()
+  const [seenKey, setSeenKey] = useState(location.key)
+  if (seenKey !== location.key) {
+    setSeenKey(location.key)
+    if (navigationType === 'POP' && layer) setLayer(null)
+  }
 
   // Esc로 닫기
   useEffect(() => {
