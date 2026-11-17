@@ -28,12 +28,7 @@ const SWIPE_PX = 30
 const ARRIVED_RIDER = [288, 406]
 const ARRIVED_LABEL = [252, 397]
 
-// 도착 지역 이름이 차지하는 범위(시안 좌표 px, 넉넉하게). 동네 이름표가 여기와 겹치면 이름표를 점 왼쪽으로 옮긴다.
-const END_LABEL_HALF_WIDTH = 48
-const END_LABEL_TOP_OFFSET = 44
-const END_LABEL_HEIGHT = 24
-const TOWN_CHIP_HEIGHT = 24
-// 동네 이름표는 글자 너비에 맞춘다(11px 글자 + 좌우 여백 10px). 위치 계산에 쓰는 어림값이다.
+// 동네 이름표는 글자 너비에 맞춘다(11px 글자 + 좌우 여백 10px). 왼쪽에 놓을 때 위치 계산에 쓰는 어림값이다.
 const townChipWidth = (name) => [...name].length * 11 + 20
 
 // 지도에서는 시·도와 시가 같은 글자면 한 번만 쓴다(제주 제주 → 제주).
@@ -181,16 +176,9 @@ function MapView({ info, letterId }) {
 
         {towns.map((town, index) => {
           const [x, y] = pointAt(town.at)
-          // 도착 지역 이름과 겹치는 이름표는 점 오른쪽이 아니라 왼쪽에 둔다(도착한 뒤에는 이름이 다른 자리에 있어 겹치지 않는다).
+          // 마지막으로 지나는 동네의 이름표는 항상 점 왼쪽에 둔다. 오른쪽에 두면 바로 뒤의 도착 지역 이름과 겹친다.
           const chipWidth = townChipWidth(town.name)
-          const chipLeft = x + 10
-          const chipTop = y - 12
-          const overlapsEnd =
-            !arrived &&
-            chipLeft < endX + END_LABEL_HALF_WIDTH &&
-            chipLeft + chipWidth > endX - END_LABEL_HALF_WIDTH &&
-            chipTop < endY - END_LABEL_TOP_OFFSET + END_LABEL_HEIGHT &&
-            chipTop + TOWN_CHIP_HEIGHT > endY - END_LABEL_TOP_OFFSET
+          const onLeft = index === towns.length - 1
           return (
             <Fragment key={town.id}>
               <span
@@ -199,7 +187,7 @@ function MapView({ info, letterId }) {
               />
               <span
                 className="map-page__town-chip"
-                style={atInside(overlapsEnd ? x - 10 - chipWidth : chipLeft, chipTop, chipWidth / 2, false)}
+                style={atInside(onLeft ? x - 10 - chipWidth : x + 10, y - 12, chipWidth / 2, false)}
               >
                 {town.name}
               </span>
