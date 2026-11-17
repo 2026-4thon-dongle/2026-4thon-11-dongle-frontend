@@ -5,8 +5,11 @@ import StampGoals from './StampGoals.jsx'
 import { REASON_TEXT, formatDuration, regionLabel } from './format.js'
 import './GameIntro.css'
 
-/** 편지 한 통 카드. 누르면 그 편지를 고른다(onSelect가 있을 때). */
-function LetterCard({ letter, selected, onSelect }) {
+/**
+ * 편지 한 통 카드. 누르면 그 편지를 고른다(onSelect가 있을 때).
+ * maxPerPlay는 한 판으로 줄일 수 있는 최대 시간(별 3개 보상, 초)이다.
+ */
+function LetterCard({ letter, selected, onSelect, maxPerPlay }) {
   const { game } = letter
   const content = (
     <>
@@ -19,7 +22,7 @@ function LetterCard({ letter, selected, onSelect }) {
       </span>
       <span className="game-intro__letter-meta">
         {game.playable
-          ? `도착까지 ${formatDuration(game.remaining_seconds)} · ${formatDuration(game.reducible_seconds)}까지 줄일 수 있어요`
+          ? `도착까지 ${formatDuration(game.remaining_seconds)} · 한 판에 최대 ${formatDuration(Math.min(game.reducible_seconds, maxPerPlay))} 줄여요`
           : REASON_TEXT[game.reason] ?? '지금은 배달할 수 없어요'}
       </span>
     </>
@@ -45,6 +48,7 @@ function GameIntro({ home, letter, busy, onStart, onSelect }) {
   const { rules, today, goals } = home
   const noToday = today.remaining <= 0
   const ownedCount = goals.filter((goal) => goal.owned).length
+  const maxPerPlay = Math.max(...rules.stars.map((rule) => rule.reduce_seconds))
 
   return (
     <div className="game-intro">
@@ -62,7 +66,7 @@ function GameIntro({ home, letter, busy, onStart, onSelect }) {
         <h3 className="game-intro__heading">배달할 편지</h3>
         {letter ? (
           <>
-            <LetterCard letter={letter} selected />
+            <LetterCard letter={letter} selected maxPerPlay={maxPerPlay} />
             <p className="game-intro__note">
               이 편지로 {rules.plays_per_letter}번 중 {letter.game.plays_used}번 했어요
               {letter.game.reduced_seconds > 0 && ` · 지금까지 ${formatDuration(letter.game.reduced_seconds)} 줄였어요`}
@@ -76,7 +80,7 @@ function GameIntro({ home, letter, busy, onStart, onSelect }) {
         ) : home.letters.length ? (
           <div className="game-intro__letters">
             {home.letters.map((item) => (
-              <LetterCard key={item.id} letter={item} onSelect={onSelect} />
+              <LetterCard key={item.id} letter={item} onSelect={onSelect} maxPerPlay={maxPerPlay} />
             ))}
           </div>
         ) : (
