@@ -6,21 +6,26 @@ import Button from '../../shared/ui/Button.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
+import { isApiDemo } from '../../shared/api/client.js'
+import ReportForm from '../../shared/ui/ReportForm.jsx'
+import BlockDialog from '../../shared/ui/BlockDialog.jsx'
 import LetterArrival from '../../components/mailbox/LetterArrival.jsx'
 import LetterPaper from '../../components/mailbox/LetterPaper.jsx'
 import LetterMenuSheet from '../../components/mailbox/LetterMenuSheet.jsx'
 import {
+  blockLetterSender,
   fetchLetterDetail,
   openLetter,
   markLetterReplied,
   passLetter,
+  reportLetter,
 } from '../../components/mailbox/letterReceiveApi.js'
 import { findRoundTripGain } from '../../components/mailbox/stampRewardApi.js'
 import './LetterPage.css'
 
 const MAILBOX_PATH = '/mailbox'
-// "붙일 우표가 없나요?" 줄(보류 기능 HOLD-02 진입점). 팀이 숨기기로 하면 false로 바꾼다. 켜도 지금은 토스트만 나온다.
-const SHOW_STAMP_MAKE_ENTRY = true
+// "붙일 우표가 없나요?" 줄(보류 기능 HOLD-02 진입점). 2026-11-17 팀 결정으로 HOLD-02는 범위에서 빼고 숨긴다(문서 레포 requests/1110_be2fe_hold-entry-points.md).
+const SHOW_STAMP_MAKE_ENTRY = false
 
 /**
  * 5-8 새 편지 도착 · 5-9 편지 열람. 우체통 카드(/mailbox/:letterId)를 누르면 들어온다.
@@ -35,15 +40,17 @@ const SHOW_STAMP_MAKE_ENTRY = true
  *  - "넘기기"(POST pass)는 보관으로 옮기고 토스트("보관함으로 옮겼어요")를 보여 준 뒤 우체통의 보관 탭으로 이동한다. 토스트 문구는 시안에 없어서 정했다. 실패하면 서버 메시지를 토스트로 보여 준다.
  *  - "답장하기"는 /letter-write?letterId=…&nickname=…&region=… 로 이동한다(5-10, 5-11은 편지 쓰기 흐름을 그대로 쓴다). 편지를 대화 중으로 옮기는 것은 서버가 답장을 보낼 때 한다.
  *  - "답장하기"·"넘기기" 버튼은 서버가 준 can_reply·can_pass일 때만 보인다. 둘 다 없으면(보관한 편지 등) 읽기만 할 수 있다.
- *  - 오른쪽 위 "…"는 신고·차단 메뉴 시트를 열고, 항목은 토스트만 보여 준다(효령님 3-6~3-8과 연결 전).
- *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이다. SHOW_STAMP_MAKE_ENTRY로 켜고 끈다(눌러도 토스트만).
+ *  - 오른쪽 위 "…"는 신고·차단 메뉴 시트를 연다. 내가 받은 편지에만 보인다(서버는 받은 편지만 신고를 받는다, api/safety.md).
+ *    신고하기는 3-7과 같은 신고 시트(POST /api/reports/ target_type letter), 차단하기는 3-8과 같은 차단 팝업(POST /api/blocks/ 보낸 사람)이다.
+ *    차단하면(신고와 함께 차단 포함) 이 편지가 더 보이지 않으므로 우체통으로 돌아간다. 차단 없이 신고만 하면 편지를 그대로 둔다(서버가 편지를 숨기지 않는다).
+ *  - 시안의 "붙일 우표가 없나요? 만들고 바로 답장해요" 줄은 보류 기능(HOLD-02) 진입점이라 숨긴다(SHOW_STAMP_MAKE_ENTRY).
  * 개발 중 확인용 주소(VITE_API_MOCK=true일 때): /mailbox/101, /mailbox/102(읽지 않음 → 5-8), /mailbox/103, /mailbox/104(읽음 → 5-9)
  */
 function LetterPage() {
   const { letterId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { openSheet, showToast, close } = useOverlay()
+  const { openSheet, openDialog, showToast } = useOverlay()
   const [reloadKey, setReloadKey] = useState(0)
   // 불러온 결과. 어떤 편지·시도(key)로 받았는지 같이 둔다: 지금 key와 다르면 아직 불러오는 중이다.
   //   detail: 편지 상세, null이면 없는 편지. error: 불러오지 못한 이유(ApiError)
@@ -124,15 +131,48 @@ function LetterPage() {
     navigate(loaded.detail.view.replyPath)
   }
 
-  const openMenu = () =>
+  // 차단하면 이 편지와 보낸 사람의 편지가 보이지 않으므로 우체통으로 돌아간다.
+  const leaveAfterBlock = (message) => {
+    navigate(MAILBOX_PATH, { replace: true })
+    showToast(message)
+  }
+
+  const openReport = (sender) =>
+    openSheet({
+      title: '어떤 점이 불편했나요?',
+      content: ({ close: closeLayer }) => (
+        <ReportForm
+          nickname={sender.nickname}
+          description="신고 내용은 운영진이 확인해요"
+          onSubmit={({ reason, details, block }) => reportLetter({ letterId, reason, details, block })}
+          close={closeLayer}
+          onDone={(report) => {
+            if (report?.blocked) leaveAfterBlock('신고를 접수하고 차단했어요')
+            else showToast('신고를 접수했어요')
+          }}
+          demoNote={isApiDemo ? '개발용 미리보기 · 실제 운영진에게 전송되지 않아요' : undefined}
+        />
+      ),
+    })
+
+  const openBlock = (sender) =>
+    openDialog({
+      label: `${sender.nickname}님 차단 확인`,
+      content: ({ close: closeLayer }) => (
+        <BlockDialog
+          nickname={sender.nickname}
+          onConfirm={() => blockLetterSender(sender.id)}
+          close={closeLayer}
+          onDone={() => leaveAfterBlock('차단했어요')}
+          demoNote={isApiDemo ? '개발용 차단 · 서버에는 저장되지 않아요' : undefined}
+        />
+      ),
+    })
+
+  const openMenu = (sender) =>
     openSheet({
       content: (
-        <LetterMenuSheet
-          onSelect={(label) => {
-            close()
-            showToast(`${label}는 준비 중이에요`)
-          }}
-        />
+        <LetterMenuSheet onSelect={(key) => (key === 'report' ? openReport(sender) : openBlock(sender))} />
       ),
     })
 
@@ -182,15 +222,19 @@ function LetterPage() {
   }
 
   const { canReply, canPass } = detail.view
+  // 신고·차단은 내가 받은 편지에서만 한다(보낸 사람 id가 있어야 차단할 수 있다)
+  const canModerate = detail.isReceived && detail.sender.id != null
 
   return (
     <main className="letter-page">
       <Header
         title="편지"
         right={
-          <button type="button" className="letter-page__more" aria-label="더보기" onClick={openMenu}>
-            <Icon name="more" />
-          </button>
+          canModerate && (
+            <button type="button" className="letter-page__more" aria-label="더보기" onClick={() => openMenu(detail.sender)}>
+              <Icon name="more" />
+            </button>
+          )
         }
       />
 

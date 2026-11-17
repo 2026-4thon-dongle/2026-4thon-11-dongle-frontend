@@ -23,6 +23,8 @@ function toServerShape(raw) {
     conversation_id: null,
     is_first: raw.is_first_letter,
     direction: 'received',
+    // mock에는 보낸 사람 id가 없어 편지 id로 만든다(신고·차단 mock에만 쓴다)
+    sender: { id: 9000 + raw.id, nickname: raw.sender_nickname },
     sender_nickname: raw.sender_nickname,
     recipient_nickname: MOCK_MY_NICKNAME,
     from_region: regionOf(raw.sender_region),
@@ -64,3 +66,11 @@ export async function markDemoLetterReplied(letterId) {
 export async function passDemoLetter(letterId) {
   passedAt.set(Number(letterId), new Date().toISOString())
 }
+
+/** 편지 신고 mock. 서버로 보내지 않고 성공만 돌려준다(목록 숨김은 흉내 내지 않는다). */
+export async function reportDemoLetter({ block }) {
+  return { id: Date.now(), blocked: Boolean(block) }
+}
+
+/** 보낸 사람 차단 mock. 서버로 보내지 않는다. */
+export async function blockDemoSender() {}

@@ -3,11 +3,20 @@
 //   GET  /api/letters/{id}/        상세(읽음 처리 안 함). 403 NOT_ARRIVED(아직 도착 전), 404 NOT_FOUND
 //   POST /api/letters/{id}/open/   봉투 열기. 읽음 처리하고 같은 상세를 돌려준다
 //   POST /api/letters/{id}/pass/   넘기기(204). 409 NOT_PASSABLE(첫 편지가 아니거나 이미 답장함)
+//   POST /api/reports/             편지 신고(target_type letter, api/safety.md). 받아서 도착한 편지만. block_user면 보낸 사람도 차단
+//   POST /api/blocks/              보낸 사람 차단(api/safety.md)
 // 읽음은 상대에게 보이지 않고, 넘기기는 상대에게 알리지 않는다.
-// 반환값은 항상 letterReceiveMapper의 화면용 데이터이다.
+// 상세 요청의 반환값은 letterReceiveMapper의 화면용 데이터이다.
 import { ApiError, isApiDemo, request } from '../../shared/api/client.js'
 import { toLetterDetail } from './letterReceiveMapper.js'
-import { fetchDemoLetterDetail, markDemoLetterReplied, openDemoLetter, passDemoLetter } from './letterReceiveDemo.js'
+import {
+  blockDemoSender,
+  fetchDemoLetterDetail,
+  markDemoLetterReplied,
+  openDemoLetter,
+  passDemoLetter,
+  reportDemoLetter,
+} from './letterReceiveDemo.js'
 
 const letterPath = (letterId) => `/api/letters/${encodeURIComponent(letterId)}/`
 
@@ -44,4 +53,22 @@ export async function passLetter(letterId) {
  */
 export async function markLetterReplied(letterId) {
   if (isApiDemo) await markDemoLetterReplied(letterId)
+}
+
+/**
+ * 편지 신고(5-9 → 3-7 시트). reason은 서버 코드(shared/ui/reportReasons.js), 기타(etc)면 details가 필요하다(200자 이하).
+ * @returns {Promise<{ id: number, blocked: boolean }>} blocked: 보낸 사람도 함께 차단했는지
+ */
+export async function reportLetter({ letterId, reason, details, block }) {
+  if (isApiDemo) return reportDemoLetter({ letterId, reason, details, block })
+  return request('/api/reports/', {
+    method: 'POST',
+    json: { target_type: 'letter', target_id: Number(letterId), reason, detail: details.trim(), block_user: block },
+  })
+}
+
+/** 보낸 사람 차단(5-9 → 3-8 팝업). 차단하면 서로의 일기와 편지가 보이지 않는다. */
+export async function blockLetterSender(userId) {
+  if (isApiDemo) return blockDemoSender(userId)
+  await request('/api/blocks/', { method: 'POST', json: { user_id: Number(userId) } })
 }
