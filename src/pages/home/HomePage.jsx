@@ -8,7 +8,7 @@ import Chip from '../../shared/ui/Chip.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
 import useReadingDiary from '../../shared/hooks/useReadingDiary.js'
-import { isReadingDemo, visibleReadingDiaries, loadReadingFeed } from '../../shared/api/readingDiary.js'
+import { isReadingDemo, visibleReadingDiaries, loadReadingFeed, startHomeVisit } from '../../shared/api/readingDiary.js'
 import DiaryFeedCard from '../../components/home/DiaryFeedCard.jsx'
 import EmptyDiaryFeed from '../../components/home/EmptyDiaryFeed.jsx'
 import unreadDot from '../../shared/assets/reading/unread-dot.svg'
@@ -28,6 +28,8 @@ export default function HomePage() {
   const regions = away ? isReadingDemo ? ALL_REGIONS : ['전체', ...state.regions.map((item) => item.short_name)] : homeRegions
   const requested = params.get('region') || '전체'
   const selected = regions.includes(requested) ? requested : '전체'
+  // 새 일기 수는 홈에 들어올 때 한 번 받고, 칩·탭을 바꿔도 유지한다(api/feed.md summary·seen).
+  useEffect(() => { startHomeVisit() }, [])
   useEffect(() => { loadReadingFeed({ away, region: requested }) }, [away, requested])
   const diaries = visibleReadingDiaries(state).filter((diary) => {
     if (!isReadingDemo) return true
@@ -57,7 +59,7 @@ export default function HomePage() {
     <div className="reading-tabs" role="tablist" aria-label="일기 피드" onKeyDown={tabKey}><button type="button" role="tab" id="hometown-feed-tab" aria-selected={!away} tabIndex={away ? -1 : 0} aria-controls="reading-feed" onClick={() => changeTab(false)}>고향 ↔ 타지</button><button type="button" role="tab" id="away-feed-tab" aria-selected={away} tabIndex={away ? 0 : -1} aria-controls="reading-feed" onClick={() => changeTab(true)}>전체 타지</button></div>
     {away && <p className="reading-away-description text-caption-11">내 본가·거주지 말고, 다른 동네의 하루</p>}
     {<nav className="reading-region-filters" aria-label="지역 필터">{regions.map((region) => <Chip key={region} variant={region === selected ? 'selected' : 'default'} onClick={() => changeRegion(region)}>{region}</Chip>)}</nav>}
-    {!away && <aside className={`reading-greeting ${emptyHometown ? 'reading-greeting--empty' : ''}`}><Mascot pose="smile" size={60} /><p className="text-label-15">{items.length ? <>{state.profile.nickname}님, {selected === '전체' ? homeRegions.slice(1).join(' · ') : selected}에서<br />새 일기 {isReadingDemo ? items.length : state.newCount}편이 도착했어요!</> : <>{state.profile.nickname}님, 오늘은 아직<br />고향 소식이 도착하지 않았어요</>}</p></aside>}
+    {!away && <aside className={`reading-greeting ${emptyHometown ? 'reading-greeting--empty' : ''}`}><Mascot pose="smile" size={60} /><p className="text-label-15">{items.length ? <>{state.profile.nickname}님, {isReadingDemo && selected !== '전체' ? selected : homeRegions.slice(1).join(' · ')}에서<br />새 일기 {isReadingDemo ? items.length : state.newCount}편이 도착했어요!</> : <>{state.profile.nickname}님, 오늘은 아직<br />고향 소식이 도착하지 않았어요</>}</p></aside>}
     <section id="reading-feed" role="tabpanel" aria-labelledby={away ? 'away-feed-tab' : 'hometown-feed-tab'}>
       {items.length ? <>{!away && <p className="reading-feed-label text-caption-11">오늘 우체통에 도착한 고향 소식</p>}<div className={away ? 'reading-feed-grid' : 'reading-feed-list'}>{items.map((diary) => <DiaryFeedCard key={diary.id} diary={diary} compact={away} from={from} />)}</div></> : <EmptyDiaryFeed region={selected === '전체' ? away ? '다른 동네' : [hometowns[0]?.province, hometowns[0]?.district].filter(Boolean).join(' ') : selected} onAll={() => changeTab(true)} />}
     </section>
