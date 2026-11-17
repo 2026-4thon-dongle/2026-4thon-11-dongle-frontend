@@ -15,6 +15,8 @@ export const MYPAGE_PATHS = {
   start: '/start', // 로그아웃·탈퇴 뒤에 가는 시작 화면(효령 담당). 가정
   // 7-1의 설정 아이콘이 여는 설정 화면(시안 7-1-1). 닉네임·지역·알림·차단·계정으로 들어가는 목록이다.
   settings: '/mypage/settings',
+  terms: '/mypage/terms', // 7-1-2 약관 · 이용약관 (설정 화면 7-1-1의 "이용약관 · 개인정보 처리방침"에서 온다)
+  privacy: '/mypage/terms/privacy', // 7-1-2-1 약관 · 개인정보 처리방침 (7-1-2의 탭)
   // 다른 담당 화면. 지금은 모두 임시 화면이다.
   myDiaries: '/diary/mine', // 7-2 내 일기 = 효령 담당(6-6 목록). 브랜치가 합쳐진 뒤 확인한다.
   penPal: '/pen-pal', // 5-14, 5-15 펜팔 친구

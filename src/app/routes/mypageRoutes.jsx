@@ -8,6 +8,7 @@ import NotificationsPage from '../../pages/mypage/NotificationsPage.jsx'
 import BlocksPage from '../../pages/mypage/BlocksPage.jsx'
 import AccountPage from '../../pages/mypage/AccountPage.jsx'
 import SettingsPage from '../../pages/mypage/SettingsPage.jsx'
+import TermsPage from '../../pages/mypage/TermsPage.jsx'
 
 // 07 마이 · 우표첩 라우트. 경로 목록은 components/mypage/mypagePaths.js와 같아야 한다.
 // mailboxRoutes.jsx에 있는 `/mypage/*` 자리 표시는 그대로 둔다. React Router는 구체적인 경로(`/mypage`, `/mypage/drafts` 등)를
@@ -19,6 +20,8 @@ export const mypageRoutes = [
   { path: '/mypage/stamps/rewards', element: <StampRewardsPage /> }, // 7-8
   { path: '/mypage/settings', element: <SettingsPage /> }, // 7-1-1 (7-1의 설정 아이콘). 아래 7-9~7-13으로 들어가는 목록이다.
   // 7-9, 7-12, 7-13은 설정 화면에서 들어온다. 7-10, 7-11은 7-1의 "지역 수정 ›", "알림 · 편지 쉬기"에서도 온다.
+  { path: '/mypage/terms', element: <TermsPage kind="terms" /> }, // 7-1-2 약관 · 이용약관 (설정의 "이용약관 · 개인정보 처리방침"에서 온다)
+  { path: '/mypage/terms/privacy', element: <TermsPage kind="privacy" /> }, // 7-1-2-1 약관 · 개인정보 처리방침 (7-1-2의 탭)
   { path: '/mypage/nickname', element: <NicknamePage /> }, // 7-9
   { path: '/mypage/regions', element: <RegionsPage /> }, // 7-10
   { path: '/mypage/notifications', element: <NotificationsPage /> }, // 7-11

@@ -1,0 +1,90 @@
+/* 시안 7-1-2, 7-1-2-1 (360 기준). 헤더는 화면 끝까지, 나머지는 좌우 20px 안쪽. */
+.terms-page {
+  width: 100%;
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+/* 헤더 아래 8, 탭과 본문 카드 사이 16 */
+.terms-page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 20px 0;
+}
+
+.terms-page__card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 20px 28px;
+  border-radius: 20px;
+  background: var(--bg-surface);
+  color: var(--text-brown);
+  word-break: break-word;
+}
+
+.terms-page__head,
+.terms-page__clause {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.terms-page__title {
+  margin: 0;
+  font: 400 18px / normal var(--font-jua);
+}
+
+.terms-page__note {
+  margin: 0;
+  color: var(--text-sub);
+  font: 400 12px / normal var(--font-body);
+}
+
+/* 개인정보 처리방침 머리말 아래 설명은 13px */
+.terms-page__intro {
+  margin: 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / 1.65 var(--font-body);
+}
+
+.terms-page__clause-title {
+  margin: 0;
+  font: 400 14px / normal var(--font-jua);
+}
+
+.terms-page__clause-body p {
+  margin: 0;
+  font: 400 var(--body-13-size) / 1.65 var(--font-body);
+}
+
+/* 수집 항목 카드: 시안 색 #fef4e2는 토큰에 없어 값을 그대로 썼다. */
+.terms-page__collect {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.terms-page__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fef4e2;
+}
+
+.terms-page__item p {
+  margin: 0;
+  font: 400 12px / 1.6 var(--font-body);
+}
+
+.terms-page__item .terms-page__item-name {
+  font: 400 13px / normal var(--font-jua);
+}
+
+.terms-page__item .terms-page__item-period {
+  color: var(--text-sub);
+}
