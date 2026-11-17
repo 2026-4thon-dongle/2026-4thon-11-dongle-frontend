@@ -2,6 +2,7 @@ import Button from '../../shared/ui/Button.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import DiaryPhotoInput from './DiaryPhotoInput.jsx'
+import { withSubjectJosa } from './josa.js'
 
 /** @param {{profile: object|null, content: string, onContent: (text: string) => void, photo: File|null, onPhoto: (file: File|null) => void, prompt: string, onPrompt: () => void, onSubmit: (event: import('react').FormEvent) => void, busy: boolean, error: string, demo: boolean}} props */
 export default function FirstDiaryEditor({ profile, content, onContent, photo, onPhoto, prompt, onPrompt, onUsePrompt, onSubmit, busy, error, demo }) {
@@ -10,7 +11,7 @@ export default function FirstDiaryEditor({ profile, content, onContent, photo, o
   return <main className="first-diary-page first-diary-editor">
     <p className="first-diary-last-step text-label-15">마지막 단계</p><div className="first-diary-progress" role="progressbar" aria-label="가입 마지막 단계" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100} />
     <div className="first-diary-editor-heading"><h1 className="text-title-24">첫 고향 일기를<br />남겨볼까요?</h1><Mascot pose="sparkle" size={74} alt="반짝이는 고향이" /></div>
-    <p className="first-diary-editor-description text-body-13">지금 사는 {residence}의 하루를 써주면<br />{hometowns}이 고향인 친구들에게 먼저 보여요</p>
+    <p className="first-diary-editor-description text-body-13">지금 사는 {residence}의 하루를 써주면<br />{withSubjectJosa(hometowns)} 고향인 친구들에게 먼저 보여요</p>
     <aside className="first-diary-prompt" aria-label="글감 추천"><div className="first-diary-prompt-top"><span className="text-caption-11"><Icon name="pencil" size={18} />오늘의 글감</span><button type="button" onClick={onPrompt} disabled={busy}>다른 글감</button></div><button className="first-diary-use-prompt text-label-15" type="button" disabled={busy} onClick={onUsePrompt} aria-label="이 글감을 본문에 넣기">{prompt}</button></aside>
     <form id="first-diary-form" className="first-diary-form" onSubmit={onSubmit}>
       <DiaryPhotoInput file={photo} onChange={onPhoto} disabled={busy} />

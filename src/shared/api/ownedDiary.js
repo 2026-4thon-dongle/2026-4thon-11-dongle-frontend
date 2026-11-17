@@ -2,7 +2,11 @@ import * as demo from './ownedDiaryDemo.js'
 import { isApiDemo, request, subscribeSession } from './client.js'
 import { getSignupProfile, loadProfile, saveSignupProfile, subscribeSignupProfile } from './profile.js'
 import { mapDiary } from './mappers.js'
+import appendUnique from './appendUnique.js'
 export const isOwnedDiaryDemo = isApiDemo
+// 일기 사진 규칙(api/diaries.md POST·PATCH image): JPEG·PNG·WEBP, 5MB 이하. 첫 일기·내 일기 사진 칸이 같이 쓴다.
+export const DIARY_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+export const DIARY_IMAGE_MAX_BYTES = 5 * 1024 * 1024
 const listeners = new Set()
 const empty = () => ({ profile: null, diaries: [], loading: false, error: null, next: null, count: 0 })
 let state = { ...empty(), profile: profileView(getSignupProfile()) }, generation = 0
@@ -21,8 +25,13 @@ export async function loadOwnedDiaries(page = 1) {
     const profile = getSignupProfile() || await loadProfile()
     const data = await request('/api/diaries/me/', { query: { page } })
     if (current !== generation) return
-    update({ profile: profileView(profile), diaries: page === 1 ? data.results.map(mapDiary) : [...state.diaries, ...data.results.map(mapDiary)].filter((item, index, all) => all.findIndex((other) => other.id === item.id) === index), count: data.count, next: data.next ? page + 1 : null, loading: false })
-  } catch (error) { if (current === generation) update({ loading: false, error }) }
+    update({ profile: profileView(profile), diaries: page === 1 ? data.results.map(mapDiary) : appendUnique(state.diaries, data.results.map(mapDiary)), count: data.count, next: data.next ? page + 1 : null, loading: false })
+  } catch (error) {
+    if (current !== generation) return
+    // 다음 페이지가 실패하면 보던 목록은 그대로 두고 부른 쪽에 알린다(목록 전체를 오류 화면으로 바꾸지 않는다).
+    if (page > 1) { update({ loading: false }); throw error }
+    update({ loading: false, error })
+  }
 }
 export async function loadOwnedDiary(id) {
   if (isApiDemo) return
@@ -32,8 +41,15 @@ export async function loadOwnedDiary(id) {
     const profile = getSignupProfile() || await loadProfile()
     const diary = mapDiary(await request(`/api/diaries/${encodeURIComponent(id)}/`))
     if (current === generation) update({ profile: profileView(profile), diaries: [diary, ...state.diaries.filter((item) => item.id !== diary.id)], loading: false })
-  } catch (error) { if (current === generation) update({ loading: false, error }) }
+  } catch (error) {
+    if (current !== generation) return
+    // 없거나 내 일기가 아니면(404 NOT_FOUND) 재시도 화면 대신 화면의 "이 일기를 찾을 수 없어요"를 보여 준다.
+    if (error?.status === 404) update({ loading: false, diaries: state.diaries.filter((item) => item.id !== String(id)) })
+    else update({ loading: false, error })
+  }
 }
+/** 다른 화면(일기 쓰기)으로 옮길 때 앞 화면의 불러오기 오류를 지운다. 오류가 남으면 그 화면까지 오류 화면이 된다. */
+export function clearOwnedDiaryError() { if (!isApiDemo && state.error) update({ error: null }) }
 function form(draft, editing = false) {
   const content = draft.content.trim()
   if (!content || content.length > 500) throw new Error('일기를 1~500자로 입력해주세요')
@@ -42,7 +58,7 @@ function form(draft, editing = false) {
   data.set('accepts_letters', String(draft.receiveLetters ?? true))
   const file = draft.photo?.file
   if (file) {
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) throw new Error('사진은 JPEG·PNG·WEBP, 5MB 이하로 첨부해주세요')
+    if (!DIARY_IMAGE_TYPES.includes(file.type) || file.size > DIARY_IMAGE_MAX_BYTES) throw new Error('사진은 JPEG·PNG·WEBP, 5MB 이하로 첨부해주세요')
     data.set('image', file)
   } else if (editing && !draft.photo) data.set('remove_image', 'true')
   return data

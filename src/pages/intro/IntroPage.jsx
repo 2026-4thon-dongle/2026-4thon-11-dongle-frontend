@@ -30,7 +30,7 @@ export default function IntroPage() {
     <h1 className="intro-title text-title-24">{second ? <>그 동네가 고향인 누군가에게<br />내 일기가 닿아요</> : <>멀리 떠나온 우리,<br />고향 소식이 그리울 때</>}</h1>
     <p className="intro-description text-body-15">{second ? <>댓글 대신 느린 손편지로 답장해요.<br />편지는 실제 거리만큼 천천히 배달돼요</> : <>자취방 창밖 풍경, 학교 앞 붕어빵 트럭…<br />지금 사는 동네의 하루를 일기로 남겨요</>}</p>
     <nav className="intro-pagination" aria-label="서비스 소개 단계">
-      {[0, 1, 2].map((item) => item === (second ? 1 : 0) ? <span key={item} className="intro-current" aria-current="step" aria-label={`${item + 1}단계`} /> : <Art key={item} name="paginationDot" />)}
+      {[0, 1, 2].map((item) => item === (second ? 1 : 0) ? <span key={item} className="intro-current" role="img" aria-current="step" aria-label={`3단계 중 ${item + 1}단계`} /> : <Art key={item} name="paginationDot" />)}
     </nav>
     <div className="intro-bottom"><Button onClick={() => navigate(second ? '/start' : '/intro/2')}>{second ? '시작하기' : '다음'}</Button></div>
   </main>

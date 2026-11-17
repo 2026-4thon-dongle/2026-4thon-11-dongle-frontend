@@ -3,6 +3,7 @@ import { isApiDemo, request, subscribeSession } from './client.js'
 import { getSignupProfile, loadProfile, subscribeSignupProfile } from './profile.js'
 import { getRegions } from './regions.js'
 import { mapDiary } from './mappers.js'
+import appendUnique from './appendUnique.js'
 import { READING_REPORT_REASONS } from '../mocks/readingDiary.js'
 export const isReadingDemo = isApiDemo
 const empty = () => ({ profile: null, diaries: [], notifications: [], hiddenDiaryIds: [], blockedAuthorIds: [], regions: [], newCount: 0, unreadCount: 0, loading: false, error: null, next: null, notificationNext: null })
@@ -22,14 +23,23 @@ export async function loadReadingFeed({ away = false, region, page = 1 } = {}) {
   update({ loading: true, error: null, ...(page === 1 ? { diaries: [] } : {}) })
   try {
     const profile = getSignupProfile() || await loadProfile()
-    const [regions, summary, unread] = await Promise.all([getRegions(), request('/api/feed/hometown/summary/'), request('/api/notifications/unread-count/')])
+    // 배너 숫자·알림 점은 부가 정보라 실패해도 피드는 보여 준다.
+    const [regions, summary, unread] = await Promise.all([getRegions(), request('/api/feed/hometown/summary/').catch(() => null), request('/api/notifications/unread-count/').catch(() => null)])
     const selected = !region || region === '전체' ? undefined : away ? regions.find((item) => item.short_name === region)?.id : profile.hometowns.find((item) => (item.district || item.province) === region)?.id
-    if (region && region !== '전체' && !selected) throw new Error('지역을 다시 선택해주세요')
+    // 주소에 남은 지역이 지금 고를 수 없는 지역이면(본가를 바꾼 뒤 뒤로 가기 등) 화면 칩처럼 "전체"로 불러온다.
+    // 오류로 막으면 다시 시도해도 같은 지역으로 다시 실패했다.
     const data = await request(away ? '/api/feed/others/' : '/api/feed/hometown/', { query: { page, [away ? 'sido' : 'region']: selected } })
     if (current !== generation) return
-    update({ profile, regions, newCount: page === 1 ? summary.new_count : state.newCount, unreadCount: unread.unread_count, diaries: page === 1 ? data.results.map(mapDiary) : [...state.diaries, ...data.results.map(mapDiary)].filter((item, index, all) => all.findIndex((other) => other.id === item.id) === index), next: data.next ? page + 1 : null, loading: false })
-    if (!away) await request('/api/feed/hometown/seen/', { method: 'POST' })
-  } catch (error) { if (current === generation) update({ loading: false, error }) }
+    // 첫 페이지는 서버가 차단·신고한 일기를 이미 빼고 주므로 화면에서 숨기던 목록을 비운다(차단 해제 뒤 다시 보이게).
+    update({ profile, regions, newCount: page === 1 ? summary?.new_count ?? 0 : state.newCount, unreadCount: unread?.unread_count ?? state.unreadCount, ...(page === 1 ? { blockedAuthorIds: [], hiddenDiaryIds: [] } : {}), diaries: page === 1 ? data.results.map(mapDiary) : appendUnique(state.diaries, data.results.map(mapDiary)), next: data.next ? page + 1 : null, loading: false })
+    // 확인 기록은 첫 페이지를 보여 준 뒤 한 번만 남긴다(api/feed.md). 실패해도 이미 보여 준 피드를 오류 화면으로 바꾸지 않는다.
+    if (!away && page === 1) request('/api/feed/hometown/seen/', { method: 'POST' }).catch(() => {})
+  } catch (error) {
+    if (current !== generation) return
+    // 다음 페이지가 실패하면 보던 목록은 그대로 두고 부른 쪽에 알린다.
+    if (page > 1) { update({ loading: false }); throw error }
+    update({ loading: false, error })
+  }
 }
 export async function loadReadingDetail(id) {
   if (isApiDemo) return
@@ -41,7 +51,7 @@ export async function loadReadingDetail(id) {
   } catch (error) { if (current === generation) update({ loading: false, error }) }
 }
 function mapNotice(raw) {
-  const paths = { letter_arrived: `/mailbox/${raw.target_id}`, letter_departed: '/mailbox?tab=delivery', letter_location: `/delivery/${raw.target_id}/map`, round_trip: `/mailbox/chats/${raw.target_id}`, prompt: '/diary/write' }
+  const paths = { letter_arrived: `/mailbox/${raw.target_id}`, letter_departed: '/mailbox?tab=shipping', letter_location: `/delivery/${raw.target_id}/map`, round_trip: `/mailbox/chats/${raw.target_id}`, prompt: '/diary/write' }
   return { ...raw, id: String(raw.id), unread: !raw.read_at, to: paths[raw.type] || '/notification', icon: ({ prompt: 'sparkle', letter_location: 'map', round_trip: 'stamp' })[raw.type] || 'mail', tone: ({ prompt: 'sage', letter_location: 'sky', round_trip: 'cream' })[raw.type] || 'peach', ago: new Date(raw.created_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) }
 }
 export async function loadReadingNotifications(page = 1) {
@@ -50,8 +60,12 @@ export async function loadReadingNotifications(page = 1) {
   update({ loading: true, error: null })
   try {
     const data = await request('/api/notifications/', { query: { page } })
-    if (current === generation) update({ notifications: page === 1 ? data.results.map(mapNotice) : [...state.notifications, ...data.results.map(mapNotice)], notificationNext: data.next ? page + 1 : null, loading: false })
-  } catch (error) { if (current === generation) update({ loading: false, error }) }
+    if (current === generation) update({ notifications: page === 1 ? data.results.map(mapNotice) : appendUnique(state.notifications, data.results.map(mapNotice)), notificationNext: data.next ? page + 1 : null, loading: false })
+  } catch (error) {
+    if (current !== generation) return
+    if (page > 1) { update({ loading: false }); throw error }
+    update({ loading: false, error })
+  }
 }
 export async function markReadingNotification(id) {
   if (isApiDemo) return demo.markReadingNotification(id)
