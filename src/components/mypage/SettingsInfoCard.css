@@ -1,9 +1,9 @@
-/* 시안 7-1-1 "정보" 카드: 높이 120, radius 24, 줄 사이 구분선 */
+/* 시안 7-1-1 "정보" 카드: 높이 61, radius 24 */
 .settings-info-card {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 20px 16px 26px;
+  padding: 20px 16px;
   border-radius: 24px;
   background: var(--bg-surface);
   box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
@@ -17,10 +17,4 @@
   font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
   text-align: left;
   cursor: pointer;
-}
-
-.settings-info-card__row + .settings-info-card__row {
-  margin-top: 16px;
-  padding-top: 15px;
-  border-top: 1px solid var(--line-soft);
 }

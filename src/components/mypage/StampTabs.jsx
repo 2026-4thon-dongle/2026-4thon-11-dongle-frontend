@@ -6,8 +6,9 @@ import './StampTabs.css'
  * @param {Array<{id: string, label: string}>} options
  * @param {string} value 고른 탭의 id
  * @param {(id: string) => void} onChange
+ * @param {string} [ariaLabel] 탭 목록 이름(스크린 리더용)
  */
-function StampTabs({ options, value, onChange }) {
+function StampTabs({ options, value, onChange, ariaLabel = '우표 종류' }) {
   // 탭 목록 키보드 규칙: 고른 탭만 Tab으로 들어오고(roving tabindex), 좌우 화살표·Home·End로 옮기며 바로 고른다.
   const handleKeyDown = (event) => {
     const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
@@ -25,7 +26,7 @@ function StampTabs({ options, value, onChange }) {
     <div
       className="stamp-tabs"
       role="tablist"
-      aria-label="우표 종류"
+      aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
       style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
     >

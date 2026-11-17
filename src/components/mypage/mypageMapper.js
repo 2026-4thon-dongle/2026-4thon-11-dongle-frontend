@@ -307,11 +307,8 @@ export function toSettingsHome(me, settings, blockCount) {
       { id: 'blocks', icon: 'ban', label: '차단 목록', value: `${blockCount}명`, to: MYPAGE_PATHS.blocks },
       { id: 'account', icon: 'settings', label: '계정', value: '로그아웃 · 탈퇴', to: MYPAGE_PATHS.account },
     ],
-    // 시안의 "정보" 카드. 이용약관·문의하기는 만들어진 화면이 없어 눌러도 토스트만 보여 준다. 버전 문구는 시안 그대로이다(서버와 무관).
-    infoItems: [
-      { id: 'terms', label: '이용약관 · 개인정보 처리방침' },
-      { id: 'contact', label: '문의하기' },
-    ],
+    // 시안의 "정보" 카드. 누르면 약관 화면(7-1-2)으로 간다. 버전 문구는 시안 그대로이다(서버와 무관).
+    infoItems: [{ id: 'terms', label: '이용약관 · 개인정보 처리방침', to: MYPAGE_PATHS.terms }],
     versionLabel: '동글 v1.0.0',
   }
 }
