@@ -15,6 +15,7 @@ function buildRoutes() {
     ['/preview/error', dev('DevError')],
     ['/preview/boundary', dev('DevBoundary')],
     ['/preview/stamping', dev('DevStamping')],
+    ['/preview/delivery-map', lazy(() => import('../dev/DevDeliveryMap.jsx'))],
     ['/preview/stamp-sheet', dev('DevStampSheet')],
     ['/preview/diary-reply', dev('DevDiaryReply')],
   ]

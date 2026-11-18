@@ -8,12 +8,12 @@ import { fetchLetterRoute } from '../letter-write/letterApi.js'
 //
 // 정보 모양(화면용):
 //   { from, to, recipient, sentAt, arrivesAt, direction, mapTheme, towns, grantedStamps }
-//   - from, to: 출발·도착 지역 이름(시안처럼 줄여서 '서울 성북')
+//   - from, to: 출발·도착 지역 이름(시안처럼 줄여서 '서울 성북'). toSido: 도착 시·도 약칭('서울', 지도의 도착지 소식에 쓴다)
 //   - recipient: 상대 닉네임
 //   - sentAt, arrivesAt: 보낸·도착 시각(ISO 문자열). 남은 시간과 진행률은 이 값으로 화면이 계산한다
 //   - direction: 'sent'(내가 보냄) / 'incoming'(나에게 옴)
 //   - mapTheme: 'city' | 'sea' | 'mountain' | 'field' | 'river'. 없으면 null
-//   - towns: 지나는 동네 [{ id, name, at(0~1 진행률), news }]. 발송 직후 응답에는 없어 빈 배열이다
+//   - towns: 지나는 동네 [{ id, name, sido(시·도 약칭), at(0~1 진행률), news }]. 발송 직후 응답에는 없어 빈 배열이다
 //   - grantedStamps: 이 편지로 새로 받은 우표 [{ code, number, name, description }]
 
 // 서버 지역({ name, full_name, sido })을 시안의 화면 이름으로 줄인다(서울 성북구 → 서울 성북, 충남 천안시 → 충남 천안).
@@ -41,6 +41,7 @@ function fromLetter(letter) {
   return {
     from: regionName(letter.from_region),
     to: regionName(letter.to_region),
+    toSido: letter.to_region.sido ?? '',
     recipient: letter.recipient.nickname,
     sentAt: letter.sent_at,
     arrivesAt: letter.arrives_at,
@@ -56,6 +57,7 @@ function fromRoute(route, provinces) {
   return {
     from: regionName(route.from_region),
     to: regionName(route.to_region),
+    toSido: route.to_region.sido ?? '',
     recipient: route.partner.nickname,
     sentAt: route.sent_at,
     arrivesAt: route.arrives_at,
@@ -64,6 +66,7 @@ function fromRoute(route, provinces) {
     towns: route.waypoints.map((waypoint) => ({
       id: String(waypoint.region.id),
       name: townName(waypoint.region, provinces),
+      sido: waypoint.region.sido ?? '',
       at: waypoint.progress,
       news: waypoint.story?.body_preview ?? '',
     })),

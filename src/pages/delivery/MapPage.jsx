@@ -10,6 +10,7 @@ import { MAP_THEMES, pickMapTheme } from '../../components/delivery/mapThemes.js
 import { ROUTE_POINTS, pointAt, toPolyline, traveledPoints } from '../../components/delivery/mapRoute.js'
 import useArrivalCountdown, { formatRemaining } from '../../components/delivery/useArrivalCountdown.js'
 import useDeliveryInfo from '../../components/delivery/useDeliveryInfo.js'
+import { pickRegionNews } from '../../components/delivery/regionNews.js'
 import './MapPage.css'
 
 // 시안 지도의 크기(px). 위쪽 상태바 자리 44px는 잘라 낸다.
@@ -135,11 +136,18 @@ function MapView({ info, letterId }) {
   )
   const current = towns[currentIndex]
   const next = towns[currentIndex + 1]
-  // 시트의 동네 소식 카드: 지금 지나는 동네 1장 + 다음 동네 1장(있을 때만). 지나는 동네가 없으면(같은 지역끼리) 도착 동네 카드 1장만 보여 준다.
-  // 아이콘은 동네가 아니라 카드 자리가 정한다: 첫 카드(지금 지나는 동네)는 하트, 둘째 카드(곧 지나요)는 핀. 동네를 지나가면 글자만 바뀐다.
+  // 시트의 동네 소식 카드(시안 메모 「4-12 동네 소식 카드 규칙」): 지금 지나는 동네 1장 + 다음 자리 1장.
+  // 경유지가 시·도 단위라 다음 동네가 없는 경우가 많으므로, 그 자리에는 도착 지역(「○○ · 곧 도착해요」)을 넣어 카드를 거의 항상 두 장으로 둔다.
+  // 서울 → 서울처럼 같은 시·도끼리라 지나는 동네가 없을 때만 도착 지역 카드 1장이고, 그때는 시트도 카드 한 장만큼 낮아진다.
+  // 소식은 서버가 준 그 지역의 일기 한 줄이 있으면 그것을, 없으면 시·도별 소식 2개 중 하나를 쓴다(같은 편지에서는 늘 같은 것).
+  const newsOf = (sido, serverNews) => serverNews || pickRegionNews(letterId, sido)
+  const destinationCard = { id: 'destination', name: to, news: newsOf(info.toSido), destination: true }
   const newsCards = towns.length
-    ? [current, next].filter(Boolean)
-    : [{ id: 'destination', name: to, news: '' }]
+    ? [
+        { ...current, news: newsOf(current.sido, current.news) },
+        next ? { ...next, news: newsOf(next.sido, next.news) } : destinationCard,
+      ]
+    : [destinationCard]
 
   return (
     <main className="map-page" style={{
@@ -182,7 +190,7 @@ function MapView({ info, letterId }) {
           return (
             <Fragment key={town.id}>
               <span
-                className={`map-page__town-dot${arrived || index <= currentIndex ? ' is-passed' : ''}`}
+                className={`map-page__town-dot${arrived || town.at <= progress ? ' is-passed' : ''}`}
                 style={at(x, y)}
               />
               <span
@@ -278,20 +286,25 @@ function MapView({ info, letterId }) {
               <>
                 <h2 className="map-page__news-title">편지가 지나가는 동네 소식</h2>
                 <ul className="map-page__news">
-                  {newsCards.map((town, position) => (
-                    <li key={position} className="map-page__news-item">
-                      <span className={`map-page__news-icon map-page__news-icon--${position === 0 ? 'peach' : 'sage'}`}>
-                        <Icon name={position === 0 ? 'heart' : 'pin'} size={24} />
-                      </span>
-                      <span className="map-page__news-text">
-                        <span className="map-page__news-name">
-                          {town.name}
-                          {town.id === next?.id && ' · 곧 지나요'}
+                  {/* 아이콘은 동네가 아니라 카드 자리가 정한다: 지금 지나는 동네(첫 카드)는 하트, 다음 자리와 도착 지역은 핀.
+                      동네를 지나가면 글자만 바뀐다. */}
+                  {newsCards.map((town, position) => {
+                    const pin = town.destination || position === 1
+                    return (
+                      <li key={position} className="map-page__news-item">
+                        <span className={`map-page__news-icon map-page__news-icon--${pin ? 'sage' : 'peach'}`}>
+                          <Icon name={pin ? 'pin' : 'heart'} size={24} />
                         </span>
-                        <span className="map-page__news-desc">{town.news || '아직 올라온 일기가 없어요'}</span>
-                      </span>
-                    </li>
-                  ))}
+                        <span className="map-page__news-text">
+                          <span className="map-page__news-name">
+                            {town.destination ? `${town.name} · 곧 도착해요` : town.name}
+                            {town.id === next?.id && ' · 곧 지나요'}
+                          </span>
+                          <span className="map-page__news-desc">{town.news || '아직 올라온 일기가 없어요'}</span>
+                        </span>
+                      </li>
+                    )
+                  })}
                 </ul>
               </>
             )}
@@ -302,4 +315,6 @@ function MapView({ info, letterId }) {
   )
 }
 
+// 개발용 확인 화면(/preview/delivery-map)이 서버 없이 같은 화면을 그리려고 내보낸다.
+export { MapView }
 export default MapPage
