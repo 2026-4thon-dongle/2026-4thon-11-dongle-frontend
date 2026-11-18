@@ -4,6 +4,9 @@ export const isApiDemo = import.meta.env.DEV && import.meta.env.VITE_API_MOCK ==
 const ACCESS_KEY = 'dongle.access-token', REFRESH_KEY = 'dongle.refresh-token'
 let memoryTokens = null
 let revision = 0
+// 세션이 왜 끝났는지: 'logout'(로그아웃·탈퇴) → 시작 화면, 'expired'(토큰 만료) → 안내와 함께 로그인 화면. 다시 로그인하면 지운다.
+let endReason = null
+export const sessionEndReason = () => endReason
 const sessionListeners = new Set()
 export function subscribeSession(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener) }
 function storageWorks() { try { localStorage.getItem(ACCESS_KEY); return true } catch { return false } }
@@ -16,6 +19,7 @@ export const getAccessToken = () => getTokens().access
 export const hasSession = () => Boolean(getTokens().access || getTokens().refresh)
 export function setTokens(tokens) {
   revision++
+  endReason = null
   memoryTokens = { access: tokens.access, refresh: tokens.refresh }
   try {
     for (const [key, value] of [[ACCESS_KEY, tokens.access], [REFRESH_KEY, tokens.refresh]]) {
@@ -25,9 +29,10 @@ export function setTokens(tokens) {
   } catch { /* Use memory tokens. */ }
 }
 export const saveTokens = setTokens
-export function clearTokens() {
+export function clearTokens(reason = 'logout') {
   const hadSession = hasSession()
   setTokens({})
+  if (hadSession) endReason = reason
   sessionListeners.forEach((listener) => listener())
   if (hadSession && typeof window !== 'undefined') window.dispatchEvent(new Event('dongle:session-expired'))
 }
@@ -51,7 +56,7 @@ let refreshing = null
 async function refreshAccessToken() {
   if (refreshing) return refreshing
   const tokens = getTokens(), started = revision
-  if (!tokens.refresh) { clearTokens(); return false }
+  if (!tokens.refresh) { clearTokens('expired'); return false }
   refreshing = (async () => {
     let response
     try {
@@ -59,7 +64,7 @@ async function refreshAccessToken() {
     } catch { throw new ApiError(0, { message: '서버에 연결하지 못했어요. 다시 시도해주세요.' }) }
     if (revision !== started) return false
     if (!response.ok) {
-      if (response.status === 401) { clearTokens(); return false }
+      if (response.status === 401) { clearTokens('expired'); return false }
       throw new ApiError(response.status, await response.json().catch(() => ({})))
     }
     const data = await response.json()
@@ -87,7 +92,7 @@ export async function request(path, { method = 'GET', query: params, json, formD
   if (auth && response.status === 401) {
     const data = await response.clone().json().catch(() => null)
     if (data?.code === 'TOKEN_NOT_VALID' && ((getAccessToken() && getAccessToken() !== sentAccess) || await refreshAccessToken())) response = await send()
-    if (response.status === 401 && hasSession()) clearTokens()
+    if (response.status === 401 && hasSession()) clearTokens('expired')
   }
   if (response.status === 204) return null
   const data = await response.json().catch(() => null)
