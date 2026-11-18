@@ -57,12 +57,10 @@ export default function SignupPage() {
       finally { setBusy(false) }
     } else if (step === 'residence') {
       setBusy(true)
-      // 완료 화면에서 뒤로 가기가 비어 있는 가입 첫 단계로 돌아오지 않도록 기록을 바꿔 끼운다.
       try { const profile = saveSignupProfile(await completeSignup({ challengeKey: challenge.key, nickname, hometowns, residence: residence[0], agreements })); setResult(profile); navigate('/signup/complete', { replace: true, state: { profile } }) }
       catch (err) {
-        // 마지막 단계에서는 고칠 수 없는 오류(api/auth.md signup)는 고칠 수 있는 단계로 돌려보낸다.
-        if (['NICKNAME_TAKEN', 'INVALID_NICKNAME', 'ACCOUNT_CONFLICT'].includes(err.code)) go('nickname')
-        else if (err.code === 'INVALID_SIGNUP_TOKEN') { setVerified(false); setChallenge(null); go('email') }
+        if (['NICKNAME_TAKEN', 'INVALID_NICKNAME'].includes(err.code)) go('nickname')
+        else if (['INVALID_SIGNUP_TOKEN', 'EMAIL_ALREADY_REGISTERED', 'ACCOUNT_CONFLICT'].includes(err.code)) { setVerified(false); setChallenge(null); go('email') }
         setError(err.message); setErrorCode(err.code || '')
       }
       finally { setBusy(false) }
@@ -90,8 +88,8 @@ export default function SignupPage() {
       {step === 'terms' && <AgreementStep value={agreements} onChange={setAgreements} />}
       {step === 'email' && <><AuthHeading description="ac.kr 학교 메일로 대학생 인증을 해요">학교 이메일을<br />알려주세요</AuthHeading><label className="auth-field signup-email-field"><span className="auth-sr-only">학교 이메일</span><input className="auth-input" name="email" type="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} placeholder="학교 이메일 (ac.kr)" value={email} aria-invalid={registeredEmail || Boolean(email && !isSchoolEmail(email))} aria-describedby="signup-email-help" onChange={(event) => { setEmail(event.target.value); setVerified(false); setError(''); setErrorCode('') }} />{isSchoolEmail(email) && !registeredEmail && <Icon name="check" size={20} />}</label><p id="signup-email-help" className={`auth-caption ${registeredEmail ? 'auth-error' : isSchoolEmail(email) ? 'auth-success' : email ? 'auth-error' : ''}`}>{registeredEmail ? '이미 동글에 가입된 메일이에요' : isSchoolEmail(email) ? '인증 가능한 학교 메일이에요' : email ? 'ac.kr로 끝나는 학교 이메일을 입력해주세요' : '가입에 사용할 학교 이메일을 입력해주세요'}</p><div className="signup-privacy"><Mascot pose="face" size={60} /><p className="text-body-13">{registeredEmail ? <>혹시 전에 가입하셨나요?<br />메일 코드로 바로 로그인할 수 있어요</> : <>메일 주소는 다른 사람에게<br />절대 보이지 않아요</>}</p></div>{isAuthDemo && <p className="auth-demo">개발용 미리보기 · 실제 메일 발송과 계정 생성은 진행되지 않음.</p>}</>}
       {step === 'nickname' && <><AuthHeading description="From. 뒤에 붙는 이름이에요. 실명은 안 돼요!">편지에 적힐<br />이름을 정해주세요</AuthHeading><NicknameStep value={nickname} onChange={setNickname} />{isAuthDemo && <p className="auth-demo">닉네임 중복 확인은 서버 연동 후 가능</p>}</>}
-      {step === 'hometown' && <><AuthHeading description="자주 오가던 곳까지 최대 3곳 골라주세요">본가는 어디인가요?</AuthHeading><RegionPicker server mode="hometown" value={hometowns} onChange={setHometowns} /></>}
-      {step === 'residence' && <><AuthHeading description="고향 일기의 작성 지역으로 표시돼요">지금은 어디에 살고 있나요?</AuthHeading><RegionPicker server mode="residence" value={residence} onChange={setResidence} hometowns={hometowns} /></>}
+      {step === 'hometown' && <><AuthHeading description="자주 오가던 곳까지 최대 3곳 골라주세요">본가는 어디인가요?</AuthHeading><RegionPicker key="hometown" server mode="hometown" value={hometowns} onChange={setHometowns} /></>}
+      {step === 'residence' && <><AuthHeading description="고향 일기의 작성 지역으로 표시돼요">지금은 어디에 살고 있나요?</AuthHeading><RegionPicker key="residence" server mode="residence" value={residence} onChange={setResidence} hometowns={hometowns} /></>}
       {error && !registeredEmail && <p className="auth-caption auth-error" role="alert">{error}</p>}
     </form>
   </AuthFrame>

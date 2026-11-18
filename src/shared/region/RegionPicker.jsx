@@ -8,7 +8,6 @@ import Button from '../ui/Button.jsx'
 import route from '../assets/decorations/region-route.svg'
 import './RegionPicker.css'
 
-// 데모 모드(VITE_API_MOCK)에서는 서버 없이 고정 목록으로 같은 모양의 트리를 만든다. id는 화면용 가짜 값이다.
 let demoTree = null
 function getDemoTree() {
   if (demoTree) return demoTree
@@ -27,12 +26,6 @@ function getDemoTree() {
   return demoTree
 }
 
-/**
- * 지역 선택기. 지역 목록은 서버(GET /api/regions/)에서 받는다. 선택값의 id는 서버 지역 id이다(regionTree.js).
- * 목록을 받는 중에는 안내 문구를, 받지 못하면 서버 메시지와 다시 시도 버튼을 보여 준다.
- * 데모 모드에서는 서버 없이 고정 목록을 쓴다. server prop은 예전 호출부 호환용이며 쓰지 않는다.
- * @param {{mode: 'hometown'|'residence', value: Array<{province: string, district: string, id?: number}>, onChange: (regions: Array<{province: string, district: string, id: number}>) => void, hometowns?: Array<{province: string, district: string}>}} props
- */
 export default function RegionPicker(props) {
   if (isApiDemo) return <RegionPickerView tree={getDemoTree()} {...props} />
   return <ServerRegionPicker {...props} />
@@ -50,12 +43,11 @@ function ServerRegionPicker(props) {
 function RegionPickerView({ tree, mode, value, onChange, hometowns = [] }) {
   const { provinces, metropolitan, byProvince } = tree
   const home = mode === 'hometown'
-  const [province, setProvince] = useState(byProvince[value[0]?.province] ? value[0].province : home ? '충남' : '서울')
+  const [province, setProvince] = useState(byProvince[value[0]?.province] ? value[0].province : null)
   const [expanded, setExpanded] = useState(false)
   const [error, setError] = useState('')
-  // 본가는 광역시·세종이면 시·도를 바로 고르므로 시·군·구가 없다. 거주 지역은 시·군·구(세종은 "세종 전체")를 고른다.
   const current = byProvince[province]
-  const details = home ? (current.hometownDirect ? [] : current.hometowns) : current.residences
+  const details = current ? (home ? current.hometowns : current.residences) : []
   const shown = home || expanded ? details : details.slice(0, 8)
   const full = home && value.length >= 3
   const hasProvince = (name) => value.some((item) => item.province === name)
