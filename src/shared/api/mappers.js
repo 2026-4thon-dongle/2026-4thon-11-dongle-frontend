@@ -7,6 +7,14 @@ export function mapRegion(region) {
 export function mapProfile(user) {
   return { ...user, id: String(user.id), hometowns: (user.hometowns || []).map(mapRegion), residence: mapRegion(user.residence) }
 }
+// 3-5 「{작성자 지역}까지 약 6시간 걸려 도착해요」. 1시간이 안 되면(데모 모드 1분 등) 분으로 쓴다.
+function deliveryLabel(delivery) {
+  if (!delivery) return '편지는 실제 거리만큼 천천히 배달돼요'
+  const minutes = delivery.duration_minutes
+  const time = minutes < 60 ? `${minutes}분` : `${Math.round(minutes / 60)}시간`
+  const place = mapRegion(delivery.to_region)?.province
+  return `${place ? `${place}까지 ` : ''}약 ${time} 걸려 도착해요`
+}
 export function mapDiary(raw) {
   const region = mapRegion(raw.region)
   const date = new Date(raw.created_at)
@@ -16,5 +24,5 @@ export function mapDiary(raw) {
     stamp: { id: 'first-letter', label: '첫 편지', number: '03' }, photo: raw.image ? { url: raw.image } : null, receiveLetters: raw.accepts_letters, canReply: raw.can_reply,
     visibility: raw.visibility === 'same_hometown' ? 'hometown' : raw.visibility || 'all', receivedLetterCount: raw.received_letter_count,
     createdAt: raw.created_at, dateLabel, ago: dateLabel, postmarkDate: new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit' }).format(date).replace('/', '.'),
-    deliveryLabel: raw.delivery ? `예상 배송 시간 ${raw.delivery.duration_minutes}분` : '편지는 실제 거리만큼 천천히 배달돼요' }
+    deliveryLabel: deliveryLabel(raw.delivery) }
 }
