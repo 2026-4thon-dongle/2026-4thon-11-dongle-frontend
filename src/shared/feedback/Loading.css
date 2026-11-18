@@ -1,15 +1,18 @@
 .ui-loading {
-  padding: 8px 20px 24px;
+  padding: 0 20px 24px;
 }
 
 .ui-loading__title {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
   margin: 0;
   color: var(--text-brown);
   font: 400 28px / 1.35 var(--font-jua);
 }
 
 .ui-loading__tabs {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .ui-loading__card {
