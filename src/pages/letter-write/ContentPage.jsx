@@ -26,7 +26,7 @@ function ContentPage() {
 
   // 받는 사람: 답장하는 상대 닉네임. 쿼리 없이 들어온 경우만 임시 문구를 쓴다.
   const recipient = draft.reply.nickname ?? '고향 친구'
-  // 전화번호는 시안 문구, 이메일·카카오톡·인스타그램은 같은 자리에 「연락처」 문구(시안에 없어 가정)로 알린다.
+  // 전화번호는 전화번호 문구, 이메일·카카오톡·인스타그램은 「연락처」 문구로 알린다.
   const contacts = detectContactTypes(draft.content)
   const warn = contacts.length === 0 ? '' : contacts.includes('phone') ? '전화번호처럼 보이는 내용이 있어요' : '연락처처럼 보이는 내용이 있어요'
   // 받은 편지에 답장할 때(5-11)만 받은 편지를 다시 볼 수 있다.
