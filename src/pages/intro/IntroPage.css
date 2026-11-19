@@ -3,7 +3,7 @@
 .intro-page h1, .intro-page p { margin: 0; }
 .intro-page .ui-button { width: 100%; }
 .intro-page a:focus-visible, .intro-page button:focus-visible { outline: 2px solid var(--brand-orange-deep); outline-offset: 4px; }
-.splash-page { background: var(--bg-butter); }
+.splash-page { min-height: 100dvh; margin-top: calc(var(--page-top-gap) * -1); background: var(--bg-butter); }
 .splash-peach-one, .splash-peach-two, .splash-cream-one, .splash-cream-two { position: absolute; z-index: -1; }
 .splash-peach-one { top: -60px; left: calc(50% - 260px); }
 .splash-peach-two { top: 520px; left: calc(50% + 40px); }
