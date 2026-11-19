@@ -1,0 +1,28 @@
+.demo-mode-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 24px;
+  background: var(--bg-surface);
+  box-shadow: 0 6px 18px rgba(140, 97, 51, 0.1);
+}
+
+.demo-mode-card__title {
+  margin: 0;
+  color: var(--text-brown);
+  font: 400 var(--label-15-size) / var(--label-15-lh) var(--font-jua);
+}
+
+.demo-mode-card__desc,
+.demo-mode-card__error {
+  margin: 2px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.demo-mode-card__error {
+  color: var(--brand-berry);
+}

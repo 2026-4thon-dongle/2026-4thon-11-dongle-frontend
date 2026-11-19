@@ -3,6 +3,7 @@ import Header from '../../shared/ui/Header.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
 import MenuList from '../../components/mypage/MenuList.jsx'
 import SettingsInfoCard from '../../components/mypage/SettingsInfoCard.jsx'
+import DemoModeCard from '../../components/mypage/DemoModeCard.jsx'
 import LoadError from '../../components/mypage/LoadError.jsx'
 import useLoad from '../../components/mypage/useLoad.js'
 import { fetchSettingsHome } from '../../components/mypage/mypageApi.js'
@@ -31,6 +32,9 @@ function SettingsPage() {
 
           <h2 className="settings-page__label settings-page__label--next">정보</h2>
           <SettingsInfoCard items={home.infoItems} onSelect={(item) => navigate(item.to)} />
+
+          <h2 className="settings-page__label settings-page__label--next">시연용</h2>
+          <DemoModeCard />
 
           <p className="settings-page__version">{home.versionLabel}</p>
         </div>
