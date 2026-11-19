@@ -83,7 +83,7 @@ function DoneView({ info, letterId }) {
           홈으로
         </Button>
         {arrived ? (
-          <Button variant="secondary" onClick={() => navigate('/mailbox')}>
+          <Button onClick={() => navigate('/mailbox')}>
             우체통으로 가기
           </Button>
         ) : (

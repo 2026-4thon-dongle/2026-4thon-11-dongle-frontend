@@ -10,7 +10,8 @@
 .first-diary-demo { margin-bottom: 8px !important; text-align: center; color: var(--text-sub); }
 .first-diary-error { margin-top: 8px !important; color: var(--brand-berry); }
 .first-diary-visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.first-diary-welcome, .first-diary-complete { background: var(--bg-butter); text-align: center; }
+.first-diary-welcome, .first-diary-complete { min-height: 100dvh; margin-top: calc(var(--page-top-gap) * -1); padding-top: calc(16px + var(--page-top-gap)); background: var(--bg-butter); text-align: center; }
+.first-diary-welcome .first-diary-confetti, .first-diary-complete .first-diary-confetti { top: var(--page-top-gap); }
 .first-diary-confetti { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .first-diary-dot { position: absolute; }
 .first-diary-dot--orange { top: 120px; left: 11.111%; }.first-diary-dot--sage { top: 140px; left: 83.333%; }.first-diary-dot--sky { top: 300px; left: 19.444%; }.first-diary-dot--berry { top: 330px; left: 80.556%; }.first-diary-dot--peach { top: 96px; left: 44.444%; }.first-diary-dot--small-orange { top: 250px; left: 66.667%; }.first-diary-dot--small-sage { top: 420px; left: 8.333%; }.first-diary-dot--small-peach { top: 460px; left: 88.889%; }
