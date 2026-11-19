@@ -1,9 +1,5 @@
-// 펜팔 친구(5-14)·주고받은 편지(5-15) 변환 함수. 서버 응답(api/mailbox.md) → 화면용 데이터.
-// 화면과 컴포넌트는 서버 필드 이름을 직접 쓰지 않고 이 파일의 결과만 쓴다.
-// 입력은 항상 서버 응답 모양이다. mock 모드(VITE_API_MOCK=true)도 penPalDemo.js가 서버 모양으로 바꿔 넘긴다.
 // 펜팔·기록의 id는 친구 id가 아니라 대화 id(conversation_id)이다. 경로도 /pen-pal/:conversationId 이다.
 
-// 서버 우표 code → 그림 id 표, 고향이 표정, 첫 줄 미리보기, 답장 경로는 우체통(같은 담당)과 같은 규칙이라 한 곳에서 가져다 쓴다.
 import { toStampArtId } from '../mailbox/stampArt.js'
 import { toAvatarPose } from '../mailbox/mailboxMapper.js'
 import { buildReplyPath, toPreview } from '../mailbox/letterReceiveMapper.js'
@@ -15,7 +11,6 @@ const DATE_PARTS = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', mo
 // 친구 프로필 원 색: 서버에는 색이 없어 목록 순서대로 돌려 쓴다. 시안 5-14(하늘빛·갈매기·귤껍질)와 맞췄다.
 const AVATAR_TONES = ['peach', 'sky', 'sage']
 
-/** "2026-10-30T..." → "10.30" */
 export function formatMonthDay(isoString) {
   const date = new Date(isoString)
   if (!isoString || Number.isNaN(date.getTime())) return ''
@@ -29,7 +24,6 @@ export function formatMonthDay(isoString) {
 const KST_OFFSET = 9 * 60 * 60 * 1000
 const kstDay = (time) => Math.floor((time + KST_OFFSET) / DAY)
 
-/** 한국 시간 달력 날짜 차이를 "오늘", "3일 전", "1주 전", "2달 전"으로 줄여 쓴다. 어제 밤 편지는 "1일 전"이다. */
 export function formatAgo(isoString, now = new Date()) {
   const time = new Date(isoString).getTime()
   if (!isoString || Number.isNaN(time)) return ''
@@ -40,10 +34,6 @@ export function formatAgo(isoString, now = new Date()) {
   return `${Math.floor(days / 30)}달 전`
 }
 
-/**
- * 펜팔 친구 목록 한 페이지(5-14). 카드마다 { id(대화 id), nickname, infoLabel("충남 천안시 · 편지 6통"), agoLabel, avatarPose, avatarTone, to }.
- * @returns {{ items: object[], hasNext: boolean }}
- */
 export function toPenPalList(response, now = new Date()) {
   const items = (response.results ?? []).map((item, index) => ({
     id: item.conversation_id,
@@ -63,10 +53,15 @@ const NO_PREVIEW = {
   received: '아직 오고 있는 편지예요',
 }
 
+// 시작 일기 원문 경로(일기 화면은 다른 담당). 작성자가 상대면 읽기 화면, 내 일기면 내 일기 화면이다. 일기가 없거나 작성자를 모르면 링크를 만들지 않는다.
+function diaryPath(diary, partner) {
+  if (diary?.id == null || diary.author?.id == null) return null
+  return diary.author.id === partner.id ? `/diary/${diary.id}` : `/diary/published/${diary.id}`
+}
+
 /**
  * 상대와 주고받은 편지(5-15). 응답은 GET /api/mailbox/conversations/{id}/ 이다.
- * 반환: { title("하늘빛 · 충남 천안시"), countLabel("주고받은 편지 6통"), replyPath, canReply, items: [{ id, side, preview, dateLabel, stampId }] }
- * side: 내가 보낸 것은 'right', 일기와 받은 것은 'left' (시안 5-15의 좌우 배치)
+ * linkPath: "원문 보기" 경로. 도착한 편지는 /mailbox/{id}, 일기는 /diary/{id}(상대) 또는 /diary/published/{id}(내 일기). 도착 전 편지나 없는 일기는 null이다.
  * canReply: 서버가 준 reply_to가 있을 때만 true. 마무리된 대화(closed)는 reply_to가 없어 "답장 쓰기"를 숨긴다.
  * 시작 일기(diary)가 있으면 맨 앞 카드로 둔다(내 일기가 지워졌으면 diary가 null이다).
  */
@@ -82,18 +77,21 @@ export function toPenPalLetters(raw) {
           preview: toPreview(raw.diary.body_preview),
           dateLabel: `${formatMonthDay(raw.diary.created_at)} 고향 일기`.trim(),
           stampId: null,
+          linkPath: diaryPath(raw.diary, partner),
         },
       ]
     : []
   const letterItems = letters.map((letter) => {
     const sent = letter.direction === 'sent'
     const when = sent ? letter.sent_at : (letter.arrived_at ?? letter.sent_at)
+    const letterId = Number(letter.id)
     return {
       id: `letter-${letter.id}`,
       side: sent ? 'right' : 'left',
       preview: toPreview(letter.preview) || NO_PREVIEW[sent ? 'sent' : 'received'],
       dateLabel: `${formatMonthDay(when)} ${sent ? '보냄' : '받음'}`.trim(),
       stampId: toStampArtId(letter.stamp?.code),
+      linkPath: letter.arrived_at && Number.isInteger(letterId) ? `/mailbox/${letterId}` : null,
     }
   })
   const region = partner.region?.full_name

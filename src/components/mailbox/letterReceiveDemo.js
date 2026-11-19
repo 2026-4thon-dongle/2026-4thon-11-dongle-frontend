@@ -1,7 +1,3 @@
-// 받은 편지 상세 mock 모드(VITE_API_MOCK=true, 개발 전용). 서버 호출은 letterReceiveApi.js가 한다.
-// shared/mocks/letterDetail.js의 옛 mock 모양을 서버 응답 모양(GET /api/letters/{id}/)으로 바꿔 mapper에 넘긴다.
-// 읽음·답장·넘김 상태는 mailboxMockStore.js(메모리)에 두고 우체통 목록 mock(mailboxDemo.js)이 같이 쓴다.
-// mock에는 서명 이미지·편지지·글씨체·스티커가 없어 서명은 안 나오고 편지지는 기본, 글씨체는 나눔손글씨 펜이다.
 import { MOCK_LETTER_DETAILS, MOCK_MY_NICKNAME } from '../../shared/mocks/letterDetail.js'
 import { getMockMailboxResponse } from '../../shared/mocks/mailbox.js'
 import { toLetterDetail } from './letterReceiveMapper.js'
@@ -44,14 +40,39 @@ function toServerShape(raw) {
   }
 }
 
-/** 편지 상세. 없는 편지(넘긴 편지 포함)면 null. */
+const DEMO_SENT_LETTER_ID = 901
+const DEMO_SENT_LETTER = {
+  id: DEMO_SENT_LETTER_ID,
+  conversation_id: 1,
+  is_first: true,
+  direction: 'sent',
+  sender: { id: 1, nickname: MOCK_MY_NICKNAME },
+  sender_nickname: MOCK_MY_NICKNAME,
+  recipient: { id: 9101, nickname: '하늘빛' },
+  recipient_nickname: '하늘빛',
+  from_region: regionOf('서울 성북'),
+  to_region: regionOf('충남 천안'),
+  body: '그 호수, 제가 고등학생 때 매일 지나던 곳이에요.\n붕어빵 트럭이 돌아왔다니 반가워요!',
+  stationery: 'basic',
+  font: 'nanum-pen',
+  signature: null,
+  stickers: [],
+  stamp: { code: 'first-diary', name: '첫 일기' },
+  sent_at: '2026-10-30T21:30:00+09:00',
+  arrived_at: '2026-10-31T03:30:00+09:00',
+  duration_minutes: 360,
+  is_read: false,
+  can_reply: false,
+  can_pass: false,
+}
+
 export async function fetchDemoLetterDetail(letterId) {
+  if (Number(letterId) === DEMO_SENT_LETTER_ID) return toLetterDetail(DEMO_SENT_LETTER)
   const raw = MOCK_LETTER_DETAILS[letterId]
   if (!raw || passedAt.has(raw.id)) return null
   return toLetterDetail(toServerShape(raw))
 }
 
-/** 읽음 처리(5-8 "봉투 열기"). 읽은 편지는 새 편지 탭에 남되 빨간 점만 사라진다. */
 export async function openDemoLetter(letterId) {
   readIds.add(Number(letterId))
   return fetchDemoLetterDetail(letterId)
@@ -62,15 +83,12 @@ export async function markDemoLetterReplied(letterId) {
   repliedIds.add(Number(letterId))
 }
 
-/** 넘기기: 새 편지 탭에서 빠지고 보관 탭으로 옮긴다. */
 export async function passDemoLetter(letterId) {
   passedAt.set(Number(letterId), new Date().toISOString())
 }
 
-/** 편지 신고 mock. 서버로 보내지 않고 성공만 돌려준다(목록 숨김은 흉내 내지 않는다). */
 export async function reportDemoLetter({ block }) {
   return { id: Date.now(), blocked: Boolean(block) }
 }
 
-/** 보낸 사람 차단 mock. 서버로 보내지 않는다. */
 export async function blockDemoSender() {}
