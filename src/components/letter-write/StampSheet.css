@@ -200,45 +200,6 @@
   font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
 }
 
-/* 직접 배달하기 배너 */
-.stamp-sheet__game {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: calc(100% + var(--stamp-bleed, 4px) * 2);
-  height: 46px;
-  margin: 8px calc(var(--stamp-bleed, 4px) * -1) 0;
-  padding: 0 10px 0 14px;
-  border: 2px solid var(--brand-orange);
-  border-radius: 23px;
-  background: var(--bg-butter);
-  text-align: left;
-  cursor: pointer;
-}
-
-.stamp-sheet__game-icon,
-.stamp-sheet__game-chevron {
-  flex: none;
-  color: var(--brand-orange-deep);
-}
-
-.stamp-sheet__game-text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.stamp-sheet__game-title {
-  color: var(--brand-orange-deep);
-  font: 400 14px / 1.4 var(--font-jua);
-}
-
-.stamp-sheet__game-desc {
-  color: var(--text-sub);
-  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
-}
-
 /* 다시 보기 110 : 보내기 200 */
 .stamp-sheet__actions {
   display: grid;

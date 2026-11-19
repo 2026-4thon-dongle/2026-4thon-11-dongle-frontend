@@ -63,7 +63,6 @@ export function DevStampSheet() {
           arrival="약 6시간"
           lockedStamp={{ id: 'first-roundtrip', art: 'first-roundtrip', name: '첫 왕복', hint: '편지를 주고받으면 받을 수 있어요' }}
           onReview={close}
-          onGame={() => showToast('직접 배달하기')}
           onSend={(stampId) => {
             showToast(`보내기: ${stampId}`)
             close()

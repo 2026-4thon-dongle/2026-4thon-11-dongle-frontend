@@ -18,10 +18,9 @@ import './StampSheet.css'
  * @param {string} arrival 도착까지 걸리는 시간 문구 (예: '약 6시간')
  * @param {(stampId: string) => void} onSend "보내기"를 눌렀을 때. 고른 우표 id를 넘긴다.
  * @param {() => void} onReview "다시 보기"를 눌렀을 때 (시트를 닫고 편지를 다시 본다)
- * @param {() => void} [onGame] "직접 배달하기"를 눌렀을 때. 아직 보내기 전이라 게임(9-1)은 보낸 뒤 배송 화면에서 한다
  * @param {(stampId: string) => void} [onSelect] 우표를 골랐을 때(고를 때마다). 뒤의 편지에 우표를 바로 붙여 보여 줄 때 쓴다.
  */
-function StampSheet({ stamps, selectedId, from, to, arrival, lockedStamp = null, onSend, onReview, onGame, onSelect }) {
+function StampSheet({ stamps, selectedId, from, to, arrival, lockedStamp = null, onSend, onReview, onSelect }) {
   const [selected, setSelected] = useState(selectedId ?? stamps[0]?.id ?? null)
   const only = stamps.length === 1 ? stamps[0] : null
 
@@ -155,16 +154,6 @@ function StampSheet({ stamps, selectedId, from, to, arrival, lockedStamp = null,
           <span className="stamp-sheet__tip-tail" />
         </div>
       )}
-
-      {/* 직접 배달하기(→ 9-1): 보내기 전이라 안내만 하고, 게임은 보낸 뒤 배송 화면에서 연다. */}
-      <button type="button" className="stamp-sheet__game" onClick={onGame}>
-        <Icon name="game" size={24} className="stamp-sheet__game-icon" />
-        <span className="stamp-sheet__game-text">
-          <span className="stamp-sheet__game-title">고향이랑 직접 배달하기</span>
-          <span className="stamp-sheet__game-desc">보낸 뒤 게임하면 최대 30분씩 빨리 도착해요</span>
-        </span>
-        <Icon name="chevron" size={20} className="stamp-sheet__game-chevron" />
-      </button>
 
       <div className="stamp-sheet__actions">
         <Button variant="secondary" onClick={onReview}>

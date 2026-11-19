@@ -136,7 +136,6 @@ function StampPage() {
             lockedStamp={info.lockedStamp}
             onReview={() => setSheetOpen(false)}
             onSelect={(stampId) => updateDraft({ stampId })}
-            onGame={() => showToast('편지를 보낸 뒤 배송 화면에서 직접 배달할 수 있어요')}
             onSend={send}
           />
         )}
