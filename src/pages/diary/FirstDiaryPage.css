@@ -1,4 +1,4 @@
-.first-diary-page { position: relative; isolation: isolate; display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: max(760px, 100dvh); padding: 16px 20px 30px; overflow: hidden; }
+.first-diary-page { position: relative; isolation: isolate; display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: calc(100dvh - var(--page-top-gap)); padding: 16px 20px 30px; overflow: hidden; }
 .first-diary-page h1, .first-diary-page h2, .first-diary-page p { margin: 0; }
 .first-diary-page h1:focus { outline: none; }
 .first-diary-page img { display: block; flex-shrink: 0; }

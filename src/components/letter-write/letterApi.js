@@ -8,7 +8,7 @@
 
 import { ApiError, request } from '../../shared/api/client.js'
 
-// 서버 주소·토큰·요청·에러는 shared/api/client.js가 맡는다. 에러 이름은 기존 코드가 쓰던 LetterApiError를 그대로 둔다.
+// 서버 주소·토큰·요청·에러는 shared/api/client.js가 맡는다.
 export { ApiError as LetterApiError }
 
 // ── 편지 쓰기 재료 · 배송 시간 ──
@@ -109,7 +109,7 @@ export function fetchStampList(kind) {
   return request('/api/stamps/', { query: { kind } })
 }
 
-// ── 임시저장 (LETTER-11). 서명·스티커·우표는 저장하지 않는다(명세, 가정). ──
+// ── 임시저장 (LETTER-11). 서명·스티커·우표는 저장하지 않는다. ──
 
 /**
  * 내 임시저장 목록, 최신순 (7-3). 페이지당 20개.

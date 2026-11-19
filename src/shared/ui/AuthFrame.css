@@ -1,4 +1,4 @@
-.auth-page { display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: max(760px, 100dvh); padding: 0 20px 38px; }
+.auth-page { display: flex; flex-direction: column; width: 100%; max-width: var(--app-width); min-height: calc(100dvh - var(--page-top-gap)); padding: 0 20px 38px; }
 .auth-header { position: relative; display: flex; justify-content: center; align-items: center; min-height: 56px; }
 .auth-header h1 { margin: 0; outline: none; }
 .auth-back { position: absolute; left: -12px; display: grid; place-items: center; width: 40px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--text-brown); cursor: pointer; }
@@ -6,10 +6,10 @@
 .auth-progress { flex-shrink: 0; height: 8px; margin-top: 4px; border-radius: 4px; background: var(--line-soft); overflow: hidden; }
 .auth-progress span { display: block; height: 100%; border-radius: inherit; background: var(--brand-orange); transition: width .2s; }
 .auth-content { min-width: 0; }
-.auth-heading { margin-top: 28px; }
+.auth-heading { margin-top: clamp(16px, 3.5dvh, 28px); }
 .auth-heading h2 { margin: 0; }
 .auth-heading p { margin: 10px 0 0; color: var(--text-sub); }
-.auth-footer { margin-top: auto; padding-top: 32px; }
+.auth-footer { margin-top: auto; padding-top: clamp(16px, 4dvh, 32px); }
 .auth-footer .ui-button { width: 100%; }
 .auth-page input:not([type='checkbox']) { color: var(--text-brown); }
 .auth-input { width: 100%; min-width: 0; height: 56px; padding: 0 20px; border: 2px solid var(--line-soft); border-radius: 20px; background: var(--bg-surface); }

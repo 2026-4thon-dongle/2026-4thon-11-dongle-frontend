@@ -53,7 +53,7 @@ export const defaultPenColorId = (paperId) => (isDarkPaper(paperId) ? 'white' : 
 export const STICKER_SIZE = { min: 32, max: 160, step: 4, initial: 64 }
 export const STICKER_TILT = { initial: 8 }
 
-// 스티커. pose는 고향이(Mascot) 표정이고, code는 서버가 정한 스티커 코드이다(api/letters.md, 가정).
+// 스티커. pose는 고향이(Mascot) 표정이고, code는 서버가 정한 스티커 코드이다(api/letters.md).
 export const STICKERS = [
   { id: 'wink', pose: 'wink', code: 'cat-wink', label: '윙크' },
   { id: 'sparkle', pose: 'sparkle', code: 'cat-sparkle', label: '반짝' },

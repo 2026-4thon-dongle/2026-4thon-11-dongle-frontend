@@ -3,7 +3,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--page-top-gap));
   padding: 0 20px calc(24px + env(safe-area-inset-bottom));
 }
 
@@ -41,11 +41,16 @@
   align-items: center;
   justify-content: center;
   align-self: center;
-  width: 240px;
-  height: 240px;
-  margin-top: 66px;
+  width: clamp(120px, 30dvh, 240px);
+  height: clamp(120px, 30dvh, 240px);
+  margin-top: clamp(16px, 8dvh, 66px);
   border-radius: 50%;
   background: var(--bg-butter);
+}
+
+/* 고향이는 원 크기에 비례 */
+.done-page__hero img {
+  width: 58%;
 }
 
 .done-page__title {

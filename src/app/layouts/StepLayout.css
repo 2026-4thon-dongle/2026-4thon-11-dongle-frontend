@@ -1,7 +1,7 @@
 .step-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--page-top-gap));
 }
 
 /* 단계 알약 4개가 너비를 똑같이 나눠 가진다(시안: 74px × 4, 간격 8px). */

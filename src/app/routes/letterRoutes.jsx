@@ -23,7 +23,7 @@ export const letterRoutes = [
       { path: 'stamp', element: <StampPage /> }, // 4-6, 4-7
     ],
   },
-  // 발송 연출·완료·배송 지도 (4-10 ~ 4-12). letterId는 편지를 보낸 뒤 받는 편지 번호이다(가정).
+  // 발송 연출·완료·배송 지도 (4-10 ~ 4-12). letterId는 편지를 보낸 뒤 받는 편지 번호이다.
   { path: '/delivery/:letterId/sending', element: <SendingPage /> }, // 4-10
   { path: '/delivery/:letterId/done', element: <DonePage /> }, // 4-11
   { path: '/delivery/:letterId/map', element: <MapPage /> }, // 4-12

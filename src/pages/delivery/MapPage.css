@@ -4,6 +4,7 @@
 .map-page {
   display: flex;
   flex-direction: column;
+  margin-top: calc(var(--page-top-gap) * -1);
   height: 100dvh;
   overflow: hidden;
   background: #fff0d2; /* 지도 바탕색 */
