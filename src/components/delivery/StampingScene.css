@@ -7,6 +7,9 @@
   position: relative;
   display: flex;
   justify-content: center;
+  /* 화면 위 여백(--page-top-gap)까지 배경색이 이어지도록 위로 끌어올리고 같은 만큼 안쪽 여백으로 채운다. */
+  margin-top: calc(var(--page-top-gap) * -1);
+  padding-top: var(--page-top-gap);
   min-height: 100dvh;
   overflow: hidden;
   background: var(--bg-butter);
