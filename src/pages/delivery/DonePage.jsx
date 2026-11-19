@@ -27,8 +27,10 @@ function DonePage() {
 
 function DoneView({ info, letterId }) {
   const navigate = useNavigate()
-  const { from, to, sentAt, arrivesAt } = info
+  const { from, to, recipient, sentAt, arrivesAt } = info
   const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
+  // 도착 시각이 지나면 화면이 도착 상태(시안 4-11 도착)로 바뀐다.
+  const arrived = remainingMinutes <= 0
   // 새로 받은 우표: 첫 편지를 보내는 등 우표를 받았을 때만 알린다. 여러 장이면 첫 장을 보여 준다.
   const earned = info.grantedStamps[0]
 
@@ -43,9 +45,9 @@ function DoneView({ info, letterId }) {
       )}
 
       <div className="done-page__hero">
-        <Mascot pose="greeting" size={138.67} />
+        <Mascot pose={arrived ? 'heart' : 'greeting'} size={138.67} />
       </div>
-      <h1 className="done-page__title">편지가 출발했어요!</h1>
+      <h1 className="done-page__title">{arrived ? '편지가 도착했어요!' : '편지가 출발했어요!'}</h1>
 
       <section className="done-page__card" aria-label="배송 현황">
         <div className="done-page__places">
@@ -58,27 +60,37 @@ function DoneView({ info, letterId }) {
             <Mascot pose="face" size={34} />
           </span>
         </div>
-        <p className="done-page__remaining">도착까지 {formatRemaining(remainingMinutes)}</p>
-        <p className="done-page__notice">도착하면 알림으로 알려드려요</p>
+        <p className="done-page__remaining">
+          {arrived ? `${recipient}님의 우체통에 쏙 들어갔어요` : `도착까지 ${formatRemaining(remainingMinutes)}`}
+        </p>
+        <p className="done-page__notice">{arrived ? '답장이 오면 우체통에서 알려드려요' : '도착하면 알림으로 알려드려요'}</p>
       </section>
 
-      {/* 직접 배달하기(→ 9-1 배달 게임) */}
-      <button type="button" className="done-page__game" onClick={() => navigate(`/delivery-game?letterId=${letterId}`)}>
-        <Mascot pose="face" size={54} />
-        <span className="done-page__game-text">
-          <span className="done-page__game-caption">기다리기 심심하다면?</span>
-          <span className="done-page__game-title">고향이랑 직접 배달하기</span>
-        </span>
-        <Icon name="chevron" size={22} className="done-page__game-chevron" />
-      </button>
+      {/* 직접 배달하기(→ 9-1 배달 게임): 도착한 뒤에는 줄일 시간이 없어 숨긴다. */}
+      {!arrived && (
+        <button type="button" className="done-page__game" onClick={() => navigate(`/delivery-game?letterId=${letterId}`)}>
+          <Mascot pose="face" size={54} />
+          <span className="done-page__game-text">
+            <span className="done-page__game-caption">기다리기 심심하다면?</span>
+            <span className="done-page__game-title">고향이랑 직접 배달하기</span>
+          </span>
+          <Icon name="chevron" size={22} className="done-page__game-chevron" />
+        </button>
+      )}
 
       <div className="done-page__actions">
         <Button variant="ghost" onClick={() => navigate('/home')}>
           홈으로
         </Button>
-        <Button variant="secondary" onClick={() => navigate(`/delivery/${letterId}/map`)}>
-          배송 지도 보기
-        </Button>
+        {arrived ? (
+          <Button variant="secondary" onClick={() => navigate('/mailbox')}>
+            우체통으로 가기
+          </Button>
+        ) : (
+          <Button variant="secondary" onClick={() => navigate(`/delivery/${letterId}/map`)}>
+            배송 지도 보기
+          </Button>
+        )}
       </div>
     </main>
   )
