@@ -2,7 +2,13 @@
 // 실제 서버 연동 시 이 모듈의 요청·검증·가입 함수를 교체한다.
 export const isAuthDemo = import.meta.env.DEV
 export const DEMO_CODE = '472913'
-export const isSchoolEmail = (email) => /^[^\s@]+@(?:[a-z0-9-]+\.)+ac\.kr$/i.test(email.trim())
+// 학교 메일(ac.kr)이 아니어도 가입·로그인할 수 있는 실제 메일 발송 시연용 주소.
+// 백엔드 배포 서버 환경변수 EXTRA_ALLOWED_EMAILS와 같은 목록으로 맞춘다.
+const EXTRA_ALLOWED_EMAILS = ['dongledongle4thon@gmail.com', 'minho0805@gmail.com']
+export const isSchoolEmail = (email) => {
+  const value = email.trim()
+  return /^[^\s@]+@(?:[a-z0-9-]+\.)+ac\.kr$/i.test(value) || EXTRA_ALLOWED_EMAILS.includes(value.toLowerCase())
+}
 const challenges = new Map()
 
 export async function requestCode(email, purpose) {
