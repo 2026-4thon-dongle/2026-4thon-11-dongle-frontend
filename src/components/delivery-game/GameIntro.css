@@ -9,11 +9,16 @@
   align-items: center;
   justify-content: center;
   align-self: center;
-  width: 160px;
-  height: 160px;
+  width: clamp(96px, 22dvh, 160px);
+  height: clamp(96px, 22dvh, 160px);
   margin-top: 8px;
   border-radius: 50%;
   background: var(--bg-butter);
+}
+
+/* 고향이는 원 크기를 따라 줄어든다(112 / 160) */
+.game-intro__hero img {
+  width: 70%;
 }
 
 .game-intro__title {
