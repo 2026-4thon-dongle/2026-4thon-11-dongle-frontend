@@ -62,5 +62,5 @@ GitHub에서 `main`으로 향하는 PR을 만든다.
   git fetch origin
   git merge origin/main
   ```
-- **코드 규칙**: 폴더 구조, 의존 방향, 스타일 규칙은 [CLAUDE.md](./CLAUDE.md)를 따른다.
+- **코드 규칙**: 화면은 `src/pages`, 기능 전용 컴포넌트는 `src/components`, 공용 UI와 디자인 토큰은 `src/shared`에 둔다. 화면은 같은 기능의 컴포넌트와 공용 모듈을 사용한다.
 - **공용 컴포넌트 확인**: 개발 중 `npm run dev` 후 `/preview`에서 공용 컴포넌트와 토큰을 확인할 수 있다.
