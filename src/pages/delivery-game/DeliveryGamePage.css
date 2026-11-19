@@ -4,5 +4,7 @@
 }
 
 .delivery-game-page--playing {
+  min-height: 100dvh;
+  margin-top: calc(var(--page-top-gap) * -1);
   overscroll-behavior: none;
 }

@@ -1,6 +1,8 @@
 /* 5-12 화면 바탕: 전체 화면 버터 */
 .stamp-gained {
+  margin-top: calc(var(--page-top-gap) * -1);
   min-height: 100dvh;
+  padding-top: var(--page-top-gap);
   background: var(--bg-butter);
 }
 

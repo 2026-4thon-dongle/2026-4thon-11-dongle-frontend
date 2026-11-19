@@ -6,9 +6,9 @@
   align-items: center;
   width: 100%;
   max-width: var(--app-width);
-  min-height: 100dvh;
-  margin: calc(var(--page-top-gap) * -1) auto 0;
-  padding: calc(var(--title-top) + var(--page-top-gap)) 20px calc(50px + env(safe-area-inset-bottom));
+  min-height: calc(100dvh - var(--page-top-gap));
+  margin: 0 auto;
+  padding: var(--title-top) 20px calc(50px + env(safe-area-inset-bottom));
   overflow: hidden;
   color: var(--text-brown);
   text-align: center;
