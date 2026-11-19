@@ -1,7 +1,7 @@
 /* 시안 9-1. 화면 전체가 게임판이고 위에 상태 알약 3개, 아래에 좌우 버튼이 떠 있다. */
 .game-canvas {
   position: relative;
-  height: calc(100dvh - var(--page-top-gap));
+  height: 100dvh;
   overflow: hidden;
   touch-action: none;
   user-select: none;
