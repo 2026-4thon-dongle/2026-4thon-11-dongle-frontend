@@ -8,7 +8,7 @@ import './GameBanner.css'
  */
 function GameBanner({ to = '/delivery-game' }) {
   return (
-    <Link to={to} className="game-banner">
+    <Link to={to} state={{ from: 'mailbox' }} className="game-banner">
       <Icon name="game" size={24} />
       <span className="game-banner__text">배달 게임으로 도착 시간을 줄여보세요</span>
     </Link>

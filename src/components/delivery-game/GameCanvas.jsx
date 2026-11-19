@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Icon from '../../shared/ui/Icon.jsx'
+import useOverlay from '../../shared/hooks/useOverlay.js'
+import GameExitConfirm from './GameExitConfirm.jsx'
 import { createGame, currentStars, moveLane, step } from './engine.js'
 import { formatDuration } from './format.js'
 import {
@@ -28,12 +30,16 @@ const SWIPE_PX = 24
  * @param {object} run 판 시작 응답(POST /api/game/runs/)
  * @param {Array<{ stars: number, reduce_seconds: number }>} starRules 별마다 줄어드는 시간(게임 홈의 rules.stars)
  * @param {(result: { pieces: number, hits: number }) => void} onEnd
+ * @param {() => void} onExit 나가기 버튼
  */
-function GameCanvas({ run, starRules, onEnd }) {
+function GameCanvas({ run, starRules, onEnd, onExit }) {
+  const { openDialog } = useOverlay()
   const wrapRef = useRef(null)
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const startedRef = useRef(false)
+  const pausedRef = useRef(false) // 나가기 확인 중에는 게임 시간이 멈춘다
+  const [paused, setPaused] = useState(false)
   const onEndRef = useRef(onEnd)
   const [countdown, setCountdown] = useState(COUNTDOWN)
   const [hud, setHud] = useState({ remaining: run.run_seconds, pieces: 0, hits: 0, stars: 0 })
@@ -45,19 +51,19 @@ function GameCanvas({ run, starRules, onEnd }) {
   }, [onEnd])
 
   const move = (direction) => {
-    if (!startedRef.current) return
+    if (!startedRef.current || pausedRef.current) return
     gameRef.current = moveLane(gameRef.current, direction)
   }
 
   // 3, 2, 1 뒤에 출발한다.
   useEffect(() => {
-    if (countdown < 0) return undefined
+    if (countdown < 0 || paused) return undefined
     const timer = setTimeout(() => {
       if (countdown === 0) startedRef.current = true
       setCountdown((value) => value - 1)
     }, countdown === 0 ? 500 : 800)
     return () => clearTimeout(timer)
-  }, [countdown])
+  }, [countdown, paused])
 
   useEffect(() => {
     const onKey = (event) => {
@@ -103,7 +109,7 @@ function GameCanvas({ run, starRules, onEnd }) {
     const render = (now) => {
       const { layout } = loop
       // 게임 시간은 실제 시간을 따른다(서버도 시작 시각으로 판을 잰다). 화면이 느려도 한 프레임은 1초까지만 흐른다.
-      const dt = Math.min(1, (now - loop.last) / 1000)
+      const dt = pausedRef.current ? 0 : Math.min(1, (now - loop.last) / 1000)
       loop.last = now
       loop.clock += dt
       const { clock } = loop
@@ -166,6 +172,27 @@ function GameCanvas({ run, starRules, onEnd }) {
     if (Math.abs(dx) >= SWIPE_PX) move(dx > 0 ? 1 : -1)
   }
 
+  const setPause = (value) => {
+    pausedRef.current = value
+    setPaused(value)
+  }
+
+  const confirmExit = () => {
+    openDialog({
+      label: '게임 나가기 확인',
+      content: ({ close }) => (
+        <GameExitConfirm
+          onPause={setPause}
+          onContinue={close}
+          onExit={() => {
+            close()
+            onExit()
+          }}
+        />
+      ),
+    })
+  }
+
   const reduce = starRules.find((rule) => rule.stars === hud.stars)?.reduce_seconds ?? 0
   const preview = Math.min(reduce, run.reducible_seconds)
 
@@ -187,6 +214,10 @@ function GameCanvas({ run, starRules, onEnd }) {
           {run.practice ? '연습' : preview ? `-${formatDuration(preview)}` : `${'★'.repeat(hud.stars) || '☆'}`}
         </span>
       </div>
+
+      <button type="button" className="game-canvas__exit" onPointerDown={(event) => event.stopPropagation()} onClick={confirmExit}>
+        나가기
+      </button>
 
       {countdown >= 0 && (
         <div className="game-canvas__countdown" role="status">

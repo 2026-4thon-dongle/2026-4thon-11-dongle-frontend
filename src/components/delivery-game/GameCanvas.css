@@ -1,7 +1,7 @@
 /* 시안 9-1. 화면 전체가 게임판이고 위에 상태 알약 3개, 아래에 좌우 버튼이 떠 있다. */
 .game-canvas {
   position: relative;
-  height: 100dvh;
+  height: calc(100dvh - var(--page-top-gap));
   overflow: hidden;
   touch-action: none;
   user-select: none;
@@ -111,4 +111,19 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+.game-canvas__exit {
+  position: absolute;
+  top: calc(64px + env(safe-area-inset-top));
+  left: 16px;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  box-shadow: 0 4px 12px rgba(140, 97, 51, 0.12);
+  color: var(--text-sub);
+  font: 400 var(--label-15-size) / 1 var(--font-jua);
+  cursor: pointer;
 }
