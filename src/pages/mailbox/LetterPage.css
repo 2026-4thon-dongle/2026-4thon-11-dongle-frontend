@@ -2,14 +2,17 @@
 .letter-page {
   width: 100%;
   max-width: var(--app-width);
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--page-top-gap));
   margin: 0 auto;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
-/* 5-8은 화면 전체가 버터 바탕이다 */
+/* 5-8은 화면 전체가 버터 바탕이다. 위 여백(--page-top-gap)까지 바탕이 이어지도록 이 바탕 요소 자체를 위로 끌어올린다. */
 .letter-page--arrival {
   max-width: none;
+  min-height: 100dvh;
+  margin: calc(var(--page-top-gap) * -1) 0 0;
+  padding-top: var(--page-top-gap);
   padding-bottom: 0;
   background: var(--bg-butter);
 }

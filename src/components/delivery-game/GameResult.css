@@ -3,8 +3,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  margin-top: calc(var(--page-top-gap) * -1);
   min-height: 100dvh;
-  padding: 0 20px calc(24px + env(safe-area-inset-bottom));
+  padding: var(--page-top-gap) 20px calc(24px + env(safe-area-inset-bottom));
   background: var(--bg-butter);
   overflow: hidden;
 }
@@ -36,11 +37,16 @@
   align-items: center;
   justify-content: center;
   align-self: center;
-  width: 220px;
-  height: 220px;
-  margin-top: 64px;
+  width: clamp(120px, 28dvh, 220px);
+  height: clamp(120px, 28dvh, 220px);
+  margin-top: clamp(16px, 8dvh, 64px);
   border-radius: 50%;
   background: var(--bg-surface);
+}
+
+/* 고향이는 원 크기를 따라 줄어든다(150 / 220) */
+.game-result__hero img {
+  width: 68%;
 }
 
 .game-result__stars {
