@@ -4,6 +4,7 @@
 import { isApiDemo, request } from '../../shared/api/client.js'
 import { fetchDemoMailboxLetters, fetchDemoMailboxSummary } from './mailboxDemo.js'
 import { toMailboxPage } from './mailboxMapper.js'
+import { isReportedLetter } from './letterReceiveApi.js'
 
 const TAB_PATH = {
   new: '/api/mailbox/new/',
@@ -22,11 +23,24 @@ const TAB_PATH = {
  * @returns {Promise<{ items: object[], count: number, hasNext: boolean }>}
  */
 export async function fetchMailboxLetters(tab, { sort = 'latest', sido = null, page = 1, empty = false } = {}) {
-  if (isApiDemo) return fetchDemoMailboxLetters(tab, { sort, sido, empty })
+  if (isApiDemo) {
+    const result = await fetchDemoMailboxLetters(tab, { sort, sido, empty })
+    const items = result.items.filter((item) => {
+      if (tab === 'new') return !isReportedLetter(item.id)
+      if (tab === 'stored' && item.path?.startsWith('/mailbox/')) return !isReportedLetter(item.path.split('/').at(-1))
+      return true
+    })
+    return { ...result, items, count: items.length }
+  }
   const data = await request(TAB_PATH[tab] ?? TAB_PATH.new, {
     query: { page, ordering: tab === 'new' ? sort : undefined, sido: tab === 'new' ? (sido ?? undefined) : undefined },
   })
-  return toMailboxPage(tab, data)
+  const results = (data.results ?? []).filter((item) => {
+    if (tab === 'new') return !isReportedLetter(item.id)
+    if (tab === 'stored' && item.kind === 'passed_letter') return !isReportedLetter(item.letter_id)
+    return true
+  })
+  return toMailboxPage(tab, { ...data, results })
 }
 
 /**
