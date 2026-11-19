@@ -7,12 +7,12 @@
   position: relative;
   display: flex;
   justify-content: center;
-  /* 화면 위 여백(--page-top-gap)까지 배경색이 이어지도록 위로 끌어올리고 같은 만큼 안쪽 여백으로 채운다. */
+  /* 위 여백까지 배경이 이어지게 끌어올리고 안쪽 여백으로 채운다 */
   margin-top: calc(var(--page-top-gap) * -1);
   padding-top: var(--page-top-gap);
   height: 100dvh;
   overflow: hidden;
-  /* 화면이 360×716 그림보다 작으면 그림을 비율대로 줄여 한 화면에 넣는다. 늘리지는 않는다. */
+  /* 360×716보다 작은 화면에서는 비율대로 축소 */
   --fit: 1;
   --fit: min(1, tan(atan2(100vw, 360px)), tan(atan2(100dvh - var(--page-top-gap), 716px)));
   background: var(--bg-butter);

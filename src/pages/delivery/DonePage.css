@@ -48,7 +48,7 @@
   background: var(--bg-butter);
 }
 
-/* 고향이는 원 크기를 따라 줄어든다(시안 138.67 / 240) */
+/* 고향이는 원 크기에 비례 */
 .done-page__hero img {
   width: 58%;
 }
