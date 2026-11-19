@@ -14,6 +14,13 @@
 .postcard-airmail { position: absolute; top: 8px; left: 14px; right: 14px; height: 5px; background: repeating-linear-gradient(to right, var(--brand-orange) 0 8px, transparent 8px 14px, var(--brand-sky) 14px 22px, transparent 22px 28px); }.postcard-airmail--bottom { top: auto; bottom: 8px; }
 .feed-postcard h2 { font: 400 23px / 1.5 var(--font-letter); }.feed-postcard-meta { color: var(--text-sub); }.feed-postcard-stamp { position: absolute; top: 24px; right: 16px; }.feed-postcard-postmark { position: absolute; top: 30px; right: 70px; }
 .feed-postcard-content { display: block; }.feed-postcard-content h2 { padding-right: 112px; }.feed-postcard-preview { min-height: 104px; padding-top: 4px; padding-right: 0; white-space: pre-line; font: 400 19px / 26px var(--font-letter); background: repeating-linear-gradient(to bottom, transparent 0 24.8px, var(--line-soft) 24.8px 26px); background-size: 100% 104px; }
+.feed-postcard-preview-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
 .feed-postcard:has(.feed-postcard-photo) .feed-postcard-preview { width: 60%; }.feed-postcard-photo { position: absolute; top: 86px; right: 14px; }.feed-postcard-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; }
 .feed-postcard-reply { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 12px; border: 1.5px solid var(--brand-orange); border-radius: 999px; color: var(--brand-orange-deep) !important; font: 400 13px / 1.4 var(--font-jua); }.feed-postcard-more { color: var(--text-sub) !important; font: 400 13px / 1.4 var(--font-jua); }
 .feed-postcard--compact { min-height: 206px; padding: 18px 12px 14px; border-radius: 18px; }.feed-postcard--compact .postcard-airmail { left: 10px; right: 10px; }.feed-postcard--compact h2 { padding-right: 0; font-size: 19px; line-height: 20px; }.feed-postcard--compact .feed-postcard-stamp { top: 22px; right: 10px; }.feed-postcard--compact .feed-postcard-postmark { top: 28px; right: 52px; }.feed-postcard--compact .feed-postcard-preview { margin-top: 32px; padding-top: 0; min-height: 58px; font-size: 18px; line-height: 24px; background: repeating-linear-gradient(to bottom, transparent 0 22.8px, var(--line-soft) 22.8px 24px); background-size: 100% 48px; background-repeat: no-repeat; }.feed-postcard--compact .feed-postcard-actions { margin-top: 10px; }.feed-postcard--compact .feed-postcard-reply { padding: 5px 12px; font-size: 12px; background: var(--bg-cream); }
