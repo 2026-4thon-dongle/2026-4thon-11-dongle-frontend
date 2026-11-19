@@ -35,7 +35,6 @@ function SignaturePage() {
 
   const { ops } = draft.signature
   const setOps = (next) => updateDraft({ signature: { ops: next } })
-  const hasSticker = ops.some((op) => op.type === 'sticker')
 
   // 어두운 편지지에서 흰색으로 쓴 서명이 밝은 편지지로 바꾼 뒤에 안 보이지 않게, 이 화면에 들어올 때 갈색으로 바꾼다.
   useEffect(() => {
@@ -118,11 +117,6 @@ function SignaturePage() {
       ) : (
         <div className="signature-page__panel">
           <StickerDrawer onPick={addSticker} />
-          <p className="signature-page__sticker-hint">
-            {hasSticker
-              ? '붙인 스티커를 눌러 ✕로 지우고, 모서리를 끌어 크기·각도를 바꿔요'
-              : '붙인 스티커는 끌어서 옮기고, 눌러서 크기·각도를 바꾸거나 지울 수 있어요'}
-          </p>
         </div>
       )}
     </StepLayout>
