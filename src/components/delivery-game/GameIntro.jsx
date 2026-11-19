@@ -1,3 +1,4 @@
+import useOverlay from '../../shared/hooks/useOverlay.js'
 import Button from '../../shared/ui/Button.jsx'
 import Icon from '../../shared/ui/Icon.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
@@ -45,10 +46,19 @@ function LetterCard({ letter, selected, onSelect, maxPerPlay }) {
  * @param {(letterId: number|null) => void} onSelect 편지를 고르거나(null이면) 고르기를 취소한다
  */
 function GameIntro({ home, letter, busy, onStart, onSelect }) {
+  const { showToast } = useOverlay()
   const { rules, today, goals } = home
   const noToday = today.remaining <= 0
   const ownedCount = goals.filter((goal) => goal.owned).length
   const maxPerPlay = Math.max(...rules.stars.map((rule) => rule.reduce_seconds))
+
+  const handleStart = () => {
+    if (!letter) {
+      showToast(home.letters.length ? '배달할 편지를 먼저 골라 주세요' : '배달할 편지가 없어요. 연습 게임만 가능해요')
+      return
+    }
+    onStart(letter.id)
+  }
 
   return (
     <div className="game-intro">
@@ -117,7 +127,7 @@ function GameIntro({ home, letter, busy, onStart, onSelect }) {
         <Button variant="ghost" onClick={() => onStart(null)} disabled={busy || noToday}>
           연습하기
         </Button>
-        <Button onClick={() => onStart(letter.id)} disabled={busy || noToday || !letter || !letter.game.playable}>
+        <Button onClick={handleStart} disabled={busy || noToday || (letter && !letter.game.playable)}>
           <Icon name="game" size={20} /> 배달 시작
         </Button>
       </div>

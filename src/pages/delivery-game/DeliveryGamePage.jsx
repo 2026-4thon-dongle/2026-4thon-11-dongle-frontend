@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
 import useOverlay from '../../shared/hooks/useOverlay.js'
 import ErrorScreen from '../../shared/feedback/ErrorScreen.jsx'
@@ -20,6 +20,9 @@ const MIN_RUN_MS = 25_500
  */
 function DeliveryGamePage() {
   const navigate = useNavigate()
+  const locationFrom = useLocation().state?.from
+  // 우체통 배송 중 탭의 배너로 들어왔는지. 편지를 고르면 주소가 바뀌어 state가 사라지므로 처음 값을 들고 있는다.
+  const [fromMailbox] = useState(() => locationFrom === 'mailbox')
   const { showToast } = useOverlay()
   const [params, setParams] = useSearchParams()
   const letterId = params.get('letterId')
@@ -67,6 +70,12 @@ function DeliveryGamePage() {
     }
   }
 
+  // 플레이 중 나가기: 결과를 보내지 않고 들어가기 화면으로 돌아간다.
+  const exit = () => {
+    setPhase('intro')
+    load()
+  }
+
   const submit = useCallback(
     async (score) => {
       setPhase('submitting')
@@ -90,7 +99,7 @@ function DeliveryGamePage() {
   if (phase === 'playing' && run) {
     return (
       <main className="delivery-game-page delivery-game-page--playing">
-        <GameCanvas key={run.id} run={run} starRules={home.rules.stars} onEnd={submit} />
+        <GameCanvas key={run.id} run={run} starRules={home.rules.stars} onEnd={submit} onExit={exit} />
       </main>
     )
   }
@@ -98,9 +107,13 @@ function DeliveryGamePage() {
 
   if (phase === 'result' && result) {
     const practice = !run?.letter_id
-    const primary = practice
-      ? { label: '우체통으로', onClick: () => navigate('/mailbox') }
-      : { label: '배송 지도 보기', onClick: () => navigate(`/delivery/${run.letter_id}/map`) }
+    // 연습 판은 들어온 곳으로 돌아간다: 우체통에서 왔으면 우체통(기본 탭), 아니면 홈.
+    let primary = { label: '배송 지도 보기', onClick: () => navigate(`/delivery/${run.letter_id}/map`) }
+    if (practice) {
+      primary = fromMailbox
+        ? { label: '우체통으로', onClick: () => navigate('/mailbox') }
+        : { label: '홈으로', onClick: () => navigate('/home') }
+    }
     return (
       <main className="delivery-game-page">
         <GameResult result={result} practice={practice} onAgain={() => start(run?.letter_id ?? null)} primary={primary} />

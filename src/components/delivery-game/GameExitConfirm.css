@@ -1,0 +1,38 @@
+.game-exit-confirm {
+  text-align: center;
+}
+
+.game-exit-confirm__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--bg-butter);
+}
+
+.game-exit-confirm__title {
+  margin: 16px 0 0;
+  color: var(--text-brown);
+  font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
+}
+
+.game-exit-confirm__description {
+  margin: 7px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--body-13-size) / var(--body-13-lh) var(--font-body);
+  white-space: pre-line;
+}
+
+.game-exit-confirm__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.game-exit-confirm__actions .ui-button {
+  width: 100%;
+}
