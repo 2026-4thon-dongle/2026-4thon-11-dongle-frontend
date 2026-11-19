@@ -48,7 +48,7 @@ export async function loadReadingDetail(id) {
   } catch (error) { if (current === generation) update({ loading: false, error }) }
 }
 function mapNotice(raw) {
-  const paths = { letter_arrived: `/mailbox/${raw.target_id}`, letter_departed: '/mailbox?tab=shipping', letter_location: `/delivery/${raw.target_id}/map`, round_trip: `/mailbox/chats/${raw.target_id}`, prompt: '/diary/write' }
+  const paths = { letter_arrived: '/mailbox?tab=new', letter_departed: '/mailbox?tab=new', letter_location: `/delivery/${raw.target_id}/map`, round_trip: `/mailbox/chats/${raw.target_id}`, prompt: '/diary/write' }
   return { ...raw, id: String(raw.id), unread: !raw.read_at, to: paths[raw.type] || '/notification', icon: ({ prompt: 'sparkle', letter_location: 'map', round_trip: 'stamp' })[raw.type] || 'mail', tone: ({ prompt: 'sage', letter_location: 'sky', round_trip: 'cream' })[raw.type] || 'peach', ago: relativeTime(raw.created_at) }
 }
 export async function loadReadingNotifications(page = 1) {
