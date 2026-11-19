@@ -6,7 +6,7 @@
 
 .ui-loading-pill--screen {
   align-items: center;
-  height: 100dvh;
+  height: calc(100dvh - var(--page-top-gap));
   padding: 0;
 }
 
