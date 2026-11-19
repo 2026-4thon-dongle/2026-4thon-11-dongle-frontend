@@ -37,7 +37,11 @@ try {
   globalThis.fetch = async () => new Response(null, { status: 204 })
   assert.equal(await client.request('/api/diaries/1/', { method: 'DELETE' }), null); checks++
   const auth = await vite.ssrLoadModule('/src/shared/api/auth.js')
-  const user = { id: 1, nickname: 'tester', hometowns: [{ id: 1, full_name: '서울특별시' }], residence: { id: 148, full_name: '충남 천안시' }, first_diary_completed: false }
+  assert.equal(auth.isSchoolEmail('student@kookmin.ac.kr'), true)
+  assert.equal(auth.isSchoolEmail(' DongleDongle4thon@Gmail.com '), true)
+  assert.equal(auth.isSchoolEmail('minho0805@gmail.com'), true)
+  assert.equal(auth.isSchoolEmail('someone@gmail.com'), false); checks++
+  const user ={ id: 1, nickname: 'tester', hometowns: [{ id: 1, full_name: '서울특별시' }], residence: { id: 148, full_name: '충남 천안시' }, first_diary_completed: false }
   let signupBody
   globalThis.fetch = async (url, options) => {
     const body = options.body ? JSON.parse(options.body) : null
