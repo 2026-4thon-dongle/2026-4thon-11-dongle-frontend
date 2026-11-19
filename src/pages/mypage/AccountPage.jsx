@@ -46,8 +46,7 @@ function AccountPage() {
       autoOpened.current = true
       openWithdrawDialog()
     }
-    // 처음 한 번만 연다
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [])
 
   const handleLogout = async () => {

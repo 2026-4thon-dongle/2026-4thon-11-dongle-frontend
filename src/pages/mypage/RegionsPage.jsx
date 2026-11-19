@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
@@ -17,20 +17,12 @@ import './RegionsPage.css'
 const sameRegions = (a, b) => a.length === b.length && a.every((item, index) => regionLabel(item) === regionLabel(b[index]))
 
 /**
- * 7-10 지역 설정 수정. 본가 지역(1~3곳), 거주 지역(1곳)을 고르고 저장한다.
- * 처음 값은 GET /api/users/me/(hometowns[], residence)에서, 저장은 PUT /api/users/me/regions/(hometown_region_ids[1~3], residence_region_id)로 한다.
  * 지역 선택기(shared/region)의 id가 서버 지역 id라서 그대로 보낸다. VITE_API_MOCK=true(개발 전용)일 때만 mock이다.
- * 불러오기가 실패하면 오류 화면과 다시 시도를 보여 준다. 저장이 실패하면 값은 그대로 두고 토스트로 서버 메시지를 알린다.
  * 이미 저장된 지역에 id가 없으면(옛 프로필 값) 화면은 그대로 뜨고, 저장할 때 "지역을 다시 골라 주세요"로 안내한다. 다시 고르면 id가 채워진다.
- * 가정:
- *  - 설정 화면으로 들어오는 길이 시안에 없어서 /mypage/regions 주소로 직접 연다. 7-1의 "지역 수정 ›"도 이 주소로 온다.
- *  - 지역 카드를 누르면 바텀시트에 공용 지역 선택기(shared/region)를 띄운다. 이 시트는 시안에 없다.
- *  - 바뀐 게 없으면 저장을 누를 수 없다. 저장하면 토스트를 보여 주고 마이(/mypage)로 간다. 토스트 문구는 시안에 없어서 정했다.
- *  - 저장하지 않고 나가기(7-10-3): 바꾼 값이 있을 때 헤더의 뒤로 가기를 누르면 확인 팝업("저장하지 않고 나갈까요?")을 띄운다.
- *    딤이나 Esc로 닫으면 계속 수정하는 것과 같다(shared 팝업의 기본 동작). 동작은 components/mypage/useLeaveGuard.js에 있다(개발용 ?dialog=leave 포함).
  */
 function RegionsPage() {
   const navigate = useNavigate()
+  const { state } = useLocation()
   const { openSheet, showToast } = useOverlay()
   const [original, setOriginal] = useState(null)
   const [hometowns, setHometowns] = useState([])
@@ -69,7 +61,7 @@ function RegionsPage() {
     try {
       await saveRegions({ hometowns, residence })
       showToast('지역을 바꿨어요')
-      navigate(MYPAGE_PATHS.home)
+      navigate(state?.from === MYPAGE_PATHS.home ? MYPAGE_PATHS.home : MYPAGE_PATHS.settings, { replace: true })
     } catch (error) {
       showToast(error.message)
       setIsSaving(false)

@@ -1,10 +1,9 @@
-/* 시안 5-15 카드: 높이 110, radius 22, 너비는 부모의 약 72%. 좌우로 번갈아 놓고 살짝 기울인다. */
 .pen-pal-letter {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 72%;
+  width: 100%;
   height: 110px;
   padding: 18px 16px 14px;
   border-radius: 22px;
@@ -13,17 +12,44 @@
   color: var(--text-brown);
 }
 
-.pen-pal-letter--left {
+.pen-pal-letter-wrap {
+  width: 72%;
+}
+
+.pen-pal-letter-wrap--left {
   align-self: flex-start;
+}
+
+.pen-pal-letter-wrap--right {
+  align-self: flex-end;
+}
+
+.pen-pal-letter-wrap__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pen-pal-letter-wrap__more {
+  display: block;
+  margin-top: 8px;
+  padding: 0 6px;
+  color: var(--brand-orange-deep);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+}
+
+.pen-pal-letter-wrap--right .pen-pal-letter-wrap__more {
+  text-align: right;
+}
+
+.pen-pal-letter--left {
   transform: rotate(2deg);
 }
 
 .pen-pal-letter--right {
-  align-self: flex-end;
   transform: rotate(-2deg);
 }
 
-/* 본문 첫 줄은 우표를 피해서 두 줄까지만 */
 .pen-pal-letter__preview {
   display: -webkit-box;
   max-width: 62%;

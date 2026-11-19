@@ -1,5 +1,3 @@
-// 펜팔 mock 모드(VITE_API_MOCK=true, 개발 전용). 서버 호출은 penPalApi.js가 한다.
-// shared/mocks/penPal.js의 옛 mock 모양을 서버 응답 모양(api/mailbox.md)으로 바꿔 mapper에 넘긴다.
 // mock에서는 대화 id를 친구 id(1~4)와 같게 둔다. 우체통 대화 중 카드(mailboxDemo.js)가 같은 id로 /pen-pal/:id에 연결한다.
 import { MOCK_PEN_PALS, MOCK_PEN_PAL_LETTERS } from '../../shared/mocks/penPal.js'
 import { toPenPalList, toPenPalLetters } from './penPalMapper.js'
@@ -21,9 +19,11 @@ const MOCK_ENDED_LETTERS = [
   { id: 'e4', kind: 'received', at: '2026-10-25T21:10:00+09:00', preview: '답장 고마워요! 닭갈비 맛집은 다음 편지에 알려 줄게요', stamp_code: 'first-roundtrip' },
 ]
 
+// 상세 화면 mock(letterReceiveDemo.js)이 열 수 있는 편지 id로 바꾼다. l1은 내가 보낸 편지(901), l2는 받은 편지(104, 읽음). 나머지는 상세가 없어 "원문 보기"를 누르면 "찾을 수 없는 편지예요"가 나온다.
+const DEMO_LETTER_IDS = { l1: 901, l2: 104 }
+
 const partnerOf = (friend) => ({ id: friend.id, nickname: friend.nickname, avatar: null, region: { full_name: friend.region } })
 
-/** 펜팔 친구 목록 mock. 한 번에 다 주므로 다음 페이지는 없다. */
 export async function fetchDemoPenPals({ empty = false } = {}) {
   const results = empty
     ? []
@@ -36,7 +36,6 @@ export async function fetchDemoPenPals({ empty = false } = {}) {
   return toPenPalList({ count: results.length, next: null, previous: null, results })
 }
 
-/** 없는 대화면 null. */
 export async function fetchDemoPenPalLetters(conversationId) {
   const friend = [...MOCK_PEN_PALS.results, MOCK_ENDED_FRIEND].find((item) => String(item.id) === String(conversationId))
   if (!friend) return null
@@ -52,7 +51,7 @@ export async function fetchDemoPenPalLetters(conversationId) {
     letters: entries
       .filter((entry) => entry.kind !== 'diary')
       .map((entry) => ({
-        id: entry.id,
+        id: DEMO_LETTER_IDS[entry.id] ?? entry.id,
         direction: entry.kind,
         preview: entry.preview,
         stamp: { code: entry.stamp_code },

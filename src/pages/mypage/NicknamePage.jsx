@@ -17,18 +17,10 @@ import './NicknamePage.css'
 const MAX_LENGTH = 10
 
 /**
- * 7-9 닉네임 변경. 입력하면 편지 서명 미리보기가 바뀌고, 사용할 수 있는지 확인한다.
- * 데이터는 서버에서 온다. 현재 닉네임은 GET /api/users/me/, 확인은 GET /api/auth/nickname/check/, 저장은 PATCH /api/users/me/이다.
  *  - 확인: { available, code }  code는 INVALID_NICKNAME(2~10자 아님) / NICKNAME_TAKEN(이미 있음)
  *  - 입력을 멈추고 0.4초 뒤에 확인한다(글자마다 서버를 부르지 않는다). 확인하지 못하면 안내 문구로 알리고 저장할 수 없다.
- *  - 현재 닉네임을 불러오지 못하면 오류 화면과 다시 시도를 보여 준다.
  * 가정:
- *  - 설정 화면으로 들어오는 길이 시안에 없어서 /mypage/nickname 주소로 직접 연다.
- *  - 바뀐 게 없거나 사용할 수 없으면 저장 버튼(헤더, 아래)을 누를 수 없다.
- *  - 저장하면 토스트를 보여 주고 마이(/mypage)로 간다. 오류 문구(2~10자, 이미 사용 중)와 토스트 문구는 시안에 없어서 정했다.
  *  - 개발용(VITE_API_MOCK=true) 닉네임 중복 확인: 하늘빛, 갈매기, 귤껍질, 감자왕, 별빛, 바람은 이미 쓰는 닉네임으로 처리한다.
- *  - 저장하지 않고 나가기(7-10-3 팝업을 같이 쓴다): 닉네임을 처음 값과 다르게 바꾼 채(앞뒤 공백을 뺀 값 기준) 헤더 뒤로 가기를 누르면
- *    확인 팝업을 띄운다. 동작은 components/mypage/useLeaveGuard.js에 있다(개발용 ?dialog=leave 포함).
  */
 function NicknamePage() {
   const navigate = useNavigate()
@@ -85,7 +77,6 @@ function NicknamePage() {
 
   const isChanged = original !== null && trimmed !== original
   const canSave = isChanged && status?.available === true && !isSaving
-  // 처음 값 그대로이면 안내 문구를 숨긴다
   const message = isChanged ? status : null
 
   const handleSave = async () => {
@@ -94,7 +85,7 @@ function NicknamePage() {
     try {
       await updateNickname(trimmed)
       showToast('닉네임을 바꿨어요')
-      navigate(MYPAGE_PATHS.home)
+      navigate(MYPAGE_PATHS.settings, { replace: true })
     } catch (error) {
       setStatus({ available: false, tone: 'error', message: nicknameErrorMessage(error.code) ?? error.message })
       setIsSaving(false)
