@@ -18,7 +18,7 @@ function HometownBox({ profile }) {
         <p className="hometown-box__line">{hometownLabel}</p>
         <p className="hometown-box__line hometown-box__line--row">
           {residenceLabel}
-          <Link to={MYPAGE_PATHS.regions} className="hometown-box__edit">
+          <Link to={MYPAGE_PATHS.regions} state={{ from: MYPAGE_PATHS.home }} className="hometown-box__edit">
             지역 수정 ›
           </Link>
         </p>

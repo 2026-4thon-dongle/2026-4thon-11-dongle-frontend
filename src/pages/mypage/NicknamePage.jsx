@@ -85,7 +85,7 @@ function NicknamePage() {
     try {
       await updateNickname(trimmed)
       showToast('닉네임을 바꿨어요')
-      navigate(MYPAGE_PATHS.settings)
+      navigate(MYPAGE_PATHS.settings, { replace: true })
     } catch (error) {
       setStatus({ available: false, tone: 'error', message: nicknameErrorMessage(error.code) ?? error.message })
       setIsSaving(false)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '../../shared/ui/Header.jsx'
 import Mascot from '../../shared/ui/Mascot.jsx'
 import Skeleton from '../../shared/ui/Skeleton.jsx'
@@ -22,6 +22,7 @@ const sameRegions = (a, b) => a.length === b.length && a.every((item, index) => 
  */
 function RegionsPage() {
   const navigate = useNavigate()
+  const { state } = useLocation()
   const { openSheet, showToast } = useOverlay()
   const [original, setOriginal] = useState(null)
   const [hometowns, setHometowns] = useState([])
@@ -60,7 +61,7 @@ function RegionsPage() {
     try {
       await saveRegions({ hometowns, residence })
       showToast('지역을 바꿨어요')
-      navigate(MYPAGE_PATHS.settings)
+      navigate(state?.from === MYPAGE_PATHS.home ? MYPAGE_PATHS.home : MYPAGE_PATHS.settings, { replace: true })
     } catch (error) {
       showToast(error.message)
       setIsSaving(false)
