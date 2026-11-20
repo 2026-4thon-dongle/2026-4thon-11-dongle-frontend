@@ -77,6 +77,7 @@ function StampBookPage() {
         {achievement && tab === 'achievement' && (
           <>
             <h2 className="stamp-book__title">{achievement.title}</h2>
+            <p className="stamp-book__breakdown">{achievement.breakdownLabel}</p>
             <p className="stamp-book__subtitle">{achievement.subtitle}</p>
             {achievement.nextReward && (
               <div className="stamp-book__card">

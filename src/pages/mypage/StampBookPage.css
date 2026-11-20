@@ -19,6 +19,13 @@
   font: 400 var(--title-20-size) / var(--title-20-lh) var(--font-jua);
 }
 
+.stamp-book__breakdown {
+  margin: 3px 0 0;
+  color: var(--text-sub);
+  font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
+  overflow-wrap: anywhere;
+}
+
 .stamp-book__subtitle {
   margin: 3px 0 0;
   color: var(--text-sub);
