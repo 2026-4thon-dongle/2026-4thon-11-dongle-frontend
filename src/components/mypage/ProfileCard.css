@@ -49,7 +49,7 @@
   margin-top: 5px;
   padding: 0 14px 0 6px;
   border-radius: 12px;
-  background: var(--brand-sage);
+  background: rgba(169, 199, 155, 0.35);
   color: var(--text-brown);
   font: 400 var(--caption-11-size) / var(--caption-11-lh) var(--font-body);
   white-space: nowrap;

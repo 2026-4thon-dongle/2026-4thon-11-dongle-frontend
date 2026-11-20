@@ -1,10 +1,7 @@
 # 05 우체통
-
-Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
-대상: 5-1~5-7-1 (`92:1001`, `92:1441`, `128:1601`, `171:2173`, `92:1129`, `171:2276`, `128:1746`, `340:5612`).
 5-8 이후(편지 열기·답장 등)와 5-14, 5-15(`pen-pal`)는 `docs/letter-receive.md`를 본다.
 
-**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 5-1 지역 필터는 서버 `sido` 파라미터로 연결했다(#79). 5-13은 서버와 연결했고(`docs/letter-receive.md`), 5-12는 발송 응답을 router state로 받아 그린다(`docs/letter-receive.md`). 5-12를 여는 쪽(`DonePage`)은 채현님 영역이라 아직 연결되지 않았다.
+**서버 연동(#65)**: 5-1~5-7은 서버(`api/mailbox.md`)에서 받는다. 5-1 지역 필터는 서버 `sido` 파라미터로 연결했다(#79). 5-13은 서버와 연결했고(`docs/letter-receive.md`), 5-12는 router state로 받아 그린다(`docs/letter-receive.md`). 5-12를 여는 곳은 5-8 봉투 열기뿐이고, 발송 완료(`DonePage`)는 이 화면을 열지 않는다.
 
 | 화면 | Figma | 경로·동작 |
 | --- | --- | --- |
@@ -13,7 +10,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 | 5-3 대화 중 | `128:1601` | 대화 중 탭. 칩 없음, 상태 배지·왕복 점이 있는 대화 카드. 카드를 누르면 5-15(`/pen-pal/:conversationId`)로 이동. id는 대화 id |
 | 5-4 대화 중 비었을 때 | `171:2173` | 버튼 "새 편지 보러 가기" → 이동 없이 새 편지 탭으로 전환 |
 | 5-5 배송 중 | `92:1129` | 배송 중 탭. 도착 임박순 고정(정렬 칩 없음), 진행 바 카드, "지도 보기", 맨 아래 배달 게임 안내 |
-| 5-6 배송 중 비었을 때 | `171:2276` | 버튼 "편지 쓰러 가기" → `/letter-write` |
+| 5-6 배송 중 비었을 때 | `171:2276` | 버튼 "편지 쓰러 가기" → `/home`(답장할 일기를 고르는 홈 피드) |
 | 5-7 보관 | `128:1746` | 보관 탭. 맨 위 안내 박스, 읽기 전용 보관 카드 |
 | 5-7-1 보관 비었을 때 | `340:5612` | 안내 문구만 있고 버튼은 없다 |
 
@@ -34,17 +31,17 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 
 ## 경로와 가정
 
-목록 데이터는 서버에서 받는다. 이동 경로 중 일부는 화면이 정해지지 않아 가정한 것이다.
+목록 데이터는 서버에서 받는다.
 
 | 위치 | 이동 경로 | 상태 |
 | --- | --- | --- |
 | 새 편지 카드, 넘긴 편지(보관) | `/mailbox/:letterId` | 5-8·5-9 (`LetterPage`). 넘긴 편지는 서버가 `can_reply`·`can_pass`를 주는 대로 읽기만 하거나 버튼이 보인다 |
 | 대화 중 카드 | `/pen-pal/:conversationId` | 5-15. 끝난 대화는 "답장 쓰기"가 없다 |
 | 마무리된 대화(보관) | `/pen-pal/:conversationId` | 보관 응답의 `conversation_id`로 5-15에 연결한다 |
-| 5-2 "고향 일기 쓰러 가기" | `/diary/write` | 공용 `TabBar`의 기본 경로와 같다. `/diary/*`가 `RoutePlaceholder`이다 |
-| 5-5 "지도 보기" | `/delivery/:id/map` | `letterRoutes`의 `RoutePlaceholder`(4-12) |
-| 5-5 배달 게임 안내 | `/delivery-game` | `letterRoutes`의 `RoutePlaceholder`. 어느 편지의 게임인지 넘기는 방법은 정하지 않았다 |
-| 5-6 "편지 쓰러 가기" | `/letter-write` | 구현된 편지 쓰기 화면 |
+| 5-2 "고향 일기 쓰러 가기" | `/diary/write` | 공용 `TabBar`의 기본 경로와 같다 |
+| 5-5 "지도 보기" | `/delivery/:id/map` | 4-12(`MapPage`) |
+| 5-5 배달 게임 안내 | `/delivery-game` | 9-1(`DeliveryGamePage`). 안내 배너는 `letterId` 쿼리 없이 연다(게임 화면이 배송 중 편지에서 고르게 한다) |
+| 5-6 "편지 쓰러 가기" | `/home` | 편지는 일기나 받은 편지에 답장할 때만 쓰므로, 받는 사람 없이 `/letter-write`로 가지 않고 홈 피드에서 일기를 고르게 한다 |
 
 - `/mailbox`, `/mailbox/:letterId`, `/mailbox/chats/:chatId`만 등록했다. `/mailbox/chats/:chatId`는 알림(`round_trip`)이 대화 id로 들어오는 주소라 `/pen-pal/:chatId`로 바로 넘긴다(`ChatRedirectPage`). 그 밖의 `/mailbox/...` 경로는 "페이지를 찾을 수 없어요" 화면이 나온다.
 - 경로를 바꿔야 하면 `mailboxMapper.js`(카드의 이동 경로, `mapPath`·`path`), `ShippingCard`, `StoredCard`, `GameBanner`, `MailboxPage.jsx`의 경로 상수를 고친다.
@@ -52,12 +49,9 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 
 ## 다른 담당 화면과 연결되는 지점
 
-- **편지 쓰기(`/letter-write`)**: 5-6 버튼이 쿼리 없이 `/letter-write`로 이동한다. 그러면 `EntryRedirect`가 `/letter-write/paper`로 보낸다.
-  `docs/letter-write.md`는 우체통·일기에서 들어올 때 `region`을 필수 쿼리로 적고 있는데 이 버튼은 아직 붙이지 않는다.
-  `LetterDraftProvider`는 쿼리가 없으면 `reply.region`을 비워 둔다. 지역을 어떻게 정할지는 정해지지 않았다.
-- **받은 편지 답장(5-10~)**: 이번 범위에 없다. `docs/letter-write.md`에 따라 `/letter-write`로 들어오며, 쿼리 이름은 합의가 필요하다(제안: `letterId`, `nickname`, `region`).
+- **편지 쓰기(`/letter-write`)**: 5-6 버튼은 편지 쓰기로 가지 않고 `/home`으로 간다(위 표). 받은 편지 답장(5-10~)은 `docs/letter-receive.md`의 `/letter-write?letterId=…&nickname=…&region=…`로 들어간다.
 - **배송 지도(4-12)·직접 배달하기(9-1)**: 각각 `/delivery/:id/map`, `/delivery-game`로 연결만 했다. 화면은 해당 담당이 만든다.
-- **일기 쓰기(6-1)**: `/diary/write`로 연결만 했다. 해당 브랜치에서 구현된 경로와 같은지 통합할 때 확인해야 한다.
+- **일기 쓰기(6-1)**: `/diary/write`로 연결만 했다.
 - **우표**: 카드의 우표는 `shared/ui/Stamp`가 `shared/assets/stamp`의 파일 이름으로 그린다. 서버 우표 `code`가 그림 이름과 같으면 그대로, 다른 두 개(`long-delivery`→`long-way`, `cat-birthday`→`hometown-birthday`)는 `mailboxMapper.toStampArtId`가 바꾼다(`components/letter-write/data.js`의 `stampArtIdOf`와 같은 표를 따로 둠).
 
 ## 구현 구조
@@ -91,10 +85,10 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기).
 - **고정 문구**: 보관 탭 안내 박스, 마무리된 대화의 "7일 동안 답장이 없어 조용히 마무리됐어요", "읽기만 할 수 있어요".
 - **새로고침 없이는 낡는 화면**: 배송 중 편지가 도착해도 목록이 저절로 바뀌지 않는다. 탭을 다시 누르거나 화면에 다시 들어올 때 새로 받는다(주기 갱신은 넣지 않았다).
 
-## 추후 연동·PR 참고
+## 참고
 
 - 관련 명세: 문서 레포 `api/mailbox.md`(`GET /api/mailbox/summary/`, `/new/`, `/conversations/`, `/in-transit/`, `/archive/`), `api/common.md`.
-- 아직 연결하지 않은 것: 5-12를 여는 쪽(`DonePage`, 채현님 영역). 5-12 화면은 발송 응답(`granted_stamps`·`unlocked_rewards`)을 router state로 받고 `GET /api/stamps/`로 모은 개수를 받는다. 5-13은 `GET /api/stamps/rewards/`·`POST /api/stamps/rewards/{code}/seen/`로 연결했고 앱 진입 때 자동 조회는 하지 않는다.
+- 5-12 화면은 `granted_stamps`·`unlocked_rewards`를 router state로 받고 `GET /api/stamps/`로 모은 개수를 받는다. 발송 완료(`DonePage`)는 이 화면을 열지 않는다. 5-13은 `GET /api/stamps/rewards/`·`POST /api/stamps/rewards/{code}/seen/`로 연결했고 앱 진입 때 자동 조회는 하지 않는다.
 - 명세와 어긋나거나 확인이 필요한 점은 PR 설명서에 적는다(보관 `passed_letter`의 상세에서 `can_reply`·`can_pass`, 새 편지 `diary`가 null일 수 있음 등).
 
-관련 지침: `CLAUDE.md`, `docs/ownership.md`, `docs/letter-write.md`.
+관련 지침: `docs/ownership.md`, `docs/letter-write.md`.
