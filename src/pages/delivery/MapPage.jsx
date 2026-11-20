@@ -77,10 +77,10 @@ function MapPage() {
  */
 function MapView({ info, letterId }) {
   const navigate = useNavigate()
-  const { recipient, towns, sentAt, arrivesAt } = info
+  const { recipient, towns, sentAt, arrivesAt, durationMinutes } = info
   const from = mapName(info.from)
   const to = mapName(info.to)
-  const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
+  const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt, durationMinutes })
   // 지도 배경은 서버가 편지마다 정해 준다. 없으면 편지 번호로 고른다.
   const theme = MAP_THEMES.find((item) => item.id === info.mapTheme) ?? pickMapTheme(letterId)
 

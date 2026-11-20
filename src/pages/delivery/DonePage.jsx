@@ -27,8 +27,8 @@ function DonePage() {
 
 function DoneView({ info, letterId }) {
   const navigate = useNavigate()
-  const { from, to, recipient, sentAt, arrivesAt } = info
-  const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt })
+  const { from, to, recipient, sentAt, arrivesAt, durationMinutes } = info
+  const { remainingMinutes, progress } = useArrivalCountdown({ sentAt, arrivesAt, durationMinutes })
   // 도착 시각이 지나면 화면이 도착 상태(시안 4-11 도착)로 바뀐다.
   const arrived = remainingMinutes <= 0
   // 새로 받은 우표: 첫 편지를 보내는 등 우표를 받았을 때만 알린다. 여러 장이면 첫 장을 보여 준다.
