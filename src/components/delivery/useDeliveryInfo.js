@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { METROPOLITAN } from '../../shared/region/regions.js'
 import { fetchRegions } from '../../shared/api/regions.js'
-import { fetchLetterRoute } from '../letter-write/letterApi.js'
+import { fetchLetterDuration, fetchLetterRoute } from '../letter-write/letterApi.js'
 
 // 배송 화면(4-11 발송 완료, 4-12 배송 지도)이 쓰는 배송 정보를 서버에서 받는다.
 // 명세: api/letters.md의 POST /api/letters/ 응답, GET /api/letters/{id}/route/
 //
 // 정보 모양(화면용):
-//   { from, to, recipient, sentAt, arrivesAt, direction, mapTheme, towns, grantedStamps }
+//   { from, to, recipient, sentAt, arrivesAt, durationMinutes, direction, mapTheme, towns, grantedStamps }
 //   - from, to: 출발·도착 지역 이름(시안처럼 줄여서 '서울 성북'). toSido: 도착 시·도 약칭('서울', 지도의 도착지 소식에 쓴다)
 //   - recipient: 상대 닉네임
-//   - sentAt, arrivesAt: 보낸·도착 시각(ISO 문자열). 남은 시간과 진행률은 이 값으로 화면이 계산한다
+//   - sentAt, arrivesAt: 보낸·도착 시각(ISO 문자열). arrivesAt은 게임으로 줄어든 값이다. 남은 시간과 진행률은 이 값으로 화면이 계산한다
+//   - durationMinutes: 게임으로 줄어들기 전 원래 배송 시간(분). 진행 바의 기준이다. 모르면 null
 //   - direction: 'sent'(내가 보냄) / 'incoming'(나에게 옴)
 //   - mapTheme: 'city' | 'sea' | 'mountain' | 'field' | 'river'. 없으면 null
 //   - towns: 지나는 동네 [{ id, name, sido(시·도 약칭), at(0~1 진행률), news }]. 발송 직후 응답에는 없어 빈 배열이다
@@ -45,6 +46,7 @@ function fromLetter(letter) {
     recipient: letter.recipient.nickname,
     sentAt: letter.sent_at,
     arrivesAt: letter.arrives_at,
+    durationMinutes: letter.duration_minutes ?? null,
     direction: 'sent',
     mapTheme: null,
     towns: [],
@@ -53,7 +55,7 @@ function fromLetter(letter) {
 }
 
 // 배송 경로 응답을 배송 정보로 바꾼다. 경유지의 일기 한 줄이 동네 소식이다.
-function fromRoute(route, provinces) {
+function fromRoute(route, provinces, durationMinutes) {
   return {
     from: regionName(route.from_region),
     to: regionName(route.to_region),
@@ -61,6 +63,7 @@ function fromRoute(route, provinces) {
     recipient: route.partner.nickname,
     sentAt: route.sent_at,
     arrivesAt: route.arrives_at,
+    durationMinutes,
     direction: route.direction,
     mapTheme: route.map_theme,
     towns: route.waypoints.map((waypoint) => ({
@@ -90,8 +93,9 @@ export default function useDeliveryInfo({ letterId, letter }) {
     if (letter) return undefined
     let cancelled = false
     // 지역 목록은 동네 이름을 줄이는 데만 쓴다. 못 받아도 지도는 그려야 하므로 실패는 무시한다.
-    Promise.all([fetchLetterRoute(letterId), fetchRegions().catch(() => null)])
-      .then(([route, provinces]) => !cancelled && setState({ info: fromRoute(route, provinces), error: null }))
+    // 원래 배송 시간은 진행 바 기준이다. 못 받으면 null이고, 그때는 줄어든 전체 시간을 기준으로 한다.
+    Promise.all([fetchLetterRoute(letterId), fetchRegions().catch(() => null), fetchLetterDuration(letterId)])
+      .then(([route, provinces, duration]) => !cancelled && setState({ info: fromRoute(route, provinces, duration), error: null }))
       .catch((error) => !cancelled && setState({ info: null, error }))
     return () => {
       cancelled = true

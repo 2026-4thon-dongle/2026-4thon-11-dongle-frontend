@@ -84,6 +84,21 @@ export function fetchLetterRoute(letterId) {
   return request(`/api/letters/${letterId}/route/`)
 }
 
+/**
+ * 편지의 원래 배송 시간(분). 게임으로 줄어들기 전 값이라 진행 바의 기준이 된다.
+ * 배송 경로 응답에는 없고 게임 편지 형식(api/game.md)의 duration_minutes에 있다. 못 받으면 null이다.
+ * @param {number|string} letterId
+ * @returns {Promise<number|null>}
+ */
+export async function fetchLetterDuration(letterId) {
+  try {
+    const letter = await request(`/api/game/letters/${letterId}/`)
+    return Number(letter?.duration_minutes) || null
+  } catch {
+    return null
+  }
+}
+
 // ── 답장하는 일기 (api/feed.md) ──
 
 /**
