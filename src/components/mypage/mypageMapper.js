@@ -123,6 +123,8 @@ export function toStampCollection(data) {
 
   const decorationStamps = byKind('decoration')
   const decorationCount = decorationStamps.filter((stamp) => stamp.owned).length
+  const achievementStamps = byKind('achievement')
+  const achievementCount = achievementStamps.filter((stamp) => stamp.owned).length
   const next = data.next_reward
   const received = data.received_rewards ?? []
 
@@ -130,8 +132,9 @@ export function toStampCollection(data) {
     achievement: {
       count: data.owned_count,
       title: `모은 우표 ${data.owned_count}개`,
+      breakdownLabel: `업적 ${achievementCount} · 꾸미기 ${decorationCount}`,
       subtitle: '성과를 낼 때마다 특별한 우표가 생겨요',
-      stamps: byKind('achievement'),
+      stamps: achievementStamps,
       nextReward: next
         ? {
             text: `다음 보상 · ${next.threshold}개: ${next.name}`,
