@@ -1,8 +1,5 @@
 # 05 편지 받기, 받은 편지에 답장, 보상·펜팔 (5-8~5-15)
 
-Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5-1~5-7-1은 `docs/mailbox.md`를 본다.
-대상: 5-8 `92:1095`, 5-9 `92:1247`, 5-10 `169:1842`, 5-11 `169:1919`, 5-12 `171:2379`, 5-13 `219:5250`, 5-14 `92:1290`, 5-15 `92:1401`.
-
 | 화면 | 경로 | 동작 |
 | --- | --- | --- |
 | 5-8 새 편지 도착 | `/mailbox/:letterId` | 내가 받은 편지이고 아직 열지 않은 것(`direction: received`, `is_read: false`). "봉투 열기" → `POST /open/`으로 읽음 처리 후 5-9, "나중에 읽을래요" → 한 칸 뒤로(읽음 처리 없음) |
@@ -13,9 +10,9 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5
 | 5-14 펜팔 친구 | `/pen-pal` | 친구 카드 → 5-15 |
 | 5-15 주고받은 편지 | `/pen-pal/:conversationId` | 시작 일기와 편지를 시간순 카드로. "답장 쓰기"(서버 `reply_to`가 있을 때만) → 5-10으로 연결 |
 
-- **서버 연동(#65)**: 5-8, 5-9, 5-14, 5-15는 서버(`api/mailbox.md`)에서 받는다. 5-13(`/mailbox/reward-unlocked`)도 서버에서 받는다(`GET /api/stamps/rewards/`, `POST …/{code}/seen/`). 5-12(`/mailbox/stamp-gained`)도 서버 모양이다: 받은 우표는 발송 응답의 `granted_stamps`·`unlocked_rewards`를 라우터 state로 받고(`navigate('/mailbox/stamp-gained', { state: { grantedStamps, unlockedRewards } })`), 모은 개수만 `GET /api/stamps/`로 받는다. 이 화면을 여는 쪽(`DonePage` 등)은 채현님 영역이라 아직 연결되지 않았다.
+- **서버 연동(#65)**: 5-8, 5-9, 5-14, 5-15는 서버(`api/mailbox.md`)에서 받는다. 5-13(`/mailbox/reward-unlocked`)도 서버에서 받는다(`GET /api/stamps/rewards/`, `POST …/{code}/seen/`). 5-12(`/mailbox/stamp-gained`)도 서버 모양이다: 받은 우표는 발송 응답의 `granted_stamps`·`unlocked_rewards`를 라우터 state로 받고(`navigate('/mailbox/stamp-gained', { state: { grantedStamps, unlockedRewards } })`), 모은 개수만 `GET /api/stamps/`로 받는다. 이 화면을 여는 곳은 5-8 봉투 열기뿐이고(아래 마지막 절), 발송 완료(`DonePage`)는 열지 않는다.
 - 개발용 확인 주소 중 mock 모드(`.env`의 `VITE_API_MOCK=true`, 개발 서버)에서만 되는 것: `/mailbox/101`·`102`(5-8), `/mailbox/103`·`104`(5-9), `/pen-pal?mock=empty`, `/pen-pal/1`·`2`·`3`·`4`(4는 끝난 대화). 기본(서버 모드)에서는 실제 편지·대화 id로 연다. mock 모드에서 state 없이 `/mailbox/stamp-gained`(`?unlock=3`이면 "확인"이 5-13으로 이어짐)로 열면 mock 우표를 보여 준다. 서버 모드에서 state 없이 열면 "새로 받은 우표가 없어요"와 우체통 버튼만 나온다. 5-13은 서버 모드에서 `/mailbox/reward-unlocked`(열렸고 아직 확인 안 한 첫 보상), `?code=stickers-cat`, `?threshold=3|5|10|15`로 열고, 보상이 열려 있지 않으면 "새로 열린 보상이 없어요"가 나온다. mock 모드에서는 같은 주소로 mock 보상을 본다.
-- 5-12는 발송 응답을 router state로 받아 열고, 응답에 `unlocked_rewards`가 있으면 5-12의 "확인"이 5-13(`?code=`)으로 간다. 마이 수집 보상(7-8)에서 이미 열린 보상을 눌러도 5-13(`?code=`)으로 온다. 앱을 열 때 5-13을 자동으로 조회하지 않는다. 5-12를 여는 `DonePage`는 아직 연결되지 않았다.
+- 5-12는 발송 응답을 router state로 받아 열고, 응답에 `unlocked_rewards`가 있으면 5-12의 "확인"이 5-13(`?code=`)으로 간다. 마이 수집 보상(7-8)에서 이미 열린 보상을 눌러도 5-13(`?code=`)으로 온다. 앱을 열 때 5-13을 자동으로 조회하지 않는다.
 - **5-13 서버 동작**: `GET /api/stamps/rewards/`에서 보상을 고른다(`code` → `threshold` → 둘 다 없으면 `unlocked && !seen` 중 기준 개수가 가장 낮은 것). 아직 확인 전(`!seen`)인 보상은 "확인"·"써보기"를 누를 때 `POST /api/stamps/rewards/{code}/seen/`(204)을 먼저 보내고, 실패하면 이동하지 않고 서버 메시지를 토스트로 알린다(버튼은 요청 중 잠긴다). 이미 확인한 보상을 다시 보면 seen을 보내지 않는다. 불러오기가 실패하면 에러 화면과 "다시 시도"이다. 진행 바는 `owned_count ÷ 다음 보상 개수`이다.
 - 읽음·넘김은 서버가 저장하고 우체통 목록(5-1, 5-3, 5-7)에 반영해 준다. 답장한 편지는 답장 편지를 **발송할 때** 서버가 대화 중으로 옮긴다("답장하기" 버튼만으로는 안 옮겨진다). mock 모드에서만 메모리(`mailboxMockStore.js`)에 두고 "답장하기"를 누르는 순간 옮긴다. 탭 이동 규칙은 `docs/mailbox.md`를 본다.
 - **로딩·에러**: 스켈레톤으로 불러오고, 실패하면 mock으로 채우지 않고 에러를 보여 준다. 5-8·5-9: 아직 도착하지 않은 편지(403 `NOT_ARRIVED`)와 없는 편지(404)는 안내 문구만, 그 밖의 실패는 "다시 시도"가 있는 에러 화면이다. 봉투 열기·넘기기가 실패하면(예: 409 `NOT_PASSABLE`) 서버 메시지를 토스트로 알린다. 5-14는 에러 화면, 5-15도 에러 화면이고 404(내 대화가 아님)는 "찾을 수 없는 대화예요" 안내이다. 5-14는 20개씩이며 "더 보기" 버튼(시안에 없는 임시 UI)이 있다.
@@ -50,13 +47,13 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5
 
 ## 임시 경로와 연결
 
-- 경로 `/mailbox/stamp-gained`, `/mailbox/reward-unlocked`, `/pen-pal/:conversationId`는 가정이다(`/pen-pal`의 id는 친구 id가 아니라 대화 id). 답장 쿼리(`letterId`, `nickname`, `region`)는 `docs/letter-write.md`의 제안이고, `letterId`는 서버 편지 id(= 5-15의 `reply_to`)이다.
+- `/pen-pal/:conversationId`의 id는 친구 id가 아니라 대화 id이다. 답장 쿼리(`letterId`, `nickname`, `region`)는 `docs/letter-write.md`의 규칙이고, `letterId`는 서버 편지 id(= 5-15의 `reply_to`)이다.
 - 답장 쿼리에 `preview`(받은 편지 첫 줄, 60자까지)를 더 붙인다(`letterReceiveMapper.buildReplyPath`). 5-10 배너("Re. {닉네임}님의 편지" + 첫 줄)와 5-11 "{닉네임}님 편지 다시 보기 ›"(`/mailbox/:letterId`로 이동, 돌아오면 쓰던 내용 유지)는 편지 쓰기 쪽에서 `letterId`로 동작한다. 자세한 동작은 `docs/letter-write.md`. 5-15(펜팔)의 "답장 쓰기"는 서버 `reply_to`를 `letterId`로 쓰고, `penPalMapper`가 받은 마지막 편지(`direction: received`)의 첫 줄을 60자까지 `preview`로 넘긴다(받은 편지가 없으면 생략). 네 단계 헤더 제목은 모두 "답장 쓰기"이다.
-- `/mypage/stamps`는 이 브랜치에서 `/mypage/*`의 `RoutePlaceholder`이다(마이는 `feature/22-mypage-ui`). 마이 7-1의 "펜팔 친구"는 `/pen-pal`로 연결되어 있다.
+- 5-12 "우표첩 보기"의 `/mypage/stamps`는 마이 우표첩(`StampBookPage`)이다. 마이 7-1의 "펜팔 친구"는 `/pen-pal`로 연결되어 있다.
 
 ## 서버와 다른 점·mock
 
-- 5-8·5-9·5-14·5-15는 `api/mailbox.md`를 따른다. 5-13은 `api/stamps.md`의 `GET /api/stamps/rewards/`·`POST /api/stamps/rewards/{code}/seen/`를 따른다. 5-12는 `api/letters.md`의 발송 응답(`granted_stamps`·`unlocked_rewards`)과 `GET /api/stamps/`를 따른다. 화면은 준비됐고 열어 주는 쪽(채현님)이 남았다.
+- 5-8·5-9·5-14·5-15는 `api/mailbox.md`를 따른다. 5-13은 `api/stamps.md`의 `GET /api/stamps/rewards/`·`POST /api/stamps/rewards/{code}/seen/`를 따른다. 5-12는 `api/letters.md`의 발송 응답(`granted_stamps`·`unlocked_rewards`)과 `GET /api/stamps/`를 따른다.
 - 5-9 서명은 서버 `signature`(이미지 URL)로 그린다. 서명 이미지 위에 스티커(`stickers[]`의 `code`·`x`·`y`·`rotation`)를 얹는다. `x`·`y`는 서명 영역 기준 0~1 비율로 보았고(문서는 "편지지 기준"이라고만 적음), 스티커 크기(`scale`)는 편지지 너비 대비 비율로 보고 `scale × 편지지 너비`로 그린다. 서버가 주면 쓰고(0 이하·숫자가 아니면 무시, 최대 1), 없으면 기본값 0.18(시안 64px ÷ 360px)이다(요청 `1115_fe2be_sticker-scale`은 응답 대기). 편지지 너비를 재기 전 첫 그림만 64px이다.
 - 5-9 편지지(`stationery`)는 6종의 바탕·글씨색만 맞추고 줄·격자·고향이·밤하늘·금박 장식은 그리지 않는다. 글씨체(`font`)는 서버 코드를 `shared/fonts/letterFonts.js`의 글씨체로 바꿔 쓰며 목록에 없는 글씨체는 나눔손글씨 펜이다.
 - 5-9 보낸 사람은 `sender_nickname`(발송 시점 값), 받는 사람(5-8 "To.")은 `recipient_nickname`을 쓴다. 우표는 `stamp.code`(`long-delivery`, `cat-birthday`는 그림 이름이 달라 변환)로 그린다.
@@ -77,7 +74,7 @@ Figma: `9OwwhbOqsCx2zGORvVCe45`, 섹션 `92:999`(05 우체통·편지 받기). 5
 - 5-8과 5-9의 구분 기준, 5-9 "…" 메뉴, 펜팔 친구가 없을 때·넘기기 후 화면, 5-14 "편지 2통" 예시, 5-13 진행 바.
 - 보관한 편지(`passed_letter`)를 읽기 전용으로 열었을 때 `can_reply`·`can_pass`가 false로 오는지, 스티커 `scale`·좌표 기준, 아바타 코드 전체 목록.
 
-관련 지침: `CLAUDE.md`, `docs/ownership.md`, `docs/mailbox.md`, `docs/letter-write.md`.
+관련 지침: `docs/ownership.md`, `docs/mailbox.md`, `docs/letter-write.md`.
 
 ## 5-8 봉투 열기 → 5-12 「첫 왕복」
 
